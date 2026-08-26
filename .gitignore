@@ -1,0 +1,24 @@
+venv/
+env/
+.venv/
+
+__pycache__/
+*.py[cod]
+
+*.log
+
+.env
+.env.*
+
+.vscode/
+.idea/
+
+credentials.json
+token.json
+
+staticfiles/
+
+.DS_Store
+Thumbs.db
+
+core/static/img/productos/base lula2_files/

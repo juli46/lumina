@@ -1,0 +1,93 @@
+{% extends "core/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/editar_usuario.css' %}">
+
+<div class="form-container">
+
+    <form method="POST" class="form-card" id="perfilForm">
+        {% csrf_token %}
+
+        <h1>Editar usuario</h1>
+
+        <div class="form-message"></div>
+
+        <div class="field">
+            <label>Usuario</label>
+            <input
+                type="text"
+                name="username"
+                value="{{ usuario.username }}"
+            >
+        </div>
+
+        <div class="field">
+            <label>Email</label>
+            <input
+                type="email"
+                name="email"
+                value="{{ usuario.email }}"
+            >
+        </div>
+
+        <div class="field">
+            <label>Teléfono</label>
+            <input
+                type="text"
+                name="telefono"
+                value="{{ usuario.telefono }}"
+            >
+        </div>
+
+        <div class="field">
+            <label>Rol</label>
+            <select name="rol">
+                <option value="admin"
+                    {% if usuario.rol == "admin" %}selected{% endif %}>
+                    Admin
+                </option>
+
+                <option value="usuario"
+                    {% if usuario.rol == "usuario" %}selected{% endif %}>
+                    Usuario
+                </option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Estado de la cuenta</label>
+
+            <select name="is_active">
+                <option value="True"
+                    {% if usuario.is_active %}selected{% endif %}>
+                    🟢 Activa
+                </option>
+
+                <option value="False"
+                    {% if not usuario.is_active %}selected{% endif %}>
+                    🔴 Inactiva
+                </option>
+            </select>
+        </div>
+
+        <div class="actions">
+
+            <a href="{% url 'usuario_d' %}" class="cancel-btn">
+                Cancelar
+            </a>
+
+            <button type="submit" class="save-btn">
+                Guardar 💾
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<script src="{% static 'js/validaciones.js' %}"></script>
+
+{% endblock %}

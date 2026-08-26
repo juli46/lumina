@@ -1,0 +1,984 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+Carrito | Lúmina
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/carrito.css' %}">
+{% endblock %}
+
+
+{% block content %}
+
+<main class="carrito-page">
+
+    <!-- ENCABEZADO -->
+    <section class="carrito-header">
+
+        <div class="carrito-header-contenido">
+
+            <span class="carrito-eyebrow">
+                <i class="fa-solid fa-bag-shopping"></i>
+                TU COMPRA
+            </span>
+
+            <h1>
+                Mi carrito
+            </h1>
+
+            <p>
+                Revisa tus productos favoritos antes de continuar.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- CONTENIDO DEL CARRITO -->
+    <section class="carrito-container">
+
+        {% if items %}
+
+        <div class="carrito-layout">
+
+            <!-- ==========================================
+                     PRODUCTOS
+                     ========================================== -->
+
+            <div class="carrito-productos">
+
+                <div class="carrito-productos-header">
+
+                    <div>
+                        <h2>
+                            Tus productos
+                        </h2>
+
+                        <span class="carrito-items-count">
+                            {{ cantidad_total }}
+                            {% if cantidad_total == 1 %}
+                            producto
+                            {% else %}
+                            productos
+                            {% endif %}
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <!-- LISTA -->
+                <div id="lista-carrito">
+
+                    {% for item in items %}
+
+                    <article class="carrito-item" id="carrito-item-{{ item.id }}" data-item-id="{{ item.id }}"
+                        data-stock="{{ item.stock_disponible }}">
+
+                        <!-- IMAGEN -->
+                        <div class="carrito-item-imagen">
+
+                            {% if item.es_kit %}
+
+                            {% if item.kit.imagen %}
+                            <img src="{{ item.kit.imagen.url }}" alt="{{ item.kit.nombre }}">
+                            {% else %}
+                            <div class="imagen-placeholder">
+                                <i class="fa-solid fa-gift"></i>
+                            </div>
+                            {% endif %}
+
+                            {% else %}
+
+                            {% with imagen=item.variante.producto.imagenes.all|first %}
+
+                            {% if imagen %}
+                            <img src="{{ imagen.imagen.url }}" alt="{{ item.variante.producto.nombre }}">
+                            {% else %}
+                            <div class="imagen-placeholder">
+                                <i class="fa-regular fa-image"></i>
+                            </div>
+                            {% endif %}
+
+                            {% endwith %}
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- INFORMACIÓN -->
+                        <div class="carrito-item-info">
+
+                            <div class="carrito-item-top">
+
+                                <div>
+
+                                    <span class="carrito-item-marca">
+                                        {% if item.es_kit %}
+                                        KIT
+                                        {% elif item.variante.producto.marca %}
+                                        {{ item.variante.producto.marca.nombre }}
+                                        {% else %}
+                                        LÚMINA
+                                        {% endif %}
+                                    </span>
+
+                                    <h3>
+                                        {{ item.nombre }}
+                                    </h3>
+
+                                </div>
+
+
+                                <!-- ELIMINAR -->
+                                <button type="button" class="btn-eliminar-carrito" data-item-id="{{ item.id }}"
+                                    aria-label="Eliminar producto" title="Eliminar">
+
+                                    <i class="fa-regular fa-trash-can"></i>
+
+                                </button>
+
+                            </div>
+
+
+                            {% if not item.es_kit %}
+
+                            <!-- VARIANTE -->
+                            {% if item.variante.nombre_tono %}
+
+                            <div class="carrito-variante">
+
+                                <span class="variante-label">
+                                    Tono
+                                </span>
+
+                                <span class="variante-valor">
+                                    {{ item.variante.nombre_tono }}
+                                </span>
+
+                            </div>
+
+                            {% endif %}
+
+
+                            {% if item.variante.codigo_tono %}
+
+                            <div class="carrito-codigo">
+
+                                <span>
+                                    {{ item.variante.codigo_tono }}
+                                </span>
+
+                            </div>
+
+                            {% endif %}
+
+                            {% endif %}
+
+
+                            <!-- TONOS ELEGIDOS DEL KIT -->
+                            {% if item.es_kit and item.selecciones_kit.all %}
+
+                            <div class="carrito-kit-tonos">
+
+                                {% for seleccion in item.selecciones_kit.all %}
+
+                                <div class="carrito-variante">
+
+                                    <span class="variante-label">
+                                        {{ seleccion.kit_producto.producto.nombre }}
+                                    </span>
+
+                                    <span class="variante-valor">
+                                        {{ seleccion.variante.nombre_tono }}
+                                    </span>
+
+                                </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                            {% endif %}
+
+
+                            <!-- PARTE INFERIOR -->
+                            <div class="carrito-item-bottom">
+
+                                <!-- CANTIDAD -->
+                                <div class="cantidad-control">
+
+                                    <button type="button" class="btn-cantidad btn-disminuir"
+                                        data-item-id="{{ item.id }}" aria-label="Disminuir cantidad">
+
+                                        <i class="fa-solid fa-minus"></i>
+
+                                    </button>
+
+
+                                    <span class="cantidad-valor" id="cantidad-{{ item.id }}">
+
+                                        {{ item.cantidad }}
+
+                                    </span>
+
+
+                                    <button type="button" class="btn-cantidad btn-aumentar" data-item-id="{{ item.id }}"
+                                        aria-label="Aumentar cantidad">
+
+                                        <i class="fa-solid fa-plus"></i>
+
+                                    </button>
+
+                                </div>
+
+
+                                <!-- PRECIO -->
+                                <div class="carrito-item-precio">
+
+                                    <span class="precio-unitario">
+                                        ${{ item.precio_unitario|floatformat:0 }}
+                                        c/u
+                                    </span>
+
+                                    <strong class="precio-subtotal" id="subtotal-{{ item.id }}">
+
+                                        ${{ item.subtotal|floatformat:0 }}
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- VOLVER A COMPRAR -->
+                <a href="{% url 'catalogo' %}" class="seguir-comprando">
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                    Seguir comprando
+
+                </a>
+
+            </div>
+
+
+            <!-- ==========================================
+                     RESUMEN
+                     ========================================== -->
+
+            <aside class="carrito-resumen">
+
+                <div class="resumen-card">
+
+                    <div class="resumen-header">
+
+                        <span>
+                            RESUMEN
+                        </span>
+
+                        <i class="fa-solid fa-receipt"></i>
+
+                    </div>
+
+
+                    <h2>
+                        Tu pedido
+                    </h2>
+
+
+                    <!-- SUBTOTAL -->
+                    <div class="resumen-linea">
+
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <strong id="carrito-subtotal">
+                            ${{ subtotal|floatformat:0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- ENVÍO -->
+                    <div class="resumen-linea">
+
+                        <span>
+                            Envío
+                        </span>
+
+                        <span class="envio-pendiente">
+                            Se calcula al finalizar
+                        </span>
+
+                    </div>
+
+
+                    <div class="resumen-separador"></div>
+
+
+                    <!-- TOTAL -->
+                    <div class="resumen-total">
+
+                        <div>
+                            <span>
+                                Total
+                            </span>
+
+                            <small>
+                                Impuestos incluidos
+                            </small>
+                        </div>
+
+                        <strong id="carrito-total">
+                            ${{ subtotal|floatformat:0 }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- CONTINUAR -->
+                    <button type="button" class="btn-continuar-compra" id="btn-continuar-compra">
+
+                        Continuar con la compra
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+
+                    <!-- SEGURIDAD -->
+                    <div class="compra-segura">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <div>
+
+                            <strong>
+                                Compra segura
+                            </strong>
+
+                            <span>
+                                Tus datos estarán protegidos.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BENEFICIO -->
+                <div class="carrito-beneficio">
+
+                    <div class="beneficio-icono">
+                        <i class="fa-solid fa-sparkles"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            ¿Buscas más?
+                        </strong>
+
+                        <p>
+                            Explora nuestra colección y descubre
+                            productos para crear tu estilo.
+                        </p>
+
+                        <a href="{% url 'catalogo' %}">
+                            Explorar productos
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+
+        {% else %}
+
+        <!-- ==========================================
+                 CARRITO VACÍO
+                 ========================================== -->
+
+        <section class="carrito-vacio">
+
+            <div class="carrito-vacio-icono">
+
+                <i class="fa-solid fa-bag-shopping"></i>
+
+                <span class="brillo brillo-1"></span>
+                <span class="brillo brillo-2"></span>
+                <span class="brillo brillo-3"></span>
+
+            </div>
+
+
+            <span class="carrito-vacio-eyebrow">
+                TU CARRITO
+            </span>
+
+
+            <h2>
+                Tu carrito está esperando
+            </h2>
+
+
+            <p>
+                Todavía no has agregado productos.
+                Descubre tus favoritos y empieza a crear
+                tu compra en Lúmina.
+            </p>
+
+
+            <a href="{% url 'catalogo' %}" class="btn-explorar">
+
+                Explorar productos
+
+                <i class="fa-solid fa-arrow-right"></i>
+
+            </a>
+
+        </section>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /*
+        ==========================================================
+        TOASTS
+        ==========================================================
+        */
+
+        function obtenerContenedorToast() {
+
+            let contenedor = document.querySelector(".toast-contenedor");
+
+            if (!contenedor) {
+
+                contenedor = document.createElement("div");
+                contenedor.className = "toast-contenedor";
+                document.body.appendChild(contenedor);
+
+            }
+
+            return contenedor;
+
+        }
+
+        function mostrarToast(mensaje, tipo = "error", titulo = null) {
+
+            const contenedor = obtenerContenedorToast();
+
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${tipo}`;
+
+            const icono = tipo === "exito" ? "fa-circle-check" : "fa-circle-exclamation";
+            const tituloDefault = tipo === "exito" ? "Listo" : "Carrito";
+
+            toast.innerHTML = `
+                <div class="toast-icono">
+                    <i class="fa-solid ${icono}"></i>
+                </div>
+                <div class="toast-texto">
+                    <strong>${titulo || tituloDefault}</strong>
+                    ${mensaje}
+                </div>
+                <button type="button" class="toast-cerrar" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            contenedor.appendChild(toast);
+
+            requestAnimationFrame(function () {
+                toast.classList.add("toast-visible");
+            });
+
+            function cerrarToast() {
+
+                toast.classList.remove("toast-visible");
+                toast.classList.add("toast-saliendo");
+
+                setTimeout(function () {
+                    toast.remove();
+                }, 250);
+
+            }
+
+            const temporizador = setTimeout(cerrarToast, 4000);
+
+            toast.querySelector(".toast-cerrar").addEventListener("click", function () {
+                clearTimeout(temporizador);
+                cerrarToast();
+            });
+
+        }
+
+
+        /*
+        ==========================================================
+        CSRF
+        ==========================================================
+        */
+
+        function obtenerCSRF() {
+
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+
+                cookie = cookie.trim();
+
+                if (cookie.startsWith("csrftoken=")) {
+
+                    return decodeURIComponent(
+                        cookie.substring("csrftoken=".length)
+                    );
+
+                }
+
+            }
+
+            return "";
+
+        }
+
+
+        /*
+        ==========================================================
+        FORMATEAR PRECIO
+        ==========================================================
+        */
+
+        function formatearPrecio(valor) {
+
+            return "$" + Number(valor).toLocaleString("es-CO");
+
+        }
+
+
+        /*
+        ==========================================================
+        ACTUALIZAR CONTADOR NAVBAR
+        ==========================================================
+        */
+
+        function actualizarContador(cantidad) {
+
+            const contador =
+                document.getElementById("contador-carrito");
+
+            if (!contador) {
+                return;
+            }
+
+            contador.textContent = cantidad;
+
+            if (Number(cantidad) <= 0) {
+
+                contador.classList.add("vacio");
+
+            } else {
+
+                contador.classList.remove("vacio");
+
+                contador.classList.add("actualizado");
+
+                setTimeout(function () {
+
+                    contador.classList.remove("actualizado");
+
+                }, 200);
+
+            }
+
+        }
+
+
+        /*
+        ==========================================================
+        PETICIÓN
+        ==========================================================
+        */
+
+        async function enviarPeticion(url) {
+
+            const respuesta = await fetch(url, {
+
+                method: "POST",
+
+                headers: {
+
+                    "X-CSRFToken": obtenerCSRF(),
+
+                    "X-Requested-With": "XMLHttpRequest",
+
+                    "Content-Type": "application/json"
+
+                },
+
+                body: JSON.stringify({})
+
+            });
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+
+                throw new Error(
+                    datos.mensaje || "No se pudo actualizar el carrito."
+                );
+
+            }
+
+            return datos;
+
+        }
+
+
+        /*
+        ==========================================================
+        ACTUALIZAR SUBTOTAL
+        ==========================================================
+        */
+
+        function actualizarSubtotalItem(itemId, subtotal) {
+
+            const elemento =
+                document.getElementById(
+                    "subtotal-" + itemId
+                );
+
+            if (!elemento) {
+                return;
+            }
+
+            elemento.textContent =
+                formatearPrecio(subtotal);
+
+        }
+
+
+        /*
+        ==========================================================
+        AUMENTAR
+        ==========================================================
+        */
+
+        document.querySelectorAll(".btn-aumentar").forEach(function (boton) {
+
+            boton.addEventListener("click", async function () {
+
+                const itemId =
+                    this.dataset.itemId;
+
+                const item =
+                    document.getElementById(
+                        "carrito-item-" + itemId
+                    );
+
+                const cantidad =
+                    document.getElementById(
+                        "cantidad-" + itemId
+                    );
+
+                this.disabled = true;
+
+                try {
+
+                    const datos =
+                        await enviarPeticion(
+                            `/carrito/aumentar/${itemId}/`
+                        );
+
+                    cantidad.textContent =
+                        datos.cantidad;
+
+                    actualizarSubtotalItem(
+                        itemId,
+                        datos.subtotal
+                    );
+
+                    actualizarContador(
+                        datos.cantidad_carrito
+                    );
+
+                } catch (error) {
+
+                    mostrarMensaje(error.message);
+
+                } finally {
+
+                    this.disabled = false;
+
+                }
+
+            });
+
+        });
+
+
+        /*
+        ==========================================================
+        DISMINUIR
+        ==========================================================
+        */
+
+        document.querySelectorAll(".btn-disminuir").forEach(function (boton) {
+
+            boton.addEventListener("click", async function () {
+
+                const itemId =
+                    this.dataset.itemId;
+
+                this.disabled = true;
+
+                try {
+
+                    const datos =
+                        await enviarPeticion(
+                            `/carrito/disminuir/${itemId}/`
+                        );
+
+
+                    if (datos.eliminado) {
+
+                        eliminarElementoCarrito(itemId);
+
+                    } else {
+
+                        const cantidad =
+                            document.getElementById(
+                                "cantidad-" + itemId
+                            );
+
+                        cantidad.textContent =
+                            datos.cantidad;
+
+                    }
+
+
+                    actualizarContador(
+                        datos.cantidad_carrito
+                    );
+
+                    recalcularResumenVisual();
+
+                } catch (error) {
+
+                    mostrarMensaje(error.message);
+
+                } finally {
+
+                    this.disabled = false;
+
+                }
+
+            });
+
+        });
+
+
+        /*
+        ==========================================================
+        ELIMINAR
+        ==========================================================
+        */
+
+        document.querySelectorAll(".btn-eliminar-carrito")
+            .forEach(function (boton) {
+
+                boton.addEventListener("click", async function () {
+
+                    const itemId =
+                        this.dataset.itemId;
+
+                    try {
+
+                        const datos =
+                            await enviarPeticion(
+                                `/carrito/eliminar/${itemId}/`
+                            );
+
+                        eliminarElementoCarrito(itemId);
+
+                        actualizarContador(
+                            datos.cantidad_carrito
+                        );
+
+                        recalcularResumenVisual();
+
+                    } catch (error) {
+
+                        mostrarMensaje(error.message);
+
+                    }
+
+                });
+
+            });
+
+
+        /*
+        ==========================================================
+        ELIMINAR ELEMENTO VISUAL
+        ==========================================================
+        */
+
+        function eliminarElementoCarrito(itemId) {
+
+            const elemento =
+                document.getElementById(
+                    "carrito-item-" + itemId
+                );
+
+            if (!elemento) {
+                return;
+            }
+
+            elemento.classList.add("item-eliminando");
+
+            setTimeout(function () {
+
+                elemento.remove();
+
+                const items =
+                    document.querySelectorAll(
+                        ".carrito-item"
+                    );
+
+                if (items.length === 0) {
+
+                    location.reload();
+
+                }
+
+            }, 250);
+
+        }
+
+
+        /*
+        ==========================================================
+        RECALCULAR RESUMEN
+        ==========================================================
+        */
+
+        function recalcularResumenVisual() {
+
+            /*
+             * Por ahora el backend no devuelve el subtotal
+             * general después de cada modificación.
+             *
+             * Recargamos la página para obtener el valor
+             * definitivo calculado por Django.
+             */
+
+            setTimeout(function () {
+
+                location.reload();
+
+            }, 300);
+
+        }
+
+
+        /*
+        ==========================================================
+        MENSAJE
+        ==========================================================
+        */
+
+        function mostrarMensaje(mensaje) {
+
+            mostrarToast(mensaje, "error");
+
+        }
+
+
+        /*
+        ==========================================================
+        CONTINUAR COMPRA
+        ==========================================================
+        */
+
+        const botonContinuar =
+            document.getElementById(
+                "btn-continuar-compra"
+            );
+
+        if (botonContinuar) {
+
+            botonContinuar.addEventListener(
+                "click",
+                function () {
+
+                    window.location.href = "{% url 'checkout' %}";
+
+                }
+            );
+
+        }
+
+
+        /*
+        ==========================================================
+        CONTADOR INICIAL
+        ==========================================================
+        */
+
+        const contadorInicial =
+            document.getElementById(
+                "contador-carrito"
+            );
+
+        if (contadorInicial) {
+
+            const cantidadInicial =
+                {{ cantidad_total|default:0 }};
+
+            actualizarContador(
+                cantidadInicial
+            );
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}

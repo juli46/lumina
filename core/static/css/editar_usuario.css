@@ -1,0 +1,169 @@
+.form-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+}
+
+.form-card{
+    width:100%;
+    max-width:450px;
+    background:var(--card);
+    padding:30px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+}
+
+.form-card h1{
+    text-align:center;
+    margin-bottom:25px;
+    color:var(--primary);
+}
+
+/* LABELS */
+.form-card label{
+    display:block;
+    margin-top:14px;
+    margin-bottom:6px;
+    font-weight:600;
+    color:var(--text);
+}
+
+/* INPUTS */
+.form-card input[type="text"],
+.form-card input[type="email"],
+.form-card select{
+    width:100%;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    outline:none;
+    transition:var(--transition);
+    box-sizing:border-box;
+    background:var(--card);
+    color:var(--text);
+}
+
+.form-card input[type="text"]:focus,
+.form-card input[type="email"]:focus,
+.form-card select:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(223,109,134,.15);
+}
+
+/* ESTADO */
+.estado-container{
+    margin-top:15px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.estado-container input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    cursor:pointer;
+    accent-color:var(--primary);
+}
+
+/* BOTONES */
+.actions{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin-top:25px;
+}
+
+/* Cancelar */
+.cancel-btn{
+    background:var(--text-light);
+    color:#fff;
+    text-decoration:none;
+    padding:12px 22px;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:var(--transition);
+}
+
+.cancel-btn:hover{
+    filter:brightness(.9);
+    transform:translateY(-2px);
+}
+
+/* Guardar */
+.save-btn{
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:12px 22px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    width:auto !important;
+    margin-top:0 !important;
+    transition:var(--transition);
+}
+
+.save-btn:hover{
+    filter:brightness(.95);
+    transform:translateY(-2px);
+}
+
+/* MENSAJES */
+.form-message{
+    margin-bottom:15px;
+    padding:12px;
+    border-radius:10px;
+    font-size:14px;
+    text-align:center;
+}
+
+.form-message.error{
+    background:var(--danger-light);
+    color:var(--danger);
+    border:1px solid var(--danger);
+}
+
+.field{
+    margin-bottom:15px;
+}
+
+.error-msg{
+    margin-top:6px;
+    color:var(--danger);
+    font-size:12px;
+    font-weight:600;
+}
+
+.input-error{
+    border:1px solid var(--danger) !important;
+    background:var(--danger-light);
+}
+
+/* RESPONSIVE */
+@media (max-width:600px){
+
+    .form-container{
+        padding:20px;
+    }
+
+    .form-card{
+        padding:20px;
+    }
+
+    .actions{
+        flex-direction:column;
+    }
+
+    .cancel-btn,
+    .save-btn{
+        width:100%;
+        justify-content:center;
+    }
+}

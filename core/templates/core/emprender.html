@@ -1,0 +1,888 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block body_class %}tips-page{% endblock %}
+
+{% block title %}
+Emprender | Lúmina
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/emprender.css' %}">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<!-- =========================================================
+     DATOS DE RECOMENDACIONES DE DJANGO
+========================================================= -->
+
+<script>
+
+    window.LUMINA_RECOMENDACIONES = [
+
+        {% for recomendacion in recomendaciones %}
+
+        {
+            id: {{ recomendacion.id }},
+
+            nombre: "{{ recomendacion.nombre|escapejs }}",
+
+            presupuesto_min: {{ recomendacion.presupuesto_min|default:0 }},
+
+            presupuesto_max: {{ recomendacion.presupuesto_max|default:0 }},
+
+            producto_interes: "{{ recomendacion.producto_interes|default:''|escapejs }}",
+
+            plataforma: "{{ recomendacion.plataforma|default:''|escapejs }}",
+
+            inversion_estimada: {{ recomendacion.inversion_estimada|default:0 }},
+
+            ganancia_estimada: {{ recomendacion.ganancia_estimada|default:0 }},
+
+            roi: {{ recomendacion.roi|default:0 }},
+
+            recomendacion: "{{ recomendacion.recomendacion|default:''|escapejs }}",
+
+
+            kits: [
+
+                {% for kit in recomendacion.kits.all %}
+
+                {
+                    id: {{ kit.id }},
+
+                    nombre: "{{ kit.nombre|escapejs }}",
+
+                    precio: {{ kit.precio_final|default:0 }}
+
+                }
+
+                {% if not forloop.last %},{% endif %}
+
+                {% endfor %}
+
+            ],
+
+
+            productos: [
+
+                {% for producto in recomendacion.productos.all %}
+
+                {
+                    id: {{ producto.id }},
+
+                    nombre: "{{ producto.nombre|escapejs }}",
+
+                    precio: {{ producto.precio_base|default:0 }}
+
+                }
+
+                {% if not forloop.last %},{% endif %}
+
+                {% endfor %}
+
+            ]
+
+        }
+
+        {% if not forloop.last %},{% endif %}
+
+        {% endfor %}
+
+    ];
+
+</script>
+
+
+<div class="lm-wrap">
+
+
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
+
+    <section class="lm-hero">
+
+        <div class="lm-hero__content">
+
+            <span class="lm-badge">
+                ✨ Emprender con Lúmina
+            </span>
+
+            <h1>
+                Convierte tu <em>brillo</em> en un negocio real
+            </h1>
+
+            <p class="lm-hero__sub">
+                Descubre qué puedes vender, cuánto invertir
+                y cómo empezar tu emprendimiento beauty.
+            </p>
+
+            <div class="lm-hero__buttons">
+
+                <a
+                    href="#test-interactivo"
+                    class="lm-btn lm-btn--primary"
+                >
+                    💰 Hacer el test
+                </a>
+
+                <a
+                    href="#emprendedores-cero"
+                    class="lm-btn lm-btn--ghost"
+                >
+                    🌱 Empezar desde cero
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="lm-mirror"
+            aria-hidden="true"
+        >
+
+            <div class="lm-mirror__ring"></div>
+
+            <div class="lm-mirror__ring lm-mirror__ring--in"></div>
+
+            <div class="lm-mirror__glass"></div>
+
+            <div class="lm-mirror__handle"></div>
+
+        </div>
+
+    </section>
+
+
+    <div class="lm-gloss-divider"></div>
+
+
+    <!-- =====================================================
+         TEST
+    ====================================================== -->
+
+    <section
+        class="lm-section lm-section--light"
+        id="test-interactivo"
+    >
+
+        <div class="lm-section__inner">
+
+
+            <div class="lm-title">
+
+                <span class="lm-eyebrow">
+                    💖 Test interactivo
+                </span>
+
+                <h2>
+                    ¿Qué negocio beauty puedes empezar?
+                </h2>
+
+                <p>
+                    Responde 3 preguntas y Lúmina te mostrará
+                    una recomendación personalizada.
+                </p>
+
+            </div>
+
+
+            <div class="lm-test-card">
+
+                <div class="lm-test-grid">
+
+
+                    <!-- PRESUPUESTO -->
+
+                    <div class="lm-field">
+
+                        <label for="presupuesto">
+                            💸 ¿Cuál es tu presupuesto?
+                        </label>
+
+                        <select id="presupuesto">
+
+                            <option value="">
+                                Selecciona
+                            </option>
+
+                            <option value="50000">
+                                $50.000 COP
+                            </option>
+
+                            <option value="100000">
+                                $100.000 COP
+                            </option>
+
+                            <option value="300000">
+                                $300.000 COP
+                            </option>
+
+                            <option value="500000">
+                                $500.000+ COP
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- PRODUCTO -->
+
+                    <div class="lm-field">
+
+                        <label for="producto">
+                            💄 ¿Qué quieres vender?
+                        </label>
+
+                        <select id="producto">
+
+                            <option value="">
+                                Selecciona
+                            </option>
+
+                            <option value="gloss">
+                                Gloss
+                            </option>
+
+                            <option value="skincare">
+                                Skincare
+                            </option>
+
+                            <option value="pestanas">
+                                Pestañas
+                            </option>
+
+                            <option value="kits">
+                                Kits beauty
+                            </option>
+
+                            <option value="maquillaje">
+                                Maquillaje
+                            </option>
+
+                            <option value="accesorios">
+                                Accesorios
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- PLATAFORMA -->
+
+                    <div class="lm-field">
+
+                        <label for="ventas">
+                            📱 ¿Dónde venderás?
+                        </label>
+
+                        <select id="ventas">
+
+                            <option value="">
+                                Selecciona
+                            </option>
+
+                            <option value="tiktok">
+                                TikTok
+                            </option>
+
+                            <option value="instagram">
+                                Instagram
+                            </option>
+
+                            <option value="whatsapp">
+                                WhatsApp
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="lm-test-btn-row">
+
+                    <button
+                        class="lm-btn lm-btn--dark"
+                        id="btnTest"
+                        type="button"
+                    >
+                        Ver recomendaciones ✨
+                    </button>
+
+                    <p
+                        class="lm-test-error"
+                        id="testError"
+                    ></p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 RESULTADO
+            ================================================== -->
+
+            <div
+                class="lm-resultado"
+                id="resultado"
+                hidden
+            >
+
+                <h3>
+                    💖 Recomendación para ti
+                </h3>
+
+
+                <p
+                    id="resultadoNombre"
+                    class="lm-resultado-nombre"
+                ></p>
+
+
+                <div class="lm-resultado-grid">
+
+
+                    <div class="lm-resultado-item">
+
+                        <span>
+                            Producto ideal
+                        </span>
+
+                        <p id="resultadoProducto"></p>
+
+                    </div>
+
+
+                    <div class="lm-resultado-item">
+
+                        <span>
+                            Inversión inicial sugerida
+                        </span>
+
+                        <p
+                            class="lm-data"
+                            id="resultadoPresupuesto"
+                        ></p>
+
+                    </div>
+
+
+                    <div class="lm-resultado-item">
+
+                        <span>
+                            Nivel
+                        </span>
+
+                        <p id="resultadoNivel"></p>
+
+                    </div>
+
+
+                    <div class="lm-resultado-item">
+
+                        <span>
+                            Plataforma ideal
+                        </span>
+
+                        <p id="resultadoPlataforma"></p>
+
+                    </div>
+
+
+                    <div class="lm-resultado-item">
+
+                        <span>
+                            Ganancia estimada
+                        </span>
+
+                        <p
+                            class="lm-data"
+                            id="resultadoGanancia"
+                        ></p>
+
+                    </div>
+
+
+                    <div class="lm-resultado-item">
+
+                        <span>
+                            ROI estimado
+                        </span>
+
+                        <p
+                            class="lm-data"
+                            id="resultadoRoi"
+                        ></p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     PRODUCTOS DINÁMICOS
+                ================================================== -->
+
+                <div
+                    class="lm-resultado-extra"
+                    id="resultadoProductos"
+                    hidden
+                >
+
+                    <strong>
+                        💄 Productos recomendados
+                    </strong>
+
+                    <div
+                        id="listaProductos"
+                        class="lm-result-list"
+                    ></div>
+
+                </div>
+
+
+                <!-- =================================================
+                     KITS DINÁMICOS
+                ================================================== -->
+
+                <div
+                    class="lm-resultado-extra"
+                    id="resultadoKits"
+                    hidden
+                >
+
+                    <strong>
+                        📦 Kits recomendados
+                    </strong>
+
+                    <div
+                        id="listaKits"
+                        class="lm-result-list"
+                    ></div>
+
+                </div>
+
+
+                <!-- MENSAJE -->
+
+                <div class="lm-resultado-message">
+
+                    <strong>
+                        ✨ Recomendación de Lúmina
+                    </strong>
+
+                    <p id="resultadoTexto"></p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         DASHBOARD
+    ====================================================== -->
+
+    <section
+        class="lm-section lm-section--dark"
+        id="dashboard"
+    >
+
+        <div class="lm-section__inner">
+
+            <div class="lm-title">
+
+                <span class="lm-eyebrow">
+                    📊 Proyección
+                </span>
+
+                <h2>
+                    Tu negocio, en números
+                </h2>
+
+                <p>
+                    La proyección se actualiza automáticamente
+                    según tu recomendación.
+                </p>
+
+            </div>
+
+
+            <div class="lm-dashboard-card">
+
+                <div class="lm-chart-holder">
+
+                    <canvas
+                        id="graficoGanancias"
+                        height="110"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="lm-dash-cards">
+
+
+                    <div class="lm-dash-card">
+
+                        <span>
+                            💸 Inversión estimada
+                        </span>
+
+                        <h3 id="invTotal">
+                            $0
+                        </h3>
+
+                    </div>
+
+
+                    <div class="lm-dash-card">
+
+                        <span>
+                            📦 Ganancia estimada
+                        </span>
+
+                        <h3 id="gananciaTotal">
+                            $0
+                        </h3>
+
+                    </div>
+
+
+                    <div class="lm-dash-card lm-dash-card--roi">
+
+                        <span>
+                            📈 ROI
+                        </span>
+
+                        <h3 id="roi">
+                            0%
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EMPRENDER DESDE CERO
+    ====================================================== -->
+
+    <section
+        class="lm-section lm-section--light"
+        id="emprendedores-cero"
+    >
+
+        <div class="lm-section__inner">
+
+            <div class="lm-title">
+
+                <span class="lm-eyebrow">
+                    🌱 Desde cero
+                </span>
+
+                <h2>
+                    Cómo empezar tu negocio
+                </h2>
+
+                <p>
+                    Consejos prácticos para comenzar
+                    tu emprendimiento beauty.
+                </p>
+
+            </div>
+
+
+            <div class="lm-cero-grid">
+
+
+                <div class="lm-cero-card">
+
+                    <div class="lm-swatch">1</div>
+
+                    <h3>
+                        Compra al por mayor
+                    </h3>
+
+                    <p>
+                        En Lúmina puedes encontrar productos
+                        y kits pensados para comenzar
+                        a emprender con diferentes presupuestos.
+                    </p>
+
+                </div>
+
+
+                <div class="lm-cero-card">
+
+                    <div class="lm-swatch">2</div>
+
+                    <h3>
+                        Calcula tu margen real
+                    </h3>
+
+                    <p>
+                        Antes de vender calcula el costo
+                        del producto, empaque, domicilio
+                        y el precio final.
+                    </p>
+
+                </div>
+
+
+                <div class="lm-cero-card">
+
+                    <div class="lm-swatch">3</div>
+
+                    <h3>
+                        Usa WhatsApp Business
+                    </h3>
+
+                    <p>
+                        Crea un catálogo con fotografías,
+                        precios y descripciones claras
+                        para facilitar tus ventas.
+                    </p>
+
+                </div>
+
+
+                <div class="lm-cero-card">
+
+                    <div class="lm-swatch">4</div>
+
+                    <h3>
+                        Crea contenido
+                    </h3>
+
+                    <p>
+                        Utiliza videos cortos para mostrar
+                        productos, resultados y novedades.
+                    </p>
+
+                </div>
+
+
+                <div class="lm-cero-card">
+
+                    <div class="lm-swatch">5</div>
+
+                    <h3>
+                        Empieza pequeño
+                    </h3>
+
+                    <p>
+                        No necesitas comprar grandes cantidades.
+                        Comienza con productos que puedas vender
+                        rápidamente.
+                    </p>
+
+                </div>
+
+
+                <div class="lm-cero-card">
+
+                    <div class="lm-swatch">6</div>
+
+                    <h3>
+                        Lleva tus cuentas
+                    </h3>
+
+                    <p>
+                        Registra cuánto inviertes, cuánto vendes
+                        y cuánto realmente ganas.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="lm-timeline">
+
+                <h3>
+                    ✅ Tu primera semana
+                </h3>
+
+                <ul class="lm-timeline-list">
+
+                    <li>
+                        <strong>Día 1-2:</strong>
+                        Define qué quieres vender.
+                    </li>
+
+                    <li>
+                        <strong>Día 3:</strong>
+                        Selecciona tus primeros productos.
+                    </li>
+
+                    <li>
+                        <strong>Día 4-5:</strong>
+                        Toma fotografías y crea tu catálogo.
+                    </li>
+
+                    <li>
+                        <strong>Día 6:</strong>
+                        Publica tus productos.
+                    </li>
+
+                    <li>
+                        <strong>Día 7:</strong>
+                        Revisa tus primeras ventas y ganancias.
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TIPS
+    ====================================================== -->
+
+    <section
+        class="lm-section lm-section--light"
+        id="tips-emprendedores"
+    >
+
+        <div class="lm-section__inner">
+
+            <div class="lm-title">
+
+                <span class="lm-eyebrow">
+                    📚 Tips
+                </span>
+
+                <h2>
+                    Vende maquillaje como una pro
+                </h2>
+
+            </div>
+
+
+            <div class="lm-tips-grid">
+
+
+                <div
+                    class="lm-tip-card"
+                    style="--tip-accent:#E8C88A"
+                >
+
+                    <div class="lm-tip-icon">
+                        📸
+                    </div>
+
+                    <h3>
+                        Fotos aesthetic
+                    </h3>
+
+                    <p>
+                        Usa luz natural y fondos claros
+                        para resaltar tus productos.
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="lm-tip-card"
+                    style="--tip-accent:#E88AA0"
+                >
+
+                    <div class="lm-tip-icon">
+                        🎥
+                    </div>
+
+                    <h3>
+                        Reels
+                    </h3>
+
+                    <p>
+                        Publica videos cortos mostrando
+                        resultados y productos.
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="lm-tip-card"
+                    style="--tip-accent:#8C7383"
+                >
+
+                    <div class="lm-tip-icon">
+                        💬
+                    </div>
+
+                    <h3>
+                        Atención al cliente
+                    </h3>
+
+                    <p>
+                        Responde rápido y brinda información
+                        clara a tus clientes.
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="lm-tip-card"
+                    style="--tip-accent:#6E9179"
+                >
+
+                    <div class="lm-tip-icon">
+                        💄
+                    </div>
+
+                    <h3>
+                        Productos tendencia
+                    </h3>
+
+                    <p>
+                        Mantén actualizado tu catálogo
+                        con productos atractivos.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{% static 'js/emprender.js' %}"></script>
+
+{% endblock %}

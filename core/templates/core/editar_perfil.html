@@ -1,0 +1,95 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Editar Perfil | Lúmina</title>
+    <link rel="icon" href="{% static 'img/logos/logo2.png' %}">
+
+    <link rel="stylesheet" href="{% static 'css/editar.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div class="account-container">
+
+        <div class="top-bar">
+            <a href="{% url 'mi_cuenta' %}" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Volver a mi cuenta
+            </a>
+        </div>
+
+        <div class="edit-card">
+
+            <div class="edit-header">
+
+                <div class="edit-icon">
+                    <i class="fa-solid fa-user-pen"></i>
+                </div>
+
+                <h1>Editar Perfil</h1>
+
+                <p>
+                    Mantén tu información actualizada para una mejor experiencia en Lúmina ✨
+                </p>
+
+            </div>
+
+            <form method="POST" id="perfilForm" enctype="multipart/form-data" novalidate>
+
+                {% csrf_token %}
+
+                {% if form.errors %}
+                <div class="form-errors">
+                    {{ form.errors }}
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label>Usuario</label>
+                    {{ form.username }}
+                </div>
+
+                <div class="form-group">
+                    <label>Correo electrónico</label>
+                    {{ form.email }}
+                </div>
+
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    {{ form.telefono }}
+                </div>
+
+                <div class="form-group">
+                    <label>Foto de perfil</label>
+                    {{ form.foto }}
+                </div>
+
+                {% if request.user.foto %}
+                <div class="current-photo">
+                    <img src="{{ request.user.foto.url }}" alt="Foto actual">
+                </div>
+                {% endif %}
+
+                <button type="submit" class="save-btn">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Guardar cambios
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+    <!-- VALIDACIONES -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/validaciones.js' %}"></script>
+</body>
+
+</html>

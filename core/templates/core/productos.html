@@ -1,0 +1,1213 @@
+{% extends 'core/dashboard.html' %}
+{% load humanize %}
+{% load l10n %}
+{% load static %}
+
+{% block title %}
+Administrar Productos | Lúmina
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/productos.css' %}">
+
+
+<div class="container">
+
+
+    <!-- ==========================
+HEADER
+========================== -->
+
+    <div class="page-header">
+
+        <div class="header-info">
+
+            <h2>
+                🛍️ Administrar Productos
+            </h2>
+
+            <p>
+                Gestiona productos, tonos, imágenes, videos y etiquetas.
+            </p>
+
+        </div>
+<br>
+        {% if total_stock_bajo_productos > 0 %}
+        <div class="alerta-stock-header">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            {{ total_stock_bajo_productos }} producto{{ total_stock_bajo_productos|pluralize }} con stock bajo (≤ {{ umbral_stock_bajo }})
+        </div>
+        {% endif %}
+
+    </div>
+
+
+
+    {% if messages %}
+
+    <ul class="mensajes">
+
+        {% for message in messages %}
+
+        <li class="mensaje {{ message.tags }}">
+
+            {{ message }}
+
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+    {% endif %}
+    {% if messages %}
+    {% for message in messages %}
+
+    <script>
+
+        Swal.fire({
+
+            icon:
+                "{{ message.tags }}",
+
+            title:
+                "{{ message }}",
+
+            timer: 2500,
+
+            showConfirmButton: false
+
+        });
+
+    </script>
+
+    {% endfor %}
+    {% endif %}
+    <!-- ==========================
+FORMULARIO
+========================== -->
+<br>
+    <div class="card">
+
+        <h3>
+
+            {% if producto_editar %}
+            ✏️ Editar Producto
+            {% else %}
+            ➕ Nuevo Producto
+            {% endif %}
+
+        </h3>
+
+        <form method="POST" enctype="multipart/form-data" novalidate>
+
+            {% csrf_token %}
+
+            {% if producto_editar %}
+            <input type="hidden" name="producto_id" value="{{ producto_editar.id }}">
+            {% endif %}
+
+            <div class="producto-layout">
+
+                <!-- ==========================
+            COLUMNA INFORMACIÓN
+            ========================== -->
+
+                <div class="producto-columna-principal">
+
+                    <div class="card-seccion">
+
+                        <h4>📦 Información General</h4>
+
+                        <div class="grid-producto">
+
+                            <!-- NOMBRE -->
+
+                            <div class="campo">
+
+                                <label>
+                                    Nombre del producto
+                                </label>
+
+                                <input type="text" name="nombre" maxlength="200" minlength="3" required
+                                    value="{{ producto_editar.nombre|default:'' }}">
+
+                                <small class="error-campo"></small>
+
+                            </div>
+
+                            <!-- CATEGORÍA -->
+
+                            <div class="campo">
+
+                                <label>
+                                    Categoría
+                                </label>
+
+                                <select name="categoria" required>
+
+                                    <option value="">
+                                        Seleccionar categoría
+                                    </option>
+
+                                    {% for categoria in categorias %}
+
+                                    <option value="{{ categoria.id }}" {% if producto_editar.categoria_id == categoria.id %}selected{% endif %}>
+    {{ categoria.nombre }}
+</option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <small class="error-campo"></small>
+
+                            </div>
+
+                            <!-- MARCA -->
+
+                            <div class="campo">
+
+                                <label>
+                                    Marca
+                                </label>
+
+                                <select name="marca" id="marca" required>
+
+                                    <option value="">
+                                        Seleccionar marca
+                                    </option>
+
+                                    {% for marca in marcas %}
+
+<option value="{{ marca.id }}"
+    {% if producto_editar and producto_editar.marca_id == marca.id %}
+        selected
+    {% endif %}
+>
+    {{ marca.nombre }}
+</option>
+
+{% endfor %}
+
+                                </select>
+
+                                <small class="error-campo"></small>
+
+                            </div>
+
+                            <!-- COLECCIÓN -->
+
+                            <div class="campo">
+
+                                <label>
+                                    Colección
+                                </label>
+
+                                <select name="coleccion" id="coleccion">
+
+    {% if producto_editar and producto_editar.coleccion %}
+        <option
+            value="{{ producto_editar.coleccion.id }}"
+            selected
+        >
+            {{ producto_editar.coleccion.nombre }}
+        </option>
+    {% else %}
+        <option value="">
+            Seleccione una marca primero
+        </option>
+    {% endif %}
+
+</select>
+
+                                <small class="error-campo"></small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- DESCRIPCIÓN -->
+
+                    <div class="card-seccion">
+
+                        <h4>
+                            📝 Descripción
+                        </h4>
+
+                        <div class="campo">
+
+                            <textarea name="descripcion" rows="5" maxlength="2000" minlength="10"
+                                placeholder="Describe el producto...">{{ producto_editar.descripcion|default:'' }}</textarea>
+
+                            <small class="error-campo"></small>
+
+                        </div>
+
+                    </div>
+                    <!-- INFO EXTRA -->
+
+                    <div class="card-seccion">
+
+                        <h4>
+                            ℹ️ Información Extra
+                        </h4>
+
+                        <p class="ayuda">
+                            Opcional: composición, modo de uso, cuidados, garantía, etc.
+                        </p>
+
+                        <div class="campo">
+
+                            <textarea name="info_extra" rows="4" maxlength="2000"
+                                placeholder="Ej: Libre de crueldad animal. Aplicar sobre piel limpia y seca.">{{ producto_editar.info_extra|default:'' }}</textarea>
+
+                            <small class="error-campo"></small>
+
+                        </div>
+
+                    </div>
+                    <!-- ==========================
+                TONOS
+                ========================== -->
+
+                    <div class="card-seccion tonos-full">
+
+                        <div class="seccion-header">
+
+                            <h4>
+                                🎨 Tonos Disponibles
+                            </h4>
+
+                            <button type="button" id="agregar-tono" class="btn-secundario">
+                                ➕ Agregar tono
+                            </button>
+
+                        </div>
+
+                        <p class="ayuda">
+                            Cada tono tendrá su propio SKU y stock.
+                        </p>
+
+                        <div id="contenedor-tonos">
+
+                            {% if producto_editar %}
+
+                            {% for variante in producto_editar.variantes.all %}
+
+                            <div class="variante-box">
+
+                                <h5>
+                                    Tono {{ forloop.counter }}
+                                    {% if variante.stock <= umbral_stock_bajo %}
+                                    <span class="badge-stock-bajo">⚠ Stock bajo</span>
+                                    {% endif %}
+                                </h5>
+
+                                <div class="grid-tonos">
+
+                                    <div class="campo">
+
+                                        <label>
+                                            Nombre
+                                        </label>
+
+                                        <input type="text" name="nombre_tono[]" value="{{ variante.nombre_tono }}"
+                                            required>
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                    <div class="campo">
+
+                                        <label>
+                                            Código
+                                        </label>
+
+                                        <input type="text" name="codigo_tono[]" value="{{ variante.codigo_tono }}">
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                    <div class="campo">
+
+                                        <label>
+                                            SKU
+                                        </label>
+
+                                        <input type="text" name="sku[]" value="{{ variante.sku }}" required>
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                    <div class="campo">
+
+                                        <label>
+                                            Stock
+                                            {% if variante.stock <= umbral_stock_bajo %}
+                                            <span class="icono-stock-bajo" title="Stock bajo">⚠</span>
+                                            {% endif %}
+                                        </label>
+
+                                        <input type="number" name="stock[]" min="0" value="{{ variante.stock }}"
+                                            required class="{% if variante.stock <= umbral_stock_bajo %}input-stock-bajo{% endif %}">
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                </div>
+
+                                <button type="button" class="eliminar-tono">
+                                    ❌ Quitar tono
+                                </button>
+
+                            </div>
+
+                            {% endfor %}
+
+                            {% else %}
+
+                            <div class="variante-box">
+
+                                <h5>
+                                    Tono 1
+                                </h5>
+
+                                <div class="grid-tonos">
+
+                                    <div class="campo">
+
+                                        <label>
+                                            Nombre
+                                        </label>
+
+                                        <input type="text" name="nombre_tono[]" placeholder="Natural" required>
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                    <div class="campo">
+
+                                        <label>
+                                            Código
+                                        </label>
+
+                                        <input type="text" name="codigo_tono[]" placeholder="N01">
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                    <div class="campo">
+
+                                        <label>
+                                            SKU
+                                        </label>
+
+                                        <input type="text" name="sku[]" placeholder="BASE-N01" required>
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                    <div class="campo">
+
+                                        <label>
+                                            Stock
+                                        </label>
+
+                                        <input type="number" name="stock[]" min="0" value="0" required>
+
+                                        <small class="error-campo"></small>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ==========================
+            COLUMNA CONFIGURACIÓN
+            ========================== -->
+
+                <div class="producto-columna-secundaria">
+
+                    <div class="card-seccion">
+
+                        <h4>
+                            💰 Costo y rentabilidad
+                        </h4>
+
+                        <p class="ayuda">
+                            Ingresa lo que te costó el producto. El precio al detalle se calcula con 30% de rentabilidad.
+                        </p>
+
+                        <div class="campo">
+
+                            <label>
+                                Costo del producto
+                            </label>
+
+                            <input type="number" name="costo_base" id="costo_base" min="1" step="1" placeholder="Ej: 50000" required
+                                value="{% if producto_editar %}{{ producto_editar.costo_base|default:producto_editar.precio_base|floatformat:0|unlocalize }}{% endif %}">
+                            <small class="error-campo"></small>
+
+                        </div>
+
+                        <div class="precio-grid">
+
+                            <div>
+                                <strong>Al detalle · 30%</strong>
+                                <span id="precio-margen-30">$0</span>
+                            </div>
+
+                            <div>
+                                <strong>Más de $100.000 · 20%</strong>
+                                <span id="precio-margen-20">$0</span>
+                            </div>
+
+                            <div>
+                                <strong>Más de $500.000 · 15%</strong>
+                                <span id="precio-margen-15">$0</span>
+                            </div>
+
+                            <div>
+                                <strong>Más de $1.200.000 · 10%</strong>
+                                <span id="precio-margen-10">$0</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- ETIQUETAS -->
+
+                    <div class="card-seccion">
+
+                        <h4>
+                            🏷️ Etiquetas del Producto
+                        </h4>
+
+                        <p class="ayuda">
+                            Estas etiquetas servirán para filtros inteligentes.
+                        </p>
+
+                        <div class="campo">
+
+                            <label>
+                                Etiquetas
+                            </label>
+                            <select name="etiquetas[]" id="id_etiquetas" multiple>
+
+                                {% for etiqueta in etiquetas %}
+
+                                <option value="{{ etiqueta.id }}">
+                                    {{ etiqueta.nombre }}
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                            <small class="error-campo"></small>
+
+                            <small>
+                                Mantén presionada Ctrl para seleccionar varias.
+                            </small>
+
+                        </div>
+
+                    </div>
+                    <br>
+                    <!-- IMÁGENES -->
+
+                    <div class="card-seccion">
+
+                        <h4>
+                            📸 Imágenes
+                        </h4>
+
+                        <div class="campo">
+
+                            <label>
+                                Subir imágenes del producto
+                            </label>
+
+                            <input type="file" name="imagenes" id="imagenes" multiple accept="image/*">
+
+                            {% if producto_editar and producto_editar.imagenes.all %}
+
+                            <div class="archivos-actuales">
+
+                                {% for imagen in producto_editar.imagenes.all %}
+
+                                <div class="archivo-actual-item">
+
+                                    <img
+                                        src="{{ imagen.imagen.url }}"
+                                        alt="{{ producto_editar.nombre }}"
+                                        class="mini-thumb">
+
+                                    <span class="archivo-nombre">
+                                        📷 {{ imagen.imagen.name|slice:"10:" }}
+                                    </span>
+
+                                    <label class="check-eliminar">
+                                        <input
+                                            type="checkbox"
+                                            name="eliminar_imagenes[]"
+                                            value="{{ imagen.id }}"
+                                            class="check-quitar-archivo">
+                                        Quitar
+                                    </label>
+
+                                </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                            {% endif %}
+
+                            <small class="error-campo"></small>
+
+                            <small>
+                                Puedes seleccionar varias imágenes. Marca "Quitar" para eliminar una imagen existente.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <!-- VIDEOS -->
+
+                    <div class="card-seccion">
+
+                        <h4>
+                            🎥 Videos
+                        </h4>
+
+                        <div class="campo">
+
+                            <label>
+                                Subir videos del producto
+                            </label>
+
+                            <input type="file" name="videos" id="videos" multiple accept="video/*">
+
+                            {% if producto_editar and producto_editar.videos.all %}
+
+                            <div class="archivos-actuales">
+
+                                {% for video in producto_editar.videos.all %}
+
+                                <div class="archivo-actual-item">
+
+                                    <span class="archivo-nombre">
+                                        🎬 {{ video.video.name|cut:"productos/" }}
+                                    </span>
+
+                                    <label class="check-eliminar">
+                                        <input
+                                            type="checkbox"
+                                            name="eliminar_videos[]"
+                                            value="{{ video.id }}"
+                                            class="check-quitar-archivo">
+                                        Quitar
+                                    </label>
+
+                                </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                            {% endif %}
+
+                            <small class="error-campo"></small>
+
+                            <small>
+                                Puedes seleccionar varios videos. Marca "Quitar" para eliminar un video existente.
+                            </small>
+
+                        </div>
+
+                    </div>
+<br>
+                    <!-- ==========================
+            COLUMNA ARCHIVOS
+            ========================== -->
+
+                    <div class="producto-columna-lateral">
+
+                        <!-- ==========================
+                GUARDAR
+                ========================== -->
+
+                        <div class="card-seccion guardar-accion">
+
+                            <button type="submit" id="btn-guardar" class="btn-guardar">
+
+                                {% if producto_editar %}
+
+                                💾 Actualizar Producto
+
+                                {% else %}
+
+                                💾 Guardar Producto
+
+                                {% endif %}
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+        </form>
+
+    </div>
+    <!-- ==========================
+PRODUCTOS REGISTRADOS
+========================== -->
+
+<div class="lista">
+
+    <h3>
+        📦 Productos Registrados
+    </h3>
+<br>
+    <!-- ==========================
+    BUSCADOR EN TIEMPO REAL
+    ========================== -->
+
+    <form method="GET" id="form-buscador-productos" onsubmit="return false;">
+
+        <div class="buscador-wrapper">
+
+            <input
+                type="text"
+                name="q"
+                id="input-buscar-productos"
+                placeholder="Buscar por nombre, marca, categoría o SKU..."
+                value="{{ query|default:'' }}"
+                autocomplete="off"
+            >
+
+            <span id="buscador-spinner" class="buscador-spinner oculto">⏳</span>
+
+        </div>
+
+        {% if query %}
+        <a href="{{ request.path }}" class="btn-limpiar" id="btn-limpiar-busqueda">
+            ✖ Limpiar
+        </a>
+        {% endif %}
+
+    </form>
+
+    <br>
+
+    <div id="lista-productos-container">
+
+    {% for producto in productos %}
+
+    <div class="producto-card {% if producto.id in productos_stock_bajo_ids %}producto-card-alerta{% endif %}">
+
+        <div class="producto-resumen">
+
+            <div class="producto-media">
+
+                {% with primera_imagen=producto.imagenes.all|first %}
+
+                    {% if primera_imagen %}
+
+                        <img
+                            src="{{ primera_imagen.imagen.url }}"
+                            alt="{{ producto.nombre }}"
+                        >
+
+                    {% else %}
+
+                        <div class="producto-media-vacia">
+                            Sin imagen
+                        </div>
+
+                    {% endif %}
+
+                {% endwith %}
+
+            </div>
+
+            <div class="producto-info">
+
+    <div class="producto-titulo-row">
+
+        <h4>
+            {{ producto.nombre }}
+            {% if producto.id in productos_stock_bajo_ids %}
+            <span class="badge-stock-bajo">⚠ Stock bajo</span>
+            {% endif %}
+        </h4>
+
+        <span class="producto-precio">
+            ${{ producto.precio_base|floatformat:0|intcomma }}
+        </span>
+
+    </div>
+
+    <p class="producto-linea-meta">
+
+        {{ producto.categoria.nombre|default:"Sin categoría" }}
+
+        •
+
+        {{ producto.marca.nombre|default:"Sin marca" }}
+
+        •
+
+        {{ producto.coleccion.nombre|default:"Sin colección" }}
+
+    </p>
+
+    <!-- BOTONES -->
+
+    <div class="producto-miniacciones">
+
+        <button
+            type="button"
+            class="btn-mini"
+            onclick="toggleInfo('descripcion-{{ producto.id }}')">
+
+            📝 Descripción
+
+        </button>
+        {% if producto.info_extra %}
+        <button
+            type="button"
+            class="btn-mini"
+            onclick="toggleInfo('info-extra-{{ producto.id }}')">
+
+            ℹ Info extra
+
+        </button>
+        {% endif %}
+
+        <button
+            type="button"
+            class="btn-mini"
+            onclick="toggleInfo('imagenes-{{ producto.id }}')">
+
+            📸 Imágenes ({{ producto.imagenes.count }})
+
+        </button>
+
+        <button
+            type="button"
+            class="btn-mini"
+            onclick="toggleInfo('videos-{{ producto.id }}')">
+
+            🎥 Videos ({{ producto.videos.count }})
+
+        </button>
+
+        <button
+            type="button"
+            class="btn-mini {% if producto.id in productos_stock_bajo_ids %}btn-mini-alerta{% endif %}"
+            onclick="toggleInfo('variantes-{{ producto.id }}')">
+
+            🎨 Tonos ({{ producto.variantes.count }})
+            {% if producto.id in productos_stock_bajo_ids %}⚠{% endif %}
+
+        </button>
+
+        <button
+            type="button"
+            class="btn-mini"
+            onclick="toggleInfo('precios-{{ producto.id }}')">
+
+            💰 Precios
+
+        </button>
+
+        <button
+            type="button"
+            class="btn-mini"
+            onclick="toggleInfo('etiquetas-{{ producto.id }}')">
+
+            🏷️ Etiquetas ({{ producto.etiquetas.count }})
+
+        </button>
+
+    </div>
+
+
+    <!-- PRECIOS -->
+
+    <div
+        id="precios-{{ producto.id }}"
+        class="detalle-oculto">
+
+        <h5>💰 Precios</h5>
+
+        <div class="precio-grid">
+
+            <div>
+                <strong>Costo</strong>
+                <span>
+                    ${{ producto.costo_base|default:producto.precio_base|floatformat:0|intcomma }}
+                </span>
+            </div>
+
+            <div>
+                <strong>Al detalle · 30%</strong>
+                <span>
+                    ${{ producto.precio_base|floatformat:0|intcomma }}
+                </span>
+            </div>
+
+            <div>
+                <strong>Más de $100.000 · 20%</strong>
+                <span>
+                    ${{ producto.precio_100|floatformat:0|intcomma }}
+                </span>
+            </div>
+
+            <div>
+                <strong>Más de $500.000 · 15%</strong>
+                <span>
+                    ${{ producto.precio_500|floatformat:0|intcomma }}
+                </span>
+            </div>
+
+            <div>
+                <strong>Más de $1.200.000 · 10%</strong>
+                <span>
+                    ${{ producto.precio_1200|floatformat:0|intcomma }}
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DESCRIPCIÓN -->
+
+    <div
+        id="descripcion-{{ producto.id }}"
+        class="detalle-oculto">
+
+        <h5>📝 Descripción</h5>
+
+        <p>
+            {{ producto.descripcion }}
+        </p>
+
+    </div>
+
+
+    {% if producto.info_extra %}
+    <!-- INFO EXTRA -->
+
+    <div
+        id="info-extra-{{ producto.id }}"
+        class="detalle-oculto">
+
+        <h5>ℹ️ Información Extra</h5>
+
+        <p>
+            {{ producto.info_extra|linebreaksbr }}
+        </p>
+
+    </div>
+    {% endif %}
+
+
+    <!-- IMÁGENES -->
+
+<div
+    id="imagenes-{{ producto.id }}"
+    class="detalle-oculto">
+
+    <h5>📸 Imágenes</h5>
+
+    <div class="galeria-producto">
+
+        {% for imagen in producto.imagenes.all %}
+
+            <img
+                src="{{ imagen.imagen.url }}"
+                alt="{{ producto.nombre }}"
+                class="mini-imagen-producto"
+            >
+
+        {% empty %}
+
+            <p>No hay imágenes registradas.</p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+   <!-- VIDEOS -->
+
+<div
+    id="videos-{{ producto.id }}"
+    class="detalle-oculto">
+
+    <h5>🎥 Videos</h5>
+
+    <div class="galeria-videos">
+
+        {% for video in producto.videos.all %}
+
+            <video
+                controls
+                class="mini-video-producto">
+
+                <source
+                    src="{{ video.video.url }}">
+
+            </video>
+
+        {% empty %}
+
+            <p>No hay videos registrados.</p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+    <!-- TONOS -->
+
+    <div
+        id="variantes-{{ producto.id }}"
+        class="detalle-oculto">
+
+        <h5>🎨 Tonos</h5>
+
+        {% for variante in producto.variantes.all %}
+
+            <div class="item-detalle {% if variante.stock <= umbral_stock_bajo %}item-detalle-alerta{% endif %}">
+
+                <strong>
+                    {{ variante.nombre_tono }}
+                </strong>
+
+                <span>
+                    SKU: {{ variante.sku }}
+                </span>
+
+                <span {% if variante.stock <= umbral_stock_bajo %}class="stock-bajo"{% endif %}>
+                    Stock: {{ variante.stock }}
+                    {% if variante.stock <= umbral_stock_bajo %}⚠{% endif %}
+                </span>
+
+            </div>
+
+        {% empty %}
+
+            <p>No hay tonos registrados.</p>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- ETIQUETAS -->
+
+    <div
+        id="etiquetas-{{ producto.id }}"
+        class="detalle-oculto">
+
+        <h5>🏷️ Etiquetas</h5>
+
+        {% for etiqueta in producto.etiquetas.all %}
+
+            <span class="tag">
+                {{ etiqueta.nombre }}
+            </span>
+
+        {% empty %}
+
+            <p>Sin etiquetas.</p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+        </div>
+
+        <!-- ACCIONES -->
+
+        <div class="acciones">
+
+            
+                <a href="?editar={{ producto.id }}" class="btn-editar">
+
+                ✏️ Editar
+
+            </a>
+
+            <form
+                method="POST"
+                action="{% url 'eliminar_producto' producto.id %}"
+                class="form-eliminar">
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="link-eliminar">
+
+                    🗑️ Eliminar
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <div class="empty-state">
+
+        <h4>
+            📦 No hay productos registrados
+        </h4>
+
+        <p>
+            {% if query %}
+                No encontramos productos que coincidan con "{{ query }}".
+            {% else %}
+                Agrega tu primer producto para comenzar.
+            {% endif %}
+        </p>
+
+    </div>
+
+    {% endfor %}
+
+    <!-- ==========================
+    PAGINACIÓN
+    ========================== -->
+
+    {% if productos.has_other_pages %}
+    <div class="paginacion">
+
+        {% if productos.has_previous %}
+            <a href="?page=1{% if query %}&q={{ query }}{% endif %}" class="link-pagina">« Primera</a>
+            <a href="?page={{ productos.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="link-pagina">‹ Anterior</a>
+        {% endif %}
+
+        <span class="pagina-actual">
+            Página {{ productos.number }} de {{ productos.paginator.num_pages }}
+        </span>
+
+        {% if productos.has_next %}
+            <a href="?page={{ productos.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="link-pagina">Siguiente ›</a>
+            <a href="?page={{ productos.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}" class="link-pagina">Última »</a>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+    </div>
+
+</div>
+
+
+<script>
+
+function toggleInfo(id){
+
+    const panel = document.getElementById(id);
+
+    panel.classList.toggle("activo");
+
+}
+
+(() => {
+
+const inputCostoBase = document.getElementById("costo_base");
+
+const preciosRentabilidad = {
+    30: document.getElementById("precio-margen-30"),
+    20: document.getElementById("precio-margen-20"),
+    15: document.getElementById("precio-margen-15"),
+    10: document.getElementById("precio-margen-10")
+};
+
+function formatearPrecio(valor){
+
+    return new Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: "COP",
+        maximumFractionDigits: 0
+    }).format(valor || 0);
+
+}
+
+function actualizarPrecios(){
+
+    const costo = parseFloat(inputCostoBase?.value || 0);
+
+    Object.entries(preciosRentabilidad).forEach(([margen, elemento]) => {
+
+        if (!elemento) return;
+
+        const precio = costo / (1 - Number(margen) / 100);
+
+        elemento.textContent = formatearPrecio(
+            Math.ceil(precio / 100) * 100
+        );
+
+    });
+
+}
+
+if (inputCostoBase) {
+
+    inputCostoBase.addEventListener("input", actualizarPrecios);
+    actualizarPrecios();
+
+}
+
+})();
+
+</script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/productos.js' %}"></script>
+
+{% endblock %}

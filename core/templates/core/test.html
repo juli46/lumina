@@ -1,0 +1,267 @@
+{% extends 'core/dashboard.html' %}
+{% load static %}
+
+{% block title %}
+Administrar Tests | Lúmina
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/test.css' %}">
+
+<div class="container">
+
+    <div class="page-header">
+        <h1>{% if editar %}Editar Test{% else %}Gestión de Test{% endif %}</h1>
+        <p>Crea y administra tests completos.</p>
+    </div>
+    <div class="test-layout">
+
+        <div class="form-section">
+
+            <form id="formTest" method="POST" enctype="multipart/form-data" novalidate
+                data-editando="{% if editar %}true{% else %}false{% endif %}">
+
+                {% csrf_token %}
+
+                <div class="section-card">
+                    <h2>Información General</h2>
+
+                    <div class="form-group">
+                        <label>Título</label>
+                        <input type="text" name="titulo" class="form-control" value="{{ editar.titulo|default:'' }}"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <input type="text" name="categoria" class="form-control"
+                            value="{{ editar.categoria|default:'' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea name="descripcion" class="form-control" rows="4"
+                            required>{{ editar.descripcion|default:'' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Imagen Principal</label>
+
+                        {% if editar and editar.imagen %}
+                        <img src="{{ editar.imagen.url }}" class="preview-img">
+                        {% endif %}
+
+                        <input type="file" name="imagen" class="form-control">
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Resultados</h2>
+
+                    <div id="resultados-container">
+
+                        {% if editar %}
+
+                        {% for resultado in editar.resultados.all %}
+                        <div class="resultado-item">
+
+                            <input type="hidden" name="resultado_id[]" value="{{ resultado.id }}">
+
+                            <input type="text" name="resultado_nombre[]" class="form-control"
+                                value="{{ resultado.nombre }}" placeholder="Nombre resultado" required>
+
+                            <textarea name="resultado_descripcion[]" class="form-control" rows="3"
+                                required>{{ resultado.descripcion }}</textarea>
+
+                            {% if resultado.imagen %}
+                            <img src="{{ resultado.imagen.url }}" class="preview-img">
+                            {% endif %}
+
+                            <input type="file" name="resultado_imagen_{{ forloop.counter0 }}" class="form-control">
+
+                        </div>
+                        {% endfor %}
+
+                        {% else %}
+
+                        <div class="resultado-item">
+
+                            <input type="hidden" name="resultado_id[]" value="">
+
+                            <input type="text" name="resultado_nombre[]" class="form-control"
+                                placeholder="Nombre resultado" required>
+
+                            <textarea name="resultado_descripcion[]" class="form-control" rows="3"
+                                placeholder="Descripción resultado" required></textarea>
+
+                            <input type="file" name="resultado_imagen_0" class="form-control">
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <button type="button" class="btn btn-success" onclick="agregarResultado()">
+                        + Agregar Resultado
+                    </button>
+                </div>
+
+                <div class="section-card">
+                    <h2>Preguntas</h2>
+
+                    <div id="preguntas-container">
+
+                        {% if editar %}
+
+                        {% for pregunta in editar.preguntas.all %}
+                        {% with numero_pregunta=forloop.counter %}
+
+                        <div class="pregunta-card">
+
+                            <input type="hidden" name="pregunta_id[]" value="{{ pregunta.id }}">
+
+                            <h4>Pregunta {{ numero_pregunta }}</h4>
+
+                            <input type="text" name="pregunta[]" class="form-control" value="{{ pregunta.texto }}"
+                                required>
+
+                            <div id="opciones-{{ numero_pregunta }}">
+
+                                {% for opcion in pregunta.opciones.all %}
+                                <div class="opcion-item">
+
+                                    <input type="text" name="opcion_{{ numero_pregunta }}[]" class="form-control"
+                                        value="{{ opcion.texto }}" required>
+
+                                    <select name="resultado_{{ numero_pregunta }}[]"
+                                        class="form-control resultado-select" required>
+
+                                        {% for resultado in editar.resultados.all %}
+                                        <option value="{{ forloop.counter }}" {% if resultado.id == opcion.resultado.id %}selected{% endif %}>
+                                            Resultado {{ forloop.counter }} - {{ resultado.nombre }}
+                                        </option>
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+                                {% endfor %}
+
+                            </div>
+
+                            <button type="button" class="btn btn-secondary"
+                                onclick="agregarOpcion('{{ numero_pregunta }}')">
+                                + Agregar Opción
+                            </button>
+
+                        </div>
+
+                        {% endwith %}
+                        {% endfor %}
+
+                        {% else %}
+
+                        <div class="pregunta-card">
+
+                            <h4>Pregunta 1</h4>
+
+                            <input type="text" name="pregunta[]" class="form-control"
+                                placeholder="Ej: ¿Cómo es tu piel al despertar?" required>
+
+                            <div id="opciones-1">
+
+                                <div class="opcion-item">
+
+                                    <input type="text" name="opcion_1[]" class="form-control" placeholder="Texto opción"
+                                        required>
+
+                                    <select name="resultado_1[]" class="form-control resultado-select" required>
+                                        <option value="1">Resultado 1</option>
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                            <button type="button" class="btn btn-secondary" onclick="agregarOpcion(1)">
+                                + Agregar Opción
+                            </button>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <button type="button" class="btn btn-info" onclick="agregarPregunta()">
+                        + Agregar Pregunta
+                    </button>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-save">
+                    {% if editar %}Actualizar Test{% else %}Guardar Test{% endif %}
+                </button>
+
+            </form>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="section-card">
+                <h2>Tests Registrados</h2>
+
+                <div class="tests-grid">
+                    {% for test in tests %}
+
+                    <div class="test-card">
+                        <span class="test-badge">{{ test.categoria }}</span>
+                        <h3>{{ test.titulo }}</h3>
+                        <p>{{ test.descripcion|truncatewords:20 }}</p>
+
+                        <div class="acciones">
+                            <a href="{% url 'editar_test' test.id %}" class="btn btn-warning">Editar</a>
+                            {% if test.activo %}
+
+                            <a href="{% url 'desactivar_test' test.id %}" class="btn btn-danger">
+                                Desactivar
+                            </a>
+
+                            {% else %}
+
+                            <a href="{% url 'activar_test' test.id %}" class="btn btn-success">
+                                Activar
+                            </a>
+
+                            {% endif %}
+                            <a href="{% url 'eliminar_test' test.id %}" class="btn btn-danger btn-eliminar">Eliminar</a>
+                        </div>
+                    </div>
+
+                    {% empty %}
+                    <p>No hay tests registrados.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<script>
+    Swal.fire({
+        icon: "success",
+        title: "{{ message }}",
+        timer: 2000,
+        showConfirmButton: false
+    });
+</script>
+{% endfor %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/test.js' %}"></script>
+
+{% endblock %}

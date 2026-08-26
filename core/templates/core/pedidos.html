@@ -1,0 +1,321 @@
+{% extends "core/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/pedido.css' %}">
+
+<section class="pedidos-dashboard">
+
+    <!-- ================================
+         ENCABEZADO
+    ================================= -->
+    <div class="pedidos-header">
+        <div>
+            <span class="pedidos-label">GESTIÓN DE PEDIDOS</span>
+            <h1>Pedidos</h1>
+            <p>Consulta y administra los pedidos realizados en Lúmina.</p>
+        </div>
+    </div>
+
+    <!-- ================================
+         ESTADÍSTICAS
+    ================================= -->
+    <div class="pedidos-stats">
+        <div class="pedido-stat">
+            <div class="pedido-stat-icon">
+                <i class="fa-solid fa-box"></i>
+            </div>
+            <div>
+                <strong>{{ total_pedidos|default:pedidos.paginator.count }}</strong>
+                <span>Total pedidos</span>
+            </div>
+        </div>
+
+        <div class="pedido-stat">
+            <div class="pedido-stat-icon pendiente">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <div>
+                <strong>{{ pedidos_pendientes_envio|default:"0" }}</strong>
+                <span>Pendientes de envío</span>
+            </div>
+        </div>
+
+        <div class="pedido-stat">
+            <div class="pedido-stat-icon aprobado">
+                <i class="fa-solid fa-truck-fast"></i>
+            </div>
+            <div>
+                <strong>{{ pedidos_enviados|default:"0" }}</strong>
+                <span>Enviados o entregados</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================
+         TABLA
+    ================================= -->
+    <div class="pedidos-card">
+
+        <div class="pedidos-card-header">
+            <div>
+                <h2>Todos los pedidos</h2>
+                <p>Revisa la información de cada compra.</p>
+            </div>
+
+            <div class="pedidos-filtros">
+                <div class="pedido-busqueda">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="buscarPedido" placeholder="Buscar pedido o cliente...">
+                </div>
+
+                <div class="pedido-filtro-estado">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <select id="filtroEstado">
+                        <option value="">Estado del pago</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="PAGADO">Pagado</option>
+                        <option value="RECHAZADO">Rechazado</option>
+                        <option value="CANCELADO">Cancelado</option>
+                    </select>
+                </div>
+
+                <div class="pedido-filtro-estado">
+                    <i class="fa-solid fa-truck"></i>
+                    <select id="filtroEnvio">
+                        <option value="">Estado del envío</option>
+                        <option value="PREPARANDO">Preparando pedido</option>
+                        <option value="EN_PROCESO">En proceso</option>
+                        <option value="ENVIADO">Enviado</option>
+                        <option value="ENTREGADO">Entregado</option>
+                        <option value="FINALIZADO">Finalizado</option>
+                    </select>
+                </div>
+
+                <div class="pedido-filtro-estado">
+                    <i class="fa-solid fa-arrow-down-wide-short"></i>
+                    <select id="filtroOrden" onchange="window.location.href='?orden='+this.value">
+                        <option value="recientes" {% if orden_actual == "recientes" %}selected{% endif %}>Más recientes</option>
+                        <option value="antiguos" {% if orden_actual == "antiguos" %}selected{% endif %}>Más antiguos</option>
+                        <option value="mayor_total" {% if orden_actual == "mayor_total" %}selected{% endif %}>Mayor total</option>
+                        <option value="menor_total" {% if orden_actual == "menor_total" %}selected{% endif %}>Menor total</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {% if pedidos %}
+        <div class="pedidos-table-container">
+            <table class="pedidos-table">
+                <thead>
+                    <tr>
+                        <th>Pedido</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Pago</th>
+                        <th>Envío</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody id="pedidosTabla">
+                    {% for pedido in pedidos %}
+                    <tr class="pedido-row"
+                        data-estado="{{ pedido.estado }}"
+                        data-estado-envio="{{ pedido.estado_envio }}"
+                        data-busqueda="{{ pedido.referencia|lower }} {{ pedido.usuario.username|lower }} {{ pedido.usuario.email|lower }}">
+
+                        <!-- REFERENCIA -->
+                        <td>
+                            <div class="pedido-referencia">
+                                <strong>{{ pedido.referencia }}</strong>
+                                <small>#{{ pedido.id }}</small>
+                            </div>
+                        </td>
+
+                        <!-- CLIENTE -->
+                        <td>
+                            <div class="pedido-cliente">
+                                {% if pedido.usuario.foto %}
+                                <img src="{{ pedido.usuario.foto.url }}" alt="{{ pedido.usuario.username }}">
+                                {% else %}
+                                <div class="pedido-avatar">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                {% endif %}
+
+                                <div>
+                                    <strong>{{ pedido.usuario.username }}</strong>
+                                    <small>{{ pedido.usuario.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- FECHA -->
+                        <td>
+                            <div class="pedido-fecha">
+                                <strong>{{ pedido.creado|date:"d/m/Y" }}</strong>
+                                <small>{{ pedido.creado|date:"h:i A" }}</small>
+                            </div>
+                        </td>
+
+                        <!-- TOTAL -->
+                        <td>
+                            <strong class="pedido-total">${{ pedido.total|floatformat:0 }}</strong>
+                        </td>
+
+                        <!-- PAGO -->
+                        <td>
+                            {% if pedido.pago %}
+                            <div class="pago-info">
+                                <span class="pago-estado pago-{{ pedido.pago.estado|lower }}">
+                                    {{ pedido.pago.get_estado_display }}
+                                </span>
+
+                                {% if pedido.pago.metodo_pago %}
+                                <small>{{ pedido.pago.metodo_pago }}</small>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="pago-sin-registro">Sin registro</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- ESTADO ENVÍO -->
+                        <td>
+                            <div class="envio-info">
+                                <span class="pedido-estado estado-{{ pedido.estado_envio|lower }}">
+                                    {{ pedido.get_estado_envio_display }}
+                                </span>
+
+                                {% if pedido.numero_guia %}
+                                <small class="envio-guia">
+                                    <i class="fa-solid fa-truck"></i>
+                                    {{ pedido.transportadora }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- ACCIÓN -->
+                        <td>
+                            <a href="{% url 'dashboard_pedido_detalle' pedido.id %}" class="btn-ver-pedido">
+                                <i class="fa-solid fa-eye"></i>
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ================================
+             PAGINACIÓN
+        ================================= -->
+        {% if pedidos.has_other_pages %}
+        <div class="pedidos-paginacion">
+            <span class="pedidos-paginacion-info">
+                Página {{ pedidos.number }} de {{ pedidos.paginator.num_pages }}
+                · {{ pedidos.paginator.count }} pedidos en total
+            </span>
+
+            <div class="pedidos-paginacion-botones">
+                {% if pedidos.has_previous %}
+                    <a href="?page=1{% if orden_actual %}&orden={{ orden_actual }}{% endif %}" class="pag-btn">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </a>
+                    <a href="?page={{ pedidos.previous_page_number }}{% if orden_actual %}&orden={{ orden_actual }}{% endif %}" class="pag-btn">
+                        <i class="fa-solid fa-angle-left"></i>
+                    </a>
+                {% endif %}
+
+                {% for num in pedidos.paginator.page_range %}
+                    {% if num == pedidos.number %}
+                        <span class="pag-btn pag-actual">{{ num }}</span>
+                    {% elif num > pedidos.number|add:"-3" and num < pedidos.number|add:"3" %}
+                        <a href="?page={{ num }}{% if orden_actual %}&orden={{ orden_actual }}{% endif %}" class="pag-btn">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pedidos.has_next %}
+                    <a href="?page={{ pedidos.next_page_number }}{% if orden_actual %}&orden={{ orden_actual }}{% endif %}" class="pag-btn">
+                        <i class="fa-solid fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ pedidos.paginator.num_pages }}{% if orden_actual %}&orden={{ orden_actual }}{% endif %}" class="pag-btn">
+                        <i class="fa-solid fa-angles-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SIN RESULTADOS DEL FILTRO -->
+        <div id="sinResultados" class="pedidos-sin-resultados" style="display:none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>No encontramos pedidos</h3>
+            <p>Prueba con otro término de búsqueda o estado.</p>
+        </div>
+
+        {% else %}
+
+        <!-- SIN PEDIDOS -->
+        <div class="pedidos-vacio">
+            <i class="fa-solid fa-box-open"></i>
+            <h3>Aún no hay pedidos</h3>
+            <p>Cuando un cliente realice una compra, aparecerá aquí.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+</section>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buscador = document.getElementById("buscarPedido");
+    const filtroPago = document.getElementById("filtroEstado");
+    const filtroEnvio = document.getElementById("filtroEnvio");
+    const filas = document.querySelectorAll(".pedido-row");
+    const sinResultados = document.getElementById("sinResultados");
+
+    function filtrarPedidos() {
+        const texto = buscador.value.toLowerCase().trim();
+        const estadoPago = filtroPago.value;
+        const estadoEnvio = filtroEnvio.value;
+        let encontrados = 0;
+
+        filas.forEach(function (fila) {
+            const busqueda = fila.dataset.busqueda || "";
+            const pagoFila = fila.dataset.estado || "";
+            const envioFila = fila.dataset.estadoEnvio || "";
+
+            const coincideTexto = !texto || busqueda.includes(texto);
+            const coincidePago = !estadoPago || pagoFila === estadoPago;
+            const coincideEnvio = !estadoEnvio || envioFila === estadoEnvio;
+
+            if (coincideTexto && coincidePago && coincideEnvio) {
+                fila.style.display = "";
+                encontrados++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = encontrados === 0 ? "block" : "none";
+        }
+    }
+
+    if (buscador) buscador.addEventListener("input", filtrarPedidos);
+    if (filtroPago) filtroPago.addEventListener("change", filtrarPedidos);
+    if (filtroEnvio) filtroEnvio.addEventListener("change", filtrarPedidos);
+
+});
+</script>
+{% endblock %}

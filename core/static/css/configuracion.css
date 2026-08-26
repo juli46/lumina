@@ -1,0 +1,365 @@
+.config-container{
+    padding:30px;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+/* TITULO */
+
+.config-container h1{
+    color:var(--primary);
+    font-size:28px;
+    letter-spacing:.5px;
+
+    background:linear-gradient(
+        90deg,
+        var(--primary),
+        var(--lavender)
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* CARD */
+
+.config-card{
+    background:var(--card);
+    padding:22px;
+
+    border-radius:20px;
+
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+
+    transition:.3s ease;
+}
+
+.config-card:hover{
+    transform:translateY(-4px);
+}
+
+/* TITULO CARD */
+
+.config-card h2{
+    margin-bottom:18px;
+    color:var(--text);
+    font-size:18px;
+    font-weight:600;
+}
+
+/* OPTIONS */
+
+.option{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:14px;
+    gap:6px;
+}
+
+.option label{
+    font-size:13px;
+    color:var(--text);
+    opacity:.7;
+}
+
+/* INPUTS */
+
+.option input,
+.option select{
+    padding:12px 14px;
+
+    border-radius:14px;
+    border:1px solid var(--border);
+
+    outline:none;
+
+    background:var(--card);
+    color:var(--text);
+
+    transition:.25s;
+}
+
+.option input:focus,
+.option select:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(223,109,134,.15);
+}
+
+/* BOTÓN */
+
+.save-btn{
+    margin-top:12px;
+    padding:12px;
+
+    border:none;
+    border-radius:14px;
+
+    background:linear-gradient(
+        135deg,
+        var(--primary),
+        var(--lavender)
+    );
+
+    color:white;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s ease;
+}
+
+.save-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 20px rgba(223,109,134,.25);
+}
+/* =========================
+   INPUT ERROR STYLE
+========================= */
+.input-error {
+    border: 1.8px solid #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.05);
+    transition: all 0.2s ease;
+}
+
+/* =========================
+   ERROR MESSAGE (debajo del input)
+========================= */
+.error-msg {
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: #ef4444;
+    font-weight: 500;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* =========================
+   FORM GLOBAL ERROR
+========================= */
+#form-error {
+    display: none;
+    margin-top: 15px;
+    padding: 12px 14px;
+    border-radius: 10px;
+
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #b91c1c;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    animation: slideDown 0.25s ease;
+}
+
+/* =========================
+   INPUT FOCUS MEJORADO
+========================= */
+input:focus {
+    outline: none;
+    border: 1.8px solid var(--primary, #df6d86);
+    box-shadow: 0 0 0 3px rgba(223, 109, 134, 0.15);
+    transition: 0.2s ease;
+}
+
+/* =========================
+   ANIMACIONES SUAVES
+========================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   BOTÓN GUARDAR
+========================= */
+.save-btn {
+    background: var(--primary, #df6d86);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
+}
+
+/* =========================
+   AJUSTE GENERAL INPUTS
+========================= */
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+
+    font-size: 14px;
+
+    transition: 0.2s ease;
+    background: white;
+}
+
+/* DARK MODE READY (opcional future-proof 🌙) */
+.dark .input-error {
+    background-color: rgba(239, 68, 68, 0.08);
+}
+
+.dark #form-error {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fecaca;
+}
+
+.messages {
+    margin-bottom: 15px;
+}
+
+.messages .error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #b91c1c;
+
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.messages .success {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #15803d;
+
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.password-wrapper{
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input{
+    width: 100%;
+    padding-right: 45px;
+}
+
+.toggle-password{
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+    transition: 0.2s;
+}
+
+.toggle-password:hover{
+    color: var(--primary);
+}
+
+.notification-container{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.notification{
+    min-width: 320px;
+    max-width: 400px;
+    padding: 15px 20px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: white;
+    font-weight: 600;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+
+    animation: slideIn .4s ease;
+}
+
+.notification.success{
+    background: #22c55e;
+}
+
+.notification.error{
+    background: #ef4444;
+}
+
+.notification.warning{
+    background: #f59e0b;
+}
+
+.notification.info{
+    background: #3b82f6;
+}
+
+@keyframes slideIn{
+
+    from{
+        opacity: 0;
+        transform: translateX(100%);
+    }
+
+    to{
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+}
+
+.form-message{
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: .9rem;
+    display: none;
+}
+
+.form-message.error{
+    display: block;
+    background: #ffe5e5;
+    color: #c62828;
+    border: 1px solid #ffcaca;
+}
+
+.form-message.success{
+    display: block;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}

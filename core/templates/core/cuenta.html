@@ -1,0 +1,613 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <link rel="icon" href="{% static 'img/logos/logo2.png' %}">
+    <title>Mi Cuenta | Lúmina</title>
+
+    <link rel="stylesheet" href="{% static 'css/cuenta.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="account-container">
+
+        <!-- VOLVER -->
+        <div class="top-bar">
+
+            {% if request.user.is_authenticated and request.user.rol == "admin" %}
+            <a href="{% url 'admin_dashboard' %}" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Volver al panel
+            </a>
+            {% else %}
+            <a href="{% url 'home' %}" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Volver al inicio
+            </a>
+            {% endif %}
+
+        </div>
+
+        {% if request.user.is_authenticated %}
+
+        <!-- HERO -->
+        <section class="hero-account">
+
+            <div class="hero-content">
+                <h1>Hola, {{ request.user.username }} 👋</h1>
+
+                <p>
+                    Bienvenido a tu espacio Lúmina.
+                    Aquí podrás gestionar tu perfil,
+                    revisar pedidos y seguir creciendo
+                    como emprendedor.
+                </p>
+            </div>
+
+        </section>
+
+        <!-- PERFIL -->
+        <section class="profile-card">
+
+            <div class="avatar-section">
+
+                {% if request.user.foto %}
+                <img src="{{ request.user.foto.url }}" alt="foto">
+                {% else %}
+                <div class="avatar-fallback">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div class="profile-info">
+
+                <h2>{{ request.user.username }}</h2>
+
+                <span class="role-badge">
+                    {{ request.user.rol|title }}
+                </span>
+
+                <div class="contact-grid">
+
+                    <div class="contact-box">
+                        <i class="fa-solid fa-envelope"></i>
+                        <div>
+                            <small>Correo</small>
+                            <p>{{ request.user.email|default:"No registrado" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-box">
+                        <i class="fa-solid fa-phone"></i>
+                        <div>
+                            <small>Teléfono</small>
+                            <p>{{ request.user.telefono|default:"No registrado" }}</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+        <section class="resultados-section">
+            <div class="title">
+                <h2>Mis Resultados</h2>
+            </div>
+            <div class="resultados-grid">
+
+                {% if resultados_usuario %}
+
+                {% for resultado_usuario in resultados_usuario %}
+
+                <div class="resultado-card">
+
+                    <div class="resultado-imagen">
+                        {% if resultado_usuario.resultado.imagen %}
+                        <img src="{{ resultado_usuario.resultado.imagen.url }}"
+                            alt="{{ resultado_usuario.resultado.nombre }}">
+                        {% endif %}
+                    </div>
+
+                    <div class="resultado-info">
+
+                        <span class="resultado-test">
+                            {{ resultado_usuario.test.titulo }}
+                        </span>
+
+                        <h3>{{ resultado_usuario.resultado.nombre }}</h3>
+
+                        <p class="resultado-resumen">
+                            {{ resultado_usuario.resultado.descripcion|truncatewords:12 }}
+                        </p>
+
+                        <div class="resultado-footer">
+
+                            <small>
+                                {{ resultado_usuario.actualizado|date:"d/m/Y" }}
+                            </small>
+
+                            <div class="resultado-botones">
+
+                                <button class="btn-rutina"
+                                    onclick="abrirRutina('{{ resultado_usuario.resultado.nombre }}', `{{ resultado_usuario.resultado.descripcion|escapejs }}`)">
+                                    Ver mas
+                                </button>
+                                <a href="{% url 'eliminar_resultado_usuario' resultado_usuario.id %}"
+                                    class="btn-eliminar-resultado eliminar-resultado">
+                                    <i class="fa-solid fa-trash"></i>
+                                    Eliminar resultado
+                                </a>
+
+                                {% if resultado_usuario.test.activo %}
+
+                                <a href="{% url 'tips' %}?test={{ resultado_usuario.test.id }}#test"
+                                    class="btn-repetir-test">
+                                    Repetir test
+                                </a>
+
+                                {% else %}
+
+                                <span class="test-inactivo">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    Test no disponible
+                                </span>
+
+                                <a href="{% url 'tips' %}" class="btn-repetir-test">
+                                    Ver tests actuales
+                                </a>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+                {% else %}
+
+                <div class="empty-publicaciones">
+                    <p>Aún no tienes resultados guardados.</p>
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+        <br>
+
+        <!-- ESTADÍSTICAS -->
+        <section class="stats">
+
+            <div class="stat-card">
+                <i class="fa-solid fa-box"></i>
+                <h3>{{ pedidos|length }}</h3>
+                <p>Pedidos realizados</p>
+            </div>
+
+            <div class="stat-card">
+                <i class="fa-solid fa-star"></i>
+                <h3>Lúmina</h3>
+                <p>Cliente activo</p>
+            </div>
+
+            <div class="stat-card">
+                <i class="fa-solid fa-gift"></i>
+                <h3>Beneficios</h3>
+                <p>Disponibles</p>
+            </div>
+
+        </section>
+
+        <!-- PEDIDOS -->
+        <section class="orders-section">
+
+            <div class="section-title">
+                <h2>Mis Pedidos</h2>
+            </div>
+
+            {% if pedidos %}
+
+            <div class="orders-grid">
+
+                {% for pedido in pedidos %}
+
+                <div class="order-card">
+
+                    <!-- ENCABEZADO -->
+                    <div class="order-header">
+
+                        <div>
+                            <span class="order-ref">{{ pedido.referencia }}</span>
+                            <span class="order-fecha">{{ pedido.creado|date:"d/m/Y" }}</span>
+                        </div>
+
+                        <span class="status status-{{ pedido.estado|lower }}">
+                            {{ pedido.get_estado_display }}
+                        </span>
+
+                    </div>
+
+                    <!-- ESTADO DE ENVÍO -->
+                    {% if pedido.estado_envio %}
+                    <div class="order-envio-badge">
+                        <i class="fa-solid fa-truck"></i>
+                        <span class="status-envio status-envio-{{ pedido.estado_envio|lower }}">
+                            {{ pedido.get_estado_envio_display }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <!-- ITEMS -->
+                    <div class="order-items">
+
+                        {% for item in pedido.items.all|slice:":3" %}
+
+                        <div class="order-item-row">
+
+                            <span class="order-item-nombre">
+                                {{ item.producto_nombre }}
+                                {% if item.variante_nombre %}
+                                <small>· {{ item.variante_nombre }}</small>
+                                {% endif %}
+                            </span>
+
+                            <span class="order-item-cantidad">
+                                x{{ item.cantidad }}
+                            </span>
+
+                        </div>
+
+                        {% endfor %}
+
+                        {% if pedido.items.all|length > 3 %}
+                        <div class="order-item-mas">
+                            + {{ pedido.items.all|length|add:"-3" }} producto{{ pedido.items.all|length|add:"-3"|pluralize }} más
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+                    <!-- GUÍA DE ENVÍO -->
+                    {% if pedido.numero_guia %}
+                    <div class="order-guia">
+                        <div class="order-guia-titulo">
+                            <i class="fa-solid fa-truck-fast"></i>
+                            <span>Tu pedido va en camino</span>
+                        </div>
+                        <div class="order-guia-datos">
+                            <div>
+                                <small>Transportadora</small>
+                                <strong>{{ pedido.transportadora }}</strong>
+                            </div>
+                            <div>
+                                <small>Número de guía</small>
+                                <strong>{{ pedido.numero_guia }}</strong>
+                            </div>
+                            {% if pedido.fecha_envio %}
+                            <div>
+                                <small>Fecha de envío</small>
+                                <strong>{{ pedido.fecha_envio|date:"d/m/Y H:i" }}</strong>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- RESUMEN -->
+                    <div class="order-body">
+
+                        {% if pedido.descuento > 0 %}
+                        <div class="order-linea">
+                            <span>Descuento</span>
+                            <strong class="order-descuento">-${{ pedido.descuento|floatformat:0 }}</strong>
+                        </div>
+                        {% endif %}
+
+                        <div class="order-linea order-total-linea">
+                            <span>Total</span>
+                            <strong class="order-total">${{ pedido.total|floatformat:0 }}</strong>
+                        </div>
+
+                    </div>
+
+                    <!-- ACCIONES -->
+                    <div class="order-actions">
+                        <a href="{% url 'factura_pedido' pedido.id %}" class="btn-factura">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            Ver factura
+                        </a>
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-orders">
+
+                <i class="fa-solid fa-cart-shopping"></i>
+
+                <h3>Aún no tienes pedidos</h3>
+
+                <p>
+                    Explora nuestro catálogo y encuentra
+                    los mejores productos para tu emprendimiento.
+                </p>
+
+                <a href="{% url 'catalogo' %}" class="btn-shop">
+                    Ver catálogo
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </section>
+
+        <!-- DIRECCIONES -->
+
+        <section class="addresses-section">
+
+            <div class="section-title">
+                <h2>📍 Direcciones</h2>
+            </div>
+
+            <button class="btn btn-primary" onclick="openModal()">
+                + Agregar dirección
+            </button>
+
+            <div class="addresses-grid">
+
+                {% for d in request.user.direcciones.all %}
+
+                <div class="address-card">
+
+                    <div class="address-header">
+
+                        <h3>{{ d.nombre_receptor }}</h3>
+
+                        {% if d.principal %}
+                        <span class="badge">Principal</span>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="address-info">
+
+                        <p>
+                            <i class="fa-solid fa-location-dot"></i>
+                            {{ d.direccion }}
+                        </p>
+
+                        <p>
+                            <i class="fa-solid fa-city"></i>
+                            {{ d.ciudad }} - {{ d.departamento }}
+                        </p>
+
+                        <p>
+                            <i class="fa-solid fa-phone"></i>
+                            {{ d.telefono }}
+                        </p>
+
+                        {% if d.codigo_postal %}
+                        <p>
+                            <i class="fa-solid fa-envelope"></i>
+                            {{ d.codigo_postal }}
+                        </p>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="address-actions">
+
+                        <a href="{% url 'eliminar_direccion' d.id %}" class="delete-btn delete-address">
+                            <i class="fa-solid fa-trash"></i>
+                            Eliminar
+                        </a>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-addresses">
+
+                    <i class="fa-solid fa-location-crosshairs"></i>
+
+                    <h3>No tienes direcciones</h3>
+
+                    <p>
+                        Agrega una dirección para facilitar tus compras.
+                    </p>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        <!-- ACCIONES -->
+
+        <section class="actions">
+
+            <a href="{% url 'editar_perfil' %}" class="action-btn">
+                <i class="fa-solid fa-pen"></i>
+                Editar perfil
+            </a>
+
+            <a href="{% url 'logout' %}" class="action-btn logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Cerrar sesión
+            </a>
+
+
+
+        </section>
+
+        {% else %}
+
+        <section class="guest-card">
+
+            <i class="fa-solid fa-user-circle"></i>
+
+            <h2>Bienvenido a Lúmina</h2>
+
+            <p>
+                Inicia sesión o crea una cuenta para
+                acceder a todos nuestros beneficios.
+            </p>
+
+            <div class="guest-buttons">
+
+                <a href="{% url 'login' %}" class="btn-primary">
+                    Iniciar Sesión
+                </a>
+
+                <a href="{% url 'registro' %}" class="btn-secondary">
+                    Registrarme
+                </a>
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+    </div>
+    <!-- MODAL DIRECCIÓN -->
+    <div id="addressModal" class="modal-overlay">
+
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <h2>📍 Nueva dirección</h2>
+
+                <button type="button" class="close-btn" onclick="closeModal()">
+                    ✖
+                </button>
+            </div>
+
+            <p class="subtitle">Solo te tomará unos segundos ✨</p>
+
+            <form id="direccionForm" method="POST" action="{% url 'agregar_direccion' %}">
+                {% csrf_token %}
+
+                <!-- NOMBRE -->
+                <div class="form-group">
+                    <label>Nombre del receptor *</label>
+                    {{ form.nombre_receptor }}
+                    <small class="error"></small>
+                </div>
+
+                <br>
+
+                <!-- TELÉFONO -->
+                <div class="form-group">
+                    <label>Teléfono *</label>
+                    {{ form.telefono }}
+                    <small class="error"></small>
+                </div>
+
+                <br>
+
+                <!-- DIRECCIÓN -->
+                <div class="form-group">
+                    <label>Dirección *</label>
+                    {{ form.direccion }}
+                    <small class="error"></small>
+                </div>
+
+                <br>
+
+                <!-- DEPARTAMENTO Y CIUDAD -->
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label>Departamento *</label>
+                        <select id="departamento" name="departamento" required>
+                            <option value="">Selecciona un departamento</option>
+                        </select>
+                        <small class="error"></small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ciudad *</label>
+                        <select id="ciudad" name="ciudad" required>
+                            <option value="">Selecciona una ciudad</option>
+                        </select>
+                        <small class="error"></small>
+                    </div>
+
+                </div>
+
+                <br>
+
+                <!-- CÓDIGO POSTAL -->
+                <div class="form-group">
+                    <label>Código postal</label>
+                    {{ form.codigo_postal }}
+                    <small class="error"></small>
+                </div>
+
+                <br>
+
+                <!-- PRINCIPAL -->
+                <div class="form-group checkbox">
+                    {{ form.principal }}
+                    <label>⭐ Dirección principal</label>
+                </div>
+
+                <br>
+
+                <button type="submit" class="save-btn">
+                    Guardar dirección
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    </div>
+    <div id="modalRutina" class="modal-overlay">
+
+        <div class="modal-card">
+
+            <button class="close-btn" onclick="cerrarRutina()">
+                ✕
+            </button>
+
+            <h2 id="tituloRutina"></h2>
+
+            <div id="contenidoRutina"></div>
+
+        </div>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/cuenta.js' %}"></script>
+</body>
+
+</html>

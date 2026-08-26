@@ -1,0 +1,430 @@
+.container{
+    max-width:1500px;
+    margin:auto;
+    padding:30px;
+}
+
+/* ===========================
+    HEADER
+=========================== */
+
+.page-header{
+    margin-bottom:30px;
+}
+
+.page-header h1{
+    color:var(--primary);
+    font-size:2rem;
+    font-weight:700;
+}
+
+.page-header p{
+    color:var(--text);
+    opacity:.8;
+    margin-top:8px;
+}
+
+/* ===========================
+    LAYOUT
+=========================== */
+
+.test-layout{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+    align-items:start;
+}
+
+@media(max-width:1100px){
+
+    .test-layout{
+        grid-template-columns:1fr;
+    }
+
+}
+
+/* ===========================
+    TARJETAS
+=========================== */
+
+.section-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:25px;
+    box-shadow:var(--shadow);
+}
+
+.section-card h2{
+    color:var(--primary);
+    margin-bottom:20px;
+    font-size:1.25rem;
+}
+
+/* ===========================
+    FORMULARIOS
+=========================== */
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.form-group label{
+    color:var(--text);
+    font-weight:600;
+}
+
+.form-control{
+    width:100%;
+    padding:12px 15px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:var(--bg);
+    color:var(--text);
+    outline:none;
+    transition:.25s;
+}
+
+.form-control:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+textarea{
+    resize:vertical;
+}
+
+/* ===========================
+    IMÁGENES
+=========================== */
+
+.preview-img{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:15px;
+    border:2px solid var(--border);
+    margin-bottom:15px;
+}
+
+/* ===========================
+    RESULTADOS
+=========================== */
+
+.resultado-item{
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:18px;
+    margin-bottom:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+/* ===========================
+    PREGUNTAS
+=========================== */
+
+.pregunta-card{
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.pregunta-card h4{
+    color:var(--primary);
+    margin-bottom:15px;
+}
+
+.opcion-item{
+    display:grid;
+    grid-template-columns:3fr 1fr;
+    gap:12px;
+    margin-bottom:12px;
+}
+
+@media(max-width:700px){
+
+    .opcion-item{
+        grid-template-columns:1fr;
+    }
+
+}
+
+/* ===========================
+    BOTONES
+=========================== */
+
+.btn{
+    border:none;
+    border-radius:12px;
+    padding:12px 18px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.25s;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-primary:hover{
+    filter:brightness(.95);
+}
+
+.btn-success,
+.btn-info,
+.btn-secondary,
+.btn-warning{
+    background:var(--primary);
+    color:var(--card);
+}
+
+.btn-success:hover,
+.btn-info:hover,
+.btn-secondary:hover,
+.btn-warning:hover{
+    filter:brightness(.98);
+}
+
+.btn-danger{
+    background:var(--danger);
+    color:white;
+}
+
+.btn-save{
+    width:100%;
+    margin-top:10px;
+    font-size:1rem;
+}
+
+/* ===========================
+    SIDEBAR
+=========================== */
+
+.tests-grid{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.test-card{
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    transition:.25s;
+}
+
+.test-card:hover{
+    transform:translateY(-3px);
+    box-shadow:var(--shadow);
+}
+
+.test-card h3{
+    color:var(--primary);
+    margin:10px 0;
+}
+
+.test-card p{
+    color:var(--text);
+    opacity:.85;
+    line-height:1.6;
+    margin-bottom:18px;
+}
+
+.test-badge{
+    display:inline-block;
+    background:var(--primary-light);
+    color:var(--primary);
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:.8rem;
+    font-weight:600;
+}
+
+.acciones{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.acciones .btn{
+    flex:1;
+    min-width:120px;
+}
+
+/* ===========================
+    SCROLL
+=========================== */
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:var(--primary);
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-track{
+    background:var(--bg);
+}
+
+.form-group,
+.resultado-item,
+.pregunta-card,
+.opcion-item{
+    margin-bottom:20px;
+}
+
+.input-error{
+    border:2px solid var(--danger) !important;
+    background:var(--bg);
+    box-shadow:0 0 0 3px rgba(223,109,134,.12);
+}
+
+.error-text{
+    display:block;
+    margin-top:6px;
+    font-size:.85rem;
+    font-weight:500;
+    color:var(--danger);
+    line-height:1.4;
+    animation:mostrarError .2s ease;
+}
+
+@keyframes mostrarError{
+    from{
+        opacity:0;
+        transform:translateY(-4px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.preview-img{
+    margin-bottom:10px;
+}
+
+/* =========================
+   BOTÓN QUITAR DISCRETO
+========================= */
+
+.btn-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f7d6de;
+    color: #b94b63;
+
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.btn-remove:hover {
+    background: #df6d86;
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.resultado-item,
+.pregunta-card,
+.opcion-item {
+    position: relative;
+}
+
+.resultado-item > .btn-remove,
+.pregunta-card > .btn-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.opcion-item > .btn-remove {
+    margin-top: 6px;
+}
+
+/* Para que la X de las opciones quede alineada */
+.opcion-item {
+    display: grid;
+    grid-template-columns: 1fr 220px 28px;
+    gap: 12px;
+    align-items: start;
+}
+
+.badge-activo,
+.badge-inactivo{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+
+    padding:6px 12px;
+    border-radius:30px;
+
+    font-size:.8rem;
+    font-weight:600;
+
+    margin-bottom:15px;
+}
+
+.badge-activo{
+    background:#e8f8ef;
+    color:#169c53;
+}
+
+.badge-inactivo{
+    background:#fdecec;
+    color:#d64545;
+}
+
+.estado-test{
+    margin:15px 0;
+}
+
+@media (max-width: 768px) {
+
+    .opcion-item {
+        grid-template-columns: 1fr 28px;
+    }
+
+    .opcion-item select {
+        grid-column: 1 / 2;
+    }
+
+    .opcion-item .btn-remove {
+        grid-column: 2 / 3;
+        grid-row: 1 / 2;
+    }
+
+}

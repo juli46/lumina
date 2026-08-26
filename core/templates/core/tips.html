@@ -1,0 +1,224 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block body_class %}tips-page{% endblock %}
+
+{% block title %}
+Tips | Lúmina
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/tips.css' %}">
+
+<!-- HERO -->
+<section class="hero" id="hero" style="background: url('/static/img/pagina/banner2.png');">
+
+    <div class="hero-content">
+        <span class="hero-badge">✨ Lúmina Beauty</span>
+
+        <h1>Tips, Tests & Beauty News</h1>
+
+        <p>Descubre qué maquillaje, colores y rutinas realmente van contigo.</p>
+    </div>
+
+</section>
+
+<!-- MENU -->
+<div class="menu" id="menu">
+
+    <button onclick="scrollSection('tests')" class="active">
+        🧪 Tests
+    </button>
+
+    <button onclick="scrollSection('blog')">
+        📰 Blog
+    </button>
+
+    <button onclick="scrollSection('galeria')">
+        🖼 Galería
+    </button>
+
+</div>
+
+<!-- TESTS -->
+<section id="test">
+
+    <div class="title searchable-item">
+        <span>TESTS INTERACTIVOS</span>
+        <h2>Descubre Tu Beauty Style</h2>
+    </div>
+
+    <div class="tests-grid searchable-item">
+
+        {% for test in tests %}
+
+        <div class="card searchable-item">
+
+            <img src="{{ test.imagen.url }}">
+
+            <div class="card-content searchable-item">
+
+                <small>
+                    {{ test.categoria }}
+                </small>
+
+                <h3>
+                    {{ test.titulo }}
+                </h3>
+
+                <p>
+                    {{ test.descripcion }}
+                </p>
+
+                <button onclick="abrirTest('{{ test.id }}')">
+                    Hacer Test
+                </button>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    </div>
+
+</section>
+
+<!-- BLOG -->
+<section id="blog">
+
+    <div class="title searchable-item">
+        <span>BLOG & TIPS</span>
+        <h2>Beauty News</h2>
+    </div>
+
+    <div class="blog-grid">
+
+        {% for blog in blogs %}
+
+        <div class="blog-card searchable-item">
+
+            {% if blog.portada %}
+            <img src="{{ blog.portada.url }}" alt="{{ blog.titulo }}">
+            {% endif %}
+
+            <div class="blog-content">
+
+                <small>
+                    {{ blog.fecha_creacion|date:"d/m/Y" }}
+                </small>
+
+                <h3>{{ blog.titulo }}</h3>
+
+                <p>
+                    {{ blog.resumen }}
+                </p>
+
+                <button onclick="abrirBlog('{{ blog.id }}')">
+                    Leer más
+                </button>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+        <div class="empty-publicaciones">
+            <p> No hay publicaciones disponibles</p>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</section>
+
+<div id="blogModal" class="blog-modal">
+
+    <div class="blog-modal-content">
+
+        <span class="close-modal" onclick="cerrarBlog()">
+            &times;
+        </span>
+
+        <div id="blogContenido"></div>
+
+    </div>
+
+</div>
+<!-- GALERÍA -->
+<section id="galeria" class="gallery-section">
+
+    <div class="gallery-header searchable-item">
+        <span class="badge">GALERÍA</span>
+        <h2>Inspiración Beauty</h2>
+        <p>Looks para inspirarte ✨</p>
+    </div>
+
+    <div class="gallery-grid">
+
+        {% for item in galeria %}
+
+        <div class="gallery-card searchable-item" data-tags="{{ item.tags }}" onclick="openGallery('{{ item.id }}')">
+
+            <img src="{{ item.imagen.url }}" alt="{{ item.titulo }}">
+
+            <div class="overlay">
+
+                <span class="tag">
+                    {{ item.categoria }}
+                </span>
+
+                <h3>
+                    {{ item.titulo }}
+                </h3>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-gallery">
+
+            <p>
+                No hay imágenes disponibles.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<div id="testModal" class="modal">
+
+    <div class="modal-box test-modal-box">
+
+        <button class="close-test" onclick="cerrarTest()">
+            &times;
+        </button>
+
+        <div id="testContent"></div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tips.js' %}"></script>
+
+{% endblock %}

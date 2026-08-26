@@ -1,0 +1,868 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+{{ kit.nombre }} | Lúmina
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/detalle_producto.css' %}">
+<link rel="stylesheet" href="{% static 'css/detalle_kit.css' %}">
+
+<div class="pagina-producto">
+
+    <!-- ==========================================
+         VOLVER AL CATÁLOGO + KIT
+    =========================================== -->
+
+    <section class="producto-detalle">
+
+        <a href="{% url 'catalogo' %}" class="volver-catalogo">
+            <i class="fa-solid fa-arrow-left"></i>
+            Volver al catálogo
+        </a>
+
+
+        <div class="producto-detalle-grid">
+
+
+            <!-- ======================================
+                 IMAGEN DEL KIT
+            ======================================= -->
+
+            <div class="producto-galeria">
+
+                <div class="galeria-principal">
+
+                    {% if kit.imagen %}
+
+                    <img src="{{ kit.imagen.url }}" alt="{{ kit.nombre }}">
+
+                    {% else %}
+
+                    <div class="producto-sin-imagen">
+
+                        <i class="fa-solid fa-gift"></i>
+
+                        <span>
+                            Sin imagen
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <span class="kit-badge">
+                        <i class="fa-solid fa-gift"></i>
+                        Kit
+                    </span>
+
+
+                    {% if kit.ahorro_porcentaje > 0 %}
+
+                    <span class="kit-badge-descuento">
+                        -{{ kit.ahorro_porcentaje|floatformat:0 }}%
+                    </span>
+
+                    {% endif %}
+
+
+                    {% if kit.destacado %}
+
+                    <span class="kit-badge-destacado">
+                        <i class="fa-solid fa-star"></i>
+                        Destacado
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ======================================
+                 INFORMACIÓN
+            ======================================= -->
+
+            <div class="producto-detalle-info">
+
+
+                <!-- CATEGORÍA -->
+
+                {% if kit.categoria %}
+
+                <span class="producto-marca">
+
+                    {{ kit.categoria.nombre }}
+
+                </span>
+
+                {% endif %}
+
+
+                <!-- NOMBRE -->
+
+                <h1>
+                    {{ kit.nombre }}
+                </h1>
+
+
+                <!-- PRECIOS -->
+
+                <div class="kit-precios">
+
+                    {% if kit.ahorro > 0 %}
+
+                    <span class="kit-precio-normal">
+                        ${{ kit.precio_normal|floatformat:0 }}
+                    </span>
+
+                    {% endif %}
+
+                    <span class="producto-precio-principal">
+
+                        ${{ kit.precio_final|floatformat:0 }}
+
+                    </span>
+
+                </div>
+
+
+                {% if kit.ahorro > 0 %}
+
+                <p class="kit-ahorro">
+                    <i class="fa-solid fa-sparkles"></i>
+                    Ahorrás ${{ kit.ahorro|floatformat:0 }} comprando el kit
+                </p>
+
+                {% endif %}
+
+
+                <!-- DESCRIPCIÓN -->
+
+                {% if kit.descripcion %}
+
+                <div class="producto-descripcion">
+
+                    <h2>
+                        Descripción
+                    </h2>
+
+                    <p>
+                        {{ kit.descripcion|linebreaksbr }}
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- INFORMACIÓN EXTRA -->
+
+                {% if kit.info_extra %}
+
+                <div class="producto-info-extra">
+
+                    <button type="button" class="info-extra-toggle" onclick="toggleInfoExtra(this)"
+                        aria-expanded="false">
+                        <span>
+                            <i class="fa-solid fa-circle-info"></i>
+                            Información extra
+                        </span>
+
+                        <i class="fa-solid fa-chevron-down info-extra-icon"></i>
+                    </button>
+
+                    <div class="info-extra-contenido">
+                        <p>
+                            {{ kit.info_extra|linebreaksbr }}
+                        </p>
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- ==================================
+                     DATOS DEL KIT
+                =================================== -->
+
+                <div class="producto-datos">
+
+
+                    {% if kit.categoria %}
+
+                    <div class="producto-dato">
+
+                        <span>
+                            Categoría
+                        </span>
+
+                        <strong>
+                            {{ kit.categoria.nombre }}
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    {% if kit.sku %}
+
+                    <div class="producto-dato">
+
+                        <span>
+                            Código
+                        </span>
+
+                        <strong class="kit-dato-sku">
+                            {{ kit.sku }}
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <div class="producto-dato">
+
+                        <span>
+                            Incluye
+                        </span>
+
+                        <strong>
+                            {{ kit.items.count }} producto{{ kit.items.count|pluralize }}
+                        </strong>
+
+                    </div>
+
+
+                    {% if kit.descuento_personalizado > 0 %}
+
+                    <div class="producto-dato">
+
+                        <span>
+                            Descuento
+                        </span>
+
+                        <strong class="kit-dato-descuento">
+                            {{ kit.descuento_personalizado|floatformat:0 }}% off
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <div class="producto-dato">
+
+                        <span>
+                            Stock
+                        </span>
+
+                        {% if kit.stock > 0 %}
+
+                        <strong class="kit-stock-ok">
+                            <i class="fa-solid fa-circle-check"></i>
+                            {{ kit.stock }} disponible{{ kit.stock|pluralize }}
+                        </strong>
+
+                        {% else %}
+
+                        <strong class="kit-stock-agotado">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            Agotado
+                        </strong>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================
+                     ETIQUETAS
+                =================================== -->
+
+                {% if kit.etiquetas.all %}
+
+                <div class="producto-etiquetas">
+
+                    {% for etiqueta in kit.etiquetas.all %}
+
+                    <span>
+                        #{{ etiqueta.nombre }}
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- ==================================
+                     CTA
+                =================================== -->
+
+                <button type="button" class="kit-cta" {% if kit.stock == 0 %}disabled{% endif %}>
+
+                    <i class="fa-solid fa-bag-shopping"></i>
+
+                    {% if kit.stock > 0 %}
+                    Agregar kit al carrito
+                    {% else %}
+                    Kit agotado
+                    {% endif %}
+
+                </button>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         PRODUCTOS QUE INCLUYE (reemplaza a "Videos")
+    =========================================== -->
+
+    <section class="producto-seccion">
+
+        <div class="seccion-titulo">
+
+            <span>
+                Este kit incluye
+            </span>
+
+            <h2>
+                {{ kit.items.count }} producto{{ kit.items.count|pluralize }}
+            </h2>
+
+            <p>
+                Todo lo que necesitás, en un solo kit.
+            </p>
+
+        </div>
+
+
+        <div class="otros-productos-grid">
+
+            {% for item in kit.items.all %}
+
+            <article class="otro-producto-card">
+
+                <a href="{% url 'detalle_producto' item.producto.slug %}" class="otro-producto-imagen">
+
+                    {% with imagen_item=item.producto.imagenes.all|first %}
+
+                    {% if imagen_item %}
+
+                    <img src="{{ imagen_item.imagen.url }}" alt="{{ item.producto.nombre }}" loading="lazy">
+
+                    {% else %}
+
+                    <div class="producto-sin-imagen">
+
+                        <i class="fa-regular fa-image"></i>
+
+                        <span>
+                            Sin imagen
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% endwith %}
+
+
+                    <span class="kit-item-cantidad">
+                        x{{ item.cantidad }}
+                    </span>
+
+                </a>
+
+
+                <div class="otro-producto-info">
+
+                    {% if item.producto.marca %}
+
+                    <span class="producto-marca">
+                        {{ item.producto.marca.nombre }}
+                    </span>
+
+                    {% endif %}
+
+
+                    <h3>
+                        {{ item.producto.nombre }}
+                    </h3>
+
+
+                    {% if item.variante %}
+
+                    <span class="kit-item-variante">
+                        {{ item.variante.nombre_tono }}
+                    </span>
+
+                    {% elif item.producto.variantes.all %}
+
+                    <div class="kit-item-selector-tono">
+
+                        <label for="tono-{{ item.id }}">
+                            Elige el tono
+                        </label>
+
+                        <select id="tono-{{ item.id }}"
+                            class="kit-selector-tono"
+                            data-kit-producto="{{ item.id }}"
+                            data-producto-nombre="{{ item.producto.nombre }}">
+
+                            <option value="">
+                                Selecciona un tono...
+                            </option>
+
+                            {% for variante in item.producto.variantes.all %}
+
+                            <option value="{{ variante.id }}" {% if variante.stock <= 0 %}disabled{% endif %}>
+
+                                {{ variante.nombre_tono|default:"Único" }}
+                                {% if variante.stock <= 0 %} (Agotado){% endif %}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <strong>
+                        ${{ item.subtotal|floatformat:0 }}
+                    </strong>
+
+
+                    <a href="{% url 'detalle_producto' item.producto.slug %}" class="btn-ver-producto">
+                        Ver producto
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
+            {% empty %}
+
+            <p class="kit-sin-items">
+                Este kit todavía no tiene productos cargados.
+            </p>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         OTROS KITS
+    =========================================== -->
+
+    {% if otros_kits %}
+
+    <section class="otros-productos">
+
+        <div class="seccion-titulo">
+
+            <span>
+                Descubre más
+            </span>
+
+            <h2>
+                También te puede gustar
+            </h2>
+
+            <p>
+                Explora otros kits de Lúmina.
+            </p>
+
+        </div>
+
+
+        <div class="otros-productos-grid">
+
+            {% for otro_kit in otros_kits %}
+
+            <article class="otro-producto-card">
+
+                <a href="{% url 'detalle_kit' otro_kit.slug %}" class="otro-producto-imagen">
+
+                    {% if otro_kit.imagen %}
+
+                    <img src="{{ otro_kit.imagen.url }}" alt="{{ otro_kit.nombre }}" loading="lazy">
+
+                    {% else %}
+
+                    <div class="producto-sin-imagen">
+
+                        <i class="fa-solid fa-gift"></i>
+
+                        <span>
+                            Sin imagen
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <span class="kit-badge">
+                        <i class="fa-solid fa-gift"></i>
+                        Kit
+                    </span>
+
+
+                    {% if otro_kit.ahorro_porcentaje > 0 %}
+
+                    <span class="kit-badge-descuento">
+                        -{{ otro_kit.ahorro_porcentaje|floatformat:0 }}%
+                    </span>
+
+                    {% endif %}
+
+                </a>
+
+
+                <div class="otro-producto-info">
+
+                    {% if otro_kit.categoria %}
+
+                    <span class="producto-marca">
+                        {{ otro_kit.categoria.nombre }}
+                    </span>
+
+                    {% endif %}
+
+
+                    <h3>
+                        {{ otro_kit.nombre }}
+                    </h3>
+
+
+                    <strong>
+                        ${{ otro_kit.precio_final|floatformat:0 }}
+                    </strong>
+
+
+                    <a href="{% url 'detalle_kit' otro_kit.slug %}" class="btn-ver-producto">
+                        Ver kit
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ==========================================
+         INFORMACIÓN EXTRA
+    =========================================== -->
+
+    <section class="producto-informacion-extra">
+
+        <div>
+
+            <i class="fa-solid fa-gift"></i>
+
+            <h3>
+                Kit completo
+            </h3>
+
+            <p>
+                Productos seleccionados por Lúmina para complementarse entre sí.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <i class="fa-solid fa-shield-heart"></i>
+
+            <h3>
+                Productos originales
+            </h3>
+
+            <p>
+                Cada producto del kit es 100% original.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <i class="fa-solid fa-tags"></i>
+
+            <h3>
+                Ahorro garantizado
+            </h3>
+
+            <p>
+                Comprando el kit pagás menos que por separado.
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =====================================================
+       INFORMACIÓN EXTRA
+    ===================================================== */
+
+    window.toggleInfoExtra = function (button) {
+
+        const contenedor = button.closest(".producto-info-extra");
+
+        if (!contenedor) {
+            return;
+        }
+
+        const abierto = contenedor.classList.toggle("abierto");
+
+        button.setAttribute(
+            "aria-expanded",
+            abierto ? "true" : "false"
+        );
+    };
+
+    /* =====================================================
+       CSRF
+    ===================================================== */
+
+    function obtenerCSRF() {
+
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+
+            cookie = cookie.trim();
+
+            if (cookie.startsWith("csrftoken=")) {
+
+                return decodeURIComponent(
+                    cookie.substring("csrftoken=".length)
+                );
+
+            }
+
+        }
+
+        return "";
+
+    }
+
+    /* =====================================================
+       AGREGAR KIT AL CARRITO
+    ===================================================== */
+
+    const btnCta = document.querySelector(".kit-cta");
+
+    if (!btnCta || btnCta.disabled) {
+        return;
+    }
+
+    const textoOriginal = btnCta.innerHTML;
+
+    function obtenerSelecciones() {
+
+        const selects = document.querySelectorAll(".kit-selector-tono");
+        const selecciones = {};
+        const faltantes = [];
+
+        selects.forEach(function (select) {
+
+            if (!select.value) {
+
+                faltantes.push(select.dataset.productoNombre);
+                select.classList.add("selector-tono-error");
+
+            } else {
+
+                select.classList.remove("selector-tono-error");
+                selecciones[select.dataset.kitProducto] = select.value;
+
+            }
+
+        });
+
+        return { selecciones, faltantes };
+    }
+
+    btnCta.addEventListener("click", async function () {
+
+        const { selecciones, faltantes } = obtenerSelecciones();
+
+        if (faltantes.length > 0) {
+
+            const mensaje =
+                "Debes elegir un tono para: " + faltantes.join(", ");
+
+            if (typeof Swal !== "undefined") {
+
+                Swal.fire({
+                    icon: "warning",
+                    title: "Faltan tonos por elegir",
+                    text: mensaje,
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#df6d86"
+                });
+
+            } else {
+                alert(mensaje);
+            }
+
+            return;
+        }
+
+        btnCta.disabled = true;
+
+        try {
+
+            const urlKit = "{% url 'agregar_kit_al_carrito' kit.id %}";
+
+            const cuerpo = new URLSearchParams({ cantidad: 1 });
+
+            Object.keys(selecciones).forEach(function (kitProductoId) {
+                cuerpo.append(`tono_${kitProductoId}`, selecciones[kitProductoId]);
+            });
+
+            const respuesta = await fetch(urlKit, {
+
+                method: "POST",
+
+                headers: {
+                    "X-CSRFToken": obtenerCSRF(),
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+
+                body: cuerpo
+
+            });
+
+            /*
+             * Leemos como texto primero. Si el backend responde con
+             * un error HTML (500, 403, redirect a login, etc.) en vez
+             * de JSON, esto nos permite mostrarlo en consola en lugar
+             * de reventar con "Unexpected token '<'".
+             */
+
+            const textoRespuesta = await respuesta.text();
+
+            let datos;
+
+            try {
+
+                datos = JSON.parse(textoRespuesta);
+
+            } catch (errorParseo) {
+
+                console.error(
+                    "El servidor no devolvió JSON. Status:",
+                    respuesta.status,
+                    "\nRespuesta cruda:",
+                    textoRespuesta
+                );
+
+                throw new Error(
+                    `Error del servidor (status ${respuesta.status}). Revisa la consola.`
+                );
+
+            }
+
+            if (!respuesta.ok || !datos.ok) {
+                throw new Error(
+                    datos.mensaje || "No se pudo agregar el kit al carrito."
+                );
+            }
+
+            const contador = document.getElementById("contador-carrito");
+
+            if (contador) {
+
+                contador.textContent = datos.cantidad_carrito;
+
+                contador.classList.remove("vacio");
+
+                contador.classList.add("actualizado");
+
+                setTimeout(function () {
+                    contador.classList.remove("actualizado");
+                }, 300);
+
+            }
+
+            btnCta.innerHTML =
+                '<i class="fa-solid fa-circle-check"></i> Agregado al carrito';
+
+            setTimeout(function () {
+                btnCta.innerHTML = textoOriginal;
+                btnCta.disabled = false;
+            }, 1500);
+
+        } catch (error) {
+
+            console.error("Error al agregar el kit:", error);
+
+            if (typeof Swal !== "undefined") {
+
+                Swal.fire({
+                    icon: "warning",
+                    title: "Kit",
+                    text: error.message,
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#df6d86"
+                });
+
+            } else {
+
+                alert(error.message);
+
+            }
+
+            btnCta.disabled = false;
+
+        }
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

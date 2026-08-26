@@ -1,0 +1,215 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}
+Contáctanos | Lúmina
+{% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{% static 'css/contacto.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="contact-section" id="contacto">
+
+```
+<!-- DECORACIONES -->
+<div class="blur-circle blur-1"></div>
+<div class="blur-circle blur-2"></div>
+
+<div class="contact-wrapper">
+
+    <!-- IZQUIERDA -->
+    <div class="contact-content">
+
+        <h2>
+            Hablemos de belleza ✨
+        </h2>
+
+        <p class="contact-text">
+            En Lúmina queremos acompañarte en cada detalle.
+            Escríbenos para pedidos, asesorías, colaboraciones
+            o cualquier duda sobre nuestros productos.
+        </p>
+
+        <!-- INFO -->
+        <div class="contact-cards">
+
+            <div class="info-card">
+
+                <div class="info-icon">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+
+                <div>
+                    <h4>Email</h4>
+                    <span>contacto.luminabeauty1@gmail.com</span>
+                </div>
+
+            </div>
+
+            <div class="info-card">
+
+                <div class="info-icon">
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+
+                <div>
+                    <h4>Teléfono</h4>
+                    <span>+57 300 000 0000</span>
+                </div>
+
+            </div>
+
+            <div class="info-card">
+
+                <div class="info-icon">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+
+                <div>
+                    <h4>Ubicación</h4>
+                    <span>Medellín, Colombia</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- REDES -->
+        <div class="contact-socials">
+
+            <a href="#">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+
+            <a href="#">
+                <i class="fa-brands fa-tiktok"></i>
+            </a>
+
+            <a href="#">
+                <i class="fa-brands fa-facebook-f"></i>
+            </a>
+
+            <a href="#">
+                <i class="fa-brands fa-pinterest-p"></i>
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="contact-form-box">
+
+        <form class="contact-form" id="contactForm" method="POST">
+
+            {% csrf_token %}
+
+            <!-- NOMBRE -->
+            <div class="form-group">
+
+                <label>Nombre completo</label>
+
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    placeholder="Ingresa tu nombre">
+
+                <small class="error"></small>
+
+            </div>
+
+            <!-- EMAIL -->
+            <div class="form-group">
+
+                <label>Correo electrónico</label>
+
+                <input
+                    type="email"
+                    id="correo"
+                    name="correo"
+                    placeholder="ejemplo@gmail.com">
+
+                <small class="error"></small>
+
+            </div>
+
+            <!-- ASUNTO -->
+            <div class="form-group">
+
+                <label>Asunto</label>
+
+                <input
+                    type="text"
+                    id="asunto"
+                    name="asunto"
+                    placeholder="¿En qué podemos ayudarte?">
+
+                <small class="error"></small>
+
+            </div>
+
+            <!-- MENSAJE -->
+            <div class="form-group">
+
+                <label>Mensaje</label>
+
+                <textarea
+                    id="mensaje"
+                    name="mensaje"
+                    placeholder="Escribe tu mensaje aquí..."></textarea>
+
+                <small class="error"></small>
+
+            </div>
+
+            <!-- BOTÓN -->
+            <button type="submit" class="contact-btn">
+
+                Enviar mensaje
+
+                <i class="fa-solid fa-paper-plane"></i>
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+</section>
+
+<!-- SWEETALERT -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    {% for message in messages %}
+    Swal.fire({
+        icon: "success",
+        title: "Mensaje enviado",
+        text: "{{ message|escapejs }}",
+        confirmButtonColor: "#df6d86",
+        confirmButtonText: "Aceptar"
+    });
+    {% endfor %}
+
+});
+</script>
+
+{% endif %}
+
+<!-- VALIDACIONES -->
+
+<script src="{% static 'js/contacto.js' %}"></script>
+
+{% endblock %}

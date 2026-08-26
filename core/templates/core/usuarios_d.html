@@ -1,0 +1,167 @@
+{% extends "core/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/usuarios_d.css' %}">
+
+<div class="page-header">
+
+    <h1> Usuarios registrados</h1>
+
+    <div class="top-bar">
+
+        <div class="search-box">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Buscar usuario..."
+                autocomplete="off">
+        </div>
+
+        <a href="{% url 'exportar_usuarios_excel' %}" class="excel-btn">
+            📊 Exportar Excel
+        </a>
+
+    </div>
+
+</div>
+
+<div class="table-wrapper">
+
+    <table class="users-table">
+
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody id="usersTable">
+
+            {% for u in usuarios %}
+            <tr>
+
+                <td class="user-cell">
+
+                    {% if u.foto %}
+                    <img
+                        src="{{ u.foto.url }}"
+                        alt="{{ u.username }}"
+                        class="avatar">
+                    {% else %}
+                    <div class="avatar-fallback">
+                        {{ u.username|first|upper }}
+                    </div>
+                    {% endif %}
+
+                    <div class="user-info">
+                        <strong>{{ u.username }}</strong>
+                    </div>
+
+                </td>
+
+                <td data-label="Correo">
+                    {{ u.email }}
+                </td>
+
+                <td data-label="Teléfono">
+                    {% if u.telefono %}
+                        {{ u.telefono }}
+                    {% else %}
+                        <span class="empty-value">
+                            No registrado
+                        </span>
+                    {% endif %}
+                </td>
+
+                <td data-label="Rol">
+                    <span class="rol">
+                        {{ u.rol }}
+                    </span>
+                </td>
+
+                <td data-label="Estado">
+
+                    {% if u.is_active %}
+                        <span class="estado activo">
+                            🟢 Activo
+                        </span>
+                    {% else %}
+                        <span class="estado inactivo">
+                            🔴 Inactivo
+                        </span>
+                    {% endif %}
+
+                </td>
+
+                <td data-label="Acciones">
+
+                    <div class="actions">
+
+                        <a
+                            href="{% url 'editar_usuario' u.id %}"
+                            class="edit-btn">
+
+                            ✏️ Editar
+
+                        </a>
+
+                        <a
+                            href="{% url 'eliminar_usuario' u.id %}"
+                            class="delete-btn">
+
+                            🗑️ Eliminar
+
+                        </a>
+
+                    </div>
+
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div id="noResults" class="no-results" style="display:none;">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <h3>No se encontraron coincidencias</h3>
+    <p>Intenta con otra palabra.</p>
+</div>
+
+<div class="pagination">
+
+    {% if usuarios.has_previous %}
+        <a href="?page={{ usuarios.previous_page_number }}">
+            ⬅ Anterior
+        </a>
+    {% endif %}
+
+    <span class="page-info">
+        Página {{ usuarios.number }}
+        de
+        {{ usuarios.paginator.num_pages }}
+    </span>
+
+    {% if usuarios.has_next %}
+        <a href="?page={{ usuarios.next_page_number }}">
+            Siguiente ➡
+        </a>
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/usuarios.js' %}"></script>
+
+{% endblock %}

@@ -1,0 +1,1044 @@
+{% extends 'core/dashboard.html' %}
+{% load static %}
+
+
+{% block title %}
+Administrar Catálogo | Lúmina
+{% endblock %}
+
+{% block content %}
+
+
+<link rel="stylesheet" href="{% static 'css/variantes.css' %}">
+
+<div class="container">
+
+
+    <!-- ====================================
+ HEADER
+===================================== -->
+
+    <div class="page-header">
+
+
+        <div class="header-info">
+
+            <h1>
+                Administrar Catálogo
+            </h1>
+
+
+            <p>
+                Gestiona categorías, marcas y colecciones de Lúmina.
+            </p>
+
+
+        </div>
+
+
+
+        <div class="header-search">
+
+
+            <input type="text" id="buscadorCatalogo" placeholder="Buscar...">
+
+
+        </div>
+
+
+    </div>
+
+    <!-- ====================================
+ MENU INTERNO
+===================================== -->
+
+    <div class="catalogo-tabs">
+
+
+        <button class="tab-btn active" onclick="mostrarCatalogo('categorias',this)">
+
+            <i class="fa-solid fa-folder"></i>
+            Categorías
+
+        </button>
+
+
+
+        <button class="tab-btn" onclick="mostrarCatalogo('marcas',this)">
+
+            <i class="fa-solid fa-tag"></i>
+            Marcas
+
+        </button>
+
+
+
+        <button class="tab-btn" onclick="mostrarCatalogo('colecciones',this)">
+
+            <i class="fa-solid fa-layer-group"></i>
+            Colecciones
+
+        </button>
+        <button class="tab-btn" onclick="mostrarCatalogo('etiquetas',this)">
+            <i class="fa-solid fa-tags"></i>
+            Etiquetas
+        </button>
+
+    </div>
+    <!-- ====================================
+ CATEGORIAS
+===================================== -->
+    <div id="categorias" class="catalogo-panel activo">
+        <div class="card">
+            <div class="card-top">
+                <div>
+                    <h3 id="tituloCategoria">
+
+                        Nueva Categoría
+
+                    </h3>
+
+
+                    <p>
+
+                        Organiza los productos por categorías.
+
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+
+            <form method="POST" class="form-card">
+
+
+                {% csrf_token %}
+
+
+
+                <input type="hidden" name="tipo" value="categoria">
+
+
+
+                <input type="hidden" name="id" id="categoria_id">
+
+
+
+
+
+
+                <div class="input-group">
+
+
+                    <label>
+
+                        Nombre
+
+                    </label>
+
+
+
+                    <input type="text" name="nombre" id="categoria_nombre" placeholder="Ej: Maquillaje" required>
+                    <small class="error-text"></small>
+
+                </div>
+
+                <div class="form-buttons">
+
+
+                    <button type="submit" id="btnCategoria" class="btn-primary">
+
+                        Guardar categoría
+
+                    </button>
+
+
+
+                    <button type="button" id="cancelarCategoria" onclick="cancelarEdicionCategoria()"
+                        class="btn-secondary" style="display:none;">
+                        Cancelar
+                    </button>
+
+                </div>
+
+            </form>
+
+            <div class="table-header">
+
+
+                <h4>
+
+                    Categorías registradas
+
+                </h4>
+
+
+                <span>
+
+                    {{ categorias.paginator.count }} registros
+
+                </span>
+
+
+            </div>
+
+            <div class="table-responsive">
+
+
+                <table class="tablaCatalogo">
+
+
+                    <thead>
+
+
+                        <tr>
+
+                            <th>
+                                Categoría
+                            </th>
+
+
+                            <th>
+                                Acciones
+                            </th>
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+                    <tbody>
+
+
+                        {% for categoria in categorias %}
+
+
+
+                        <tr>
+
+
+                            <td>
+
+                                {{ categoria.nombre }}
+
+                            </td>
+                            <td>
+
+
+                                <button type="button" class="btn-action editar"
+                                    onclick="editarCategoria('{{ categoria.id }}','{{ categoria.nombre }}')">
+
+                                    Editar
+
+                                </button>
+
+
+                                <form method="POST" action="{% url 'eliminar_categoria' categoria.id %}"
+                                    class="form-eliminar">
+
+
+                                    {% csrf_token %}
+
+
+                                    <button type="submit" class="btn-action eliminar">
+
+                                        Eliminar
+
+                                    </button>
+
+
+                                </form>
+
+
+
+                            </td>
+
+
+
+                        </tr>
+
+
+
+                        {% empty %}
+
+
+
+                        <tr>
+
+                            <td colspan="2">
+
+                                No hay categorías registradas.
+
+                            </td>
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+
+                    </tbody>
+
+
+
+                </table>
+                {% if categorias.has_other_pages %}
+                <div class="paginacion">
+
+                    {% if categorias.has_previous %}
+                    <a
+                        href="?categorias_page={{ categorias.previous_page_number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}">
+                        ←
+                    </a>
+                    {% endif %}
+
+                    {% for i in categorias.paginator.page_range %}
+                    {% if i == categorias.number %}
+                    <span class="activo">{{ i }}</span>
+                    {% else %}
+                    <a
+                        href="?categorias_page={{ i }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}">
+                        {{ i }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if categorias.has_next %}
+                    <a
+                        href="?categorias_page={{ categorias.next_page_number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}">
+                        →
+                    </a>
+                    {% endif %}
+
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+    <!-- ====================================
+ MARCAS
+===================================== -->
+
+
+    <div id="marcas" class="catalogo-panel">
+
+
+
+        <div class="card">
+
+
+
+            <div class="card-top">
+
+
+                <div>
+
+
+                    <h3 id="tituloMarca">
+
+                        Nueva Marca
+
+                    </h3>
+
+
+                    <p>
+
+                        Administra las marcas disponibles para tus productos.
+
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+            <form method="POST" class="form-card">
+
+
+                {% csrf_token %}
+
+
+
+
+                <input type="hidden" name="tipo" value="marca">
+
+
+
+                <input type="hidden" name="id" id="marca_id">
+
+                <div class="input-group">
+
+
+                    <label>
+
+                        Nombre de marca
+
+                    </label>
+
+
+
+
+                    <input type="text" id="marca_nombre" name="nombre" placeholder="Ej: Maybelline" required>
+                    <small class="error-text"></small>
+
+                </div>
+
+
+
+
+
+
+                <div class="form-buttons">
+
+
+                    <button type="submit" id="btnMarca" class="btn-primary">
+
+
+                        Guardar marca
+
+
+                    </button>
+
+
+
+
+
+                    <button type="button" id="cancelarMarca" onclick="cancelarEdicionMarca()" class="btn-secondary"
+                        style="display:none;">
+                        Cancelar
+                    </button>
+
+
+                </div>
+            </form>
+
+            <div class="table-header">
+
+
+                <h4>
+
+                    Marcas registradas
+
+                </h4>
+
+
+                <span>
+
+                    {{ marcas.paginator.count }} registros
+
+                </span>
+
+
+            </div>
+            <div class="table-responsive">
+
+
+
+                <table class="tablaCatalogo">
+
+
+
+                    <thead>
+
+
+                        <tr>
+
+
+                            <th>
+
+                                Marca
+
+                            </th>
+
+
+
+                            <th>
+
+                                Acciones
+
+                            </th>
+
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+
+
+                    <tbody>
+
+
+
+
+                        {% for marca in marcas %}
+
+
+
+                        <tr>
+
+
+
+                            <td>
+
+                                {{ marca.nombre }}
+
+                            </td>
+
+
+
+
+
+                            <td>
+
+
+
+
+                                <button type="button" class="btn-action editar"
+                                    onclick="editarMarca('{{ marca.id }}','{{ marca.nombre }}')">
+
+
+                                    Editar
+
+
+                                </button>
+
+
+
+
+
+
+
+
+                                <form method="POST" action="{% url 'eliminar_marca' marca.id %}" class="form-eliminar">
+
+
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="btn-action eliminar">
+
+
+                                        Eliminar
+
+
+                                    </button>
+
+                                </form>
+                            </td>
+
+
+
+                        </tr>
+
+                        {% empty %}
+                        <tr>
+
+
+                            <td colspan="2">
+
+
+                                No hay marcas registradas.
+
+
+                            </td>
+
+
+                        </tr>
+
+
+
+                        {% endfor %}
+
+
+
+
+                    </tbody>
+                </table>
+                {% if marcas.has_other_pages %}
+                <div class="paginacion">
+
+                    {% if marcas.has_previous %}
+                    <a
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.previous_page_number }}&colecciones_page={{ colecciones.number }}">
+                        ←
+                    </a>
+                    {% endif %}
+
+                    {% for i in marcas.paginator.page_range %}
+                    {% if i == marcas.number %}
+                    <span class="activo">{{ i }}</span>
+                    {% else %}
+                    <a
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ i }}&colecciones_page={{ colecciones.number }}">
+                        {{ i }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if marcas.has_next %}
+                    <a
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.next_page_number }}&colecciones_page={{ colecciones.number }}">
+                        →
+                    </a>
+                    {% endif %}
+
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- ====================================
+ COLECCIONES
+===================================== -->
+
+
+    <div id="colecciones" class="catalogo-panel">
+
+
+
+        <div class="card">
+
+
+
+            <div class="card-top">
+
+
+                <div>
+
+
+                    <h3 id="tituloColeccion">
+
+                        Nueva Colección
+
+                    </h3>
+
+
+                    <p>
+
+                        Relaciona colecciones con sus respectivas marcas.
+
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+
+
+
+
+
+
+            <form method="POST" class="form-card">
+
+
+                {% csrf_token %}
+                <input type="hidden" name="tipo" value="coleccion">
+                <input type="hidden" name="id" id="coleccion_id">
+                <div class="input-group">
+                    <label>
+
+                        Marca
+
+                    </label>
+                    <select name="marca" id="coleccion_marca" required>
+                        <small class="error-text"></small>
+
+                        <option value="">
+
+                            Seleccionar marca
+
+                        </option>
+
+
+
+                        {% for marca in marcas %}
+
+
+
+                        <option value="{{ marca.id }}">
+
+
+                            {{ marca.nombre }}
+
+
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group">
+
+
+                    <label>
+
+                        Nombre de colección
+
+                    </label>
+
+
+
+
+                    <input type="text" name="nombre" id="coleccion_nombre" placeholder="Ej: Sublime " required>
+                    <small class="error-text"></small>
+
+                </div>
+
+                <div class="form-buttons">
+
+
+                    <button type="submit" id="btnColeccion" class="btn-primary">
+
+
+                        Guardar colección
+
+
+                    </button>
+                    <button type="button" id="cancelarColeccion" onclick="cancelarEdicionColeccion()"
+                        class="btn-secondary" style="display:none;">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+
+            <div class="table-header">
+
+
+                <h4>
+
+                    Colecciones registradas
+
+                </h4>
+
+
+                <span>
+
+                    {{ colecciones.paginator.count }} registros
+
+                </span>
+
+
+            </div>
+            <div class="table-responsive">
+                <table class="tablaCatalogo">
+                    <thead>
+                        <tr>
+                            <th>
+
+                                Colección
+
+                            </th>
+                            <th>
+
+                                Marca
+
+                            </th>
+
+
+
+                            <th>
+
+                                Acciones
+
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for coleccion in colecciones %}
+                        <tr>
+                            <td>
+
+                                {{ coleccion.nombre }}
+
+                            </td>
+                            <td>
+
+                                {{ coleccion.marca.nombre }}
+
+                            </td>
+
+                            <td>
+
+                                <button type="button" class="btn-action editar" onclick="editarColeccion(
+'{{ coleccion.id }}',
+'{{ coleccion.nombre }}',
+'{{ coleccion.marca.id }}'
+)">
+
+
+                                    Editar
+
+
+                                </button>
+                                <form method="POST" action="{% url 'eliminar_coleccion' coleccion.id %}"
+                                    class="form-eliminar">
+
+
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-action eliminar">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        {% empty %}
+                        <tr>
+
+                            <td colspan="3">
+
+
+                                No hay colecciones registradas.
+
+
+                            </td>
+
+
+                        </tr>
+
+
+
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if colecciones.has_other_pages %}
+                <div class="paginacion">
+
+                    {% if colecciones.has_previous %}
+                    <a
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.previous_page_number }}">
+                        ←
+                    </a>
+                    {% endif %}
+
+                    {% for i in colecciones.paginator.page_range %}
+                    {% if i == colecciones.number %}
+                    <span class="activo">{{ i }}</span>
+                    {% else %}
+                    <a
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ i }}">
+                        {{ i }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if colecciones.has_next %}
+                    <a
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.next_page_number }}">
+                        →
+                    </a>
+                    {% endif %}
+
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- ====================================
+ ETIQUETAS
+===================================== -->
+
+<div id="etiquetas" class="catalogo-panel">
+
+    <div class="card">
+
+        <div class="card-top">
+
+            <div>
+
+                <h3 id="tituloEtiqueta">
+                    Nueva Etiqueta
+                </h3>
+
+                <p>
+                    Crea etiquetas para filtros del catálogo.
+                </p>
+
+            </div>
+
+        </div>
+
+        <form method="POST" class="form-card">
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="tipo"
+                value="etiqueta"
+            >
+
+            <input
+                type="hidden"
+                name="id"
+                id="etiqueta_id"
+            >
+
+            <div class="input-group">
+
+                <label>
+                    Nombre de etiqueta
+                </label>
+
+                <input
+                    type="text"
+                    name="nombre"
+                    id="etiqueta_nombre"
+                    placeholder="Ej: Piel seca"
+                    required
+                >
+
+            </div>
+
+            <div class="form-buttons">
+
+                <button
+                    type="submit"
+                    id="btnEtiqueta"
+                    class="btn-primary"
+                >
+                    Guardar etiqueta
+                </button>
+
+                <button
+                    type="button"
+                    id="cancelarEtiqueta"
+                    class="btn-secondary"
+                    style="display:none;"
+                    onclick="cancelarEdicionEtiqueta()"
+                >
+                    Cancelar
+                </button>
+
+            </div>
+
+        </form>
+
+        <div class="table-header">
+
+            <h4>
+                Etiquetas registradas
+            </h4>
+
+            <span>
+                {{ etiquetas.count }} registros
+            </span>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="tablaCatalogo">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Etiqueta
+                        </th>
+
+                        <th>
+                            Acciones
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for etiqueta in etiquetas %}
+
+                    <tr>
+
+                        <td>
+                            {{ etiqueta.nombre }}
+                        </td>
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="btn-action editar"
+                                onclick="editarEtiqueta(
+                                '{{ etiqueta.id }}',
+                                '{{ etiqueta.nombre }}'
+                                )"
+                            >
+                                Editar
+                            </button>
+
+                            <form
+                                method="POST"
+                                action="{% url 'eliminar_etiqueta' etiqueta.id %}"
+                                class="form-eliminar"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="btn-action eliminar"
+                                >
+                                    Eliminar
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="2">
+
+                            No hay etiquetas registradas.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+</div>
+<!-- ================================
+ SCRIPTS
+===================================== -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="{% static 'js/variantes.js' %}"></script>
+{% endblock %}

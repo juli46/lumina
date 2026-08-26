@@ -1,0 +1,1554 @@
+{% extends "core/dashboard.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+Kits | Lúmina
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/kits.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<div class="container">
+
+    <!-- ========================================= -->
+    <!-- HEADER -->
+    <!-- ========================================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h2>
+                <i class="fa-solid fa-box-open"></i>
+                Administración de Kits
+            </h2>
+
+            <p>
+                Crea kits personalizados utilizando los productos registrados.
+            </p>
+
+        </div>
+
+        <div class="header-derecha">
+
+            <div class="contador">
+
+                {{ kits|length }} Kits
+
+            </div>
+<br>
+            {% if kits_stock_bajo > 0 %}
+            <div class="alerta-stock-header">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {{ kits_stock_bajo }} kit{{ kits_stock_bajo|pluralize }} con stock bajo (≤ {{ umbral_stock_bajo }})
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+<br>
+    <!-- ========================================= -->
+    <!-- FORMULARIO -->
+    <!-- ========================================= -->
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <input type="hidden" name="kit_id" value="{% if kit_editar %}{{ kit_editar.id }}{% endif %}">
+
+        <div class="producto-layout">
+
+            <!-- ========================================= -->
+            <!-- COLUMNA IZQUIERDA -->
+            <!-- ========================================= -->
+
+            <div>
+
+                <div class="card">
+
+                    <div class="card-header-flex">
+
+                        <h3>
+
+                            {% if kit_editar %}
+                            Editar Kit
+                            {% else %}
+                            Nuevo Kit
+                            {% endif %}
+
+                        </h3>
+
+                        {% if kit_editar %}
+
+                        <a href="{% url 'dashboard_kits' %}" class="btn-nuevo">
+
+                            <i class="fa-solid fa-plus"></i>
+                            Nuevo Kit
+
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="grid-producto">
+
+                        <div class="campo">
+
+                            <label>
+
+                                Nombre
+
+                            </label>
+
+                            <input type="text" name="nombre" required
+                                value="{% if kit_editar %}{{ kit_editar.nombre }}{% endif %}">
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Categoría
+
+                            </label>
+
+                            <select name="categoria">
+
+                                <option value="">
+
+                                    Seleccionar...
+
+                                </option>
+
+                                {% for categoria in categorias %}
+
+                                <option value="{{ categoria.id }}" {% if kit_editar and kit_editar.categoria_id == categoria.id %}selected{% endif %}>
+    {{ categoria.nombre }}
+</option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="grid-producto">
+<div class="campo">
+
+    <label>
+        SKU / Código
+    </label>
+
+    <input
+        type="text"
+        name="sku"
+        maxlength="50"
+        placeholder="Se genera automáticamente si se deja vacío"
+        value="{% if kit_editar and kit_editar.sku %}{{ kit_editar.sku }}{% endif %}">
+
+</div>
+
+
+                        <div class="campo">
+
+                            <label>
+
+                                Stock
+                                {% if kit_editar and kit_editar.stock <= umbral_stock_bajo %}
+                                <span class="icono-stock-bajo" title="Stock bajo">⚠</span>
+                                {% endif %}
+
+                            </label>
+
+                            <input type="number" name="stock" min="0"
+                                value="{% if kit_editar %}{{ kit_editar.stock }}{% else %}0{% endif %}"
+                                class="{% if kit_editar and kit_editar.stock <= umbral_stock_bajo %}input-stock-bajo{% endif %}">
+
+                        </div>
+
+                    </div>
+<div class="campo">
+
+    <label>
+        Descripción
+    </label>
+
+    <textarea
+        name="descripcion"
+        required
+        maxlength="2000"
+        placeholder="Describe qué incluye este kit...">{% if kit_editar %}{{ kit_editar.descripcion }}{% endif %}</textarea>
+
+</div>
+
+
+                    <div class="grid-producto">
+
+                        <div class="campo">
+
+                            <label>
+
+                                Descuento personalizado (%)
+
+                            </label>
+
+                            <input type="text" inputmode="decimal" name="descuento_personalizado"
+                                placeholder="Ej: 15 o 15,5"
+                                value="{% if kit_editar %}{{ kit_editar.descuento_personalizado|default:0|floatformat:-2 }}{% endif %}">
+
+                        </div>
+
+                        <div class="campo">
+
+                            <label>
+
+                                Imagen
+
+                            </label>
+
+                            <input type="file" name="imagen">
+
+                        </div>
+
+                    </div>
+
+                    {% if kit_editar and kit_editar.imagen %}
+
+                    <div class="archivos-actuales">
+
+                        <p>
+
+                            Imagen actual
+
+                        </p>
+
+                        <img src="{{ kit_editar.imagen.url }}" style="width:160px;border-radius:16px;margin-top:10px;">
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+                <!-- ========================================= -->
+                <!-- ESTADO -->
+                <!-- ========================================= -->
+
+                <div class="card">
+
+                    <h3>Configuración</h3>
+
+                    <div class="grid-producto">
+
+                        <div class="campo check-campo">
+
+    <label class="switch">
+
+        <input type="checkbox" name="activo"
+            {% if not kit_editar or kit_editar.activo %}
+                checked
+            {% endif %}>
+
+        <span class="slider"></span>
+
+    </label>
+
+    <span>Kit activo</span>
+
+</div>
+
+                        <div class="campo check-campo">
+
+                            <label class="switch">
+
+                                <input type="checkbox" name="destacado" {% if kit_editar and kit_editar.destacado %}
+                                    checked {% endif %}>
+
+                                <span class="slider"></span>
+
+                            </label>
+
+                            <span>Destacado</span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ========================================= -->
+            <!-- COLUMNA DERECHA -->
+            <!-- ========================================= -->
+
+            <div>
+
+                <div class="card">
+
+                    <h3>
+
+                        Resumen
+
+                    </h3>
+
+                    <div class="resumen-kit">
+
+                        <div class="resumen-item">
+
+                            <span>Productos</span>
+
+                            <strong>
+
+                                {% if kit_editar %}
+                                {{ kit_editar.productos.count }}
+                                {% else %}
+                                0
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+                        <div class="resumen-item {% if kit_editar and kit_editar.stock <= umbral_stock_bajo %}resumen-item-alerta{% endif %}">
+
+                            <span>Stock</span>
+
+                            <strong>
+
+                                {% if kit_editar %}
+                                {{ kit_editar.stock }}
+                                {% if kit_editar.stock <= umbral_stock_bajo %}⚠{% endif %}
+                                {% else %}
+                                0
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+                        {% if kit_editar and kit_editar.precio_normal > 0 %}
+
+                        <div class="resumen-item">
+
+                            <span>Precio normal</span>
+
+                            <strong>${{ kit_editar.precio_normal|floatformat:0|intcomma }}</strong>
+
+                        </div>
+
+                        <div class="resumen-item">
+
+                            <span>Descuento</span>
+
+                            <strong>{{ kit_editar.descuento_personalizado|default:0|floatformat:-2 }}%</strong>
+
+                        </div>
+
+                        <div class="resumen-item">
+
+                            <span>Precio final</span>
+
+                            <strong>${{ kit_editar.precio_final|floatformat:0|intcomma }}</strong>
+
+                        </div>
+
+                        {% if kit_editar.ahorro > 0 %}
+
+                        <div class="resumen-item resumen-ahorro">
+
+                            <span>Ahorro del cliente</span>
+
+                            <strong>${{ kit_editar.ahorro|floatformat:0|intcomma }} ({{ kit_editar.ahorro_porcentaje|floatformat:0 }}%)</strong>
+
+                        </div>
+
+                        {% endif %}
+
+                        {% endif %}
+
+                        {% if kit_editar and kit_editar.stock <= umbral_stock_bajo %}
+
+                        <div class="resumen-item resumen-item-alerta">
+
+                            <span>⚠ Alerta</span>
+
+                            <strong>Stock bajo (≤ {{ umbral_stock_bajo }})</strong>
+
+                        </div>
+
+                        {% endif %}
+
+                        <div class="resumen-item">
+
+                            <span>Estado</span>
+
+                            <strong>
+
+                                {% if kit_editar %}
+
+                                {% if kit_editar.activo %}
+                                Activo
+                                {% else %}
+                                Inactivo
+                                {% endif %}
+
+                                {% else %}
+
+                                Nuevo
+
+                                {% endif %}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    <button class="btn-guardar" type="submit">
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        {% if kit_editar %}
+
+                        Actualizar Kit
+
+                        {% else %}
+
+                        Guardar Kit
+
+                        {% endif %}
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+    <!-- ========================================= -->
+    <!-- CONSTRUCTOR DEL KIT -->
+    <!-- ========================================= -->
+
+    <div class="card">
+
+        <div class="section-header">
+
+            <div>
+
+                <h3>
+
+                    Productos del Kit
+
+                </h3>
+
+                <p>
+
+                    Agrega productos al kit.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        {% if kit_editar %}
+
+        <div class="buscador-productos">
+
+            <input type="text" id="buscarProducto" placeholder="Buscar producto...">
+
+            <button type="button" id="toggleProductos" class="btn-toggle-productos">
+                <i class="fa-solid fa-eye-slash"></i>
+                Ocultar productos
+            </button>
+
+        </div>
+
+        <div class="productos-disponibles" id="listaProductos">
+
+            {% for producto in productos %}
+
+            <div class="producto-card producto-kit-card">
+
+                <div class="producto-info">
+
+                    {% with imagen=producto.imagenes.first %}
+
+                    {% if imagen %}
+
+                    <img src="{{ imagen.imagen.url }}" class="mini-img">
+
+                    {% else %}
+
+                    <div class="sin-img">
+
+                        <i class="fa-solid fa-image"></i>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% endwith %}
+
+                    <div>
+
+                        <h4>
+
+                            {{ producto.nombre }}
+
+                        </h4>
+
+                        <small>
+
+                            {{ producto.marca.nombre }}
+
+                        </small>
+
+                        <div class="precio">
+
+                            ${{ producto.precio_base|floatformat:0|intcomma }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <form method="POST" action="{% url 'agregar_producto_kit' kit_editar.id %}">
+
+                    {% csrf_token %}
+
+                    <input type="hidden" name="producto" value="{{ producto.id }}">
+                    <div class="acciones-agregar">
+
+                        <select name="variante">
+
+                            <option value="">
+                                Variante
+                            </option>
+
+                            {% for variante in producto.variantes.all %}
+
+                            <option value="{{ variante.id }}" {% if variante.stock <= umbral_stock_bajo %}class="opcion-stock-bajo"{% endif %}>
+
+                                {% if variante.nombre_tono %}
+                                {{ variante.nombre_tono }}
+                                {% else %}
+                                Sin variante
+                                {% endif %}
+
+                                (Stock: {{ variante.stock }}{% if variante.stock <= umbral_stock_bajo %} ⚠{% endif %})
+
+                            </option>
+
+                            {% empty %}
+
+                            <option value="">
+                                Sin variantes
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <input type="number" name="cantidad" value="1" min="1">
+
+                        <button type="submit" class="btn-agregar">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <hr>
+
+        <h3>
+
+            Productos agregados
+
+        </h3>
+
+        {% if kit_editar.items.all %}
+
+        {% for item in kit_editar.items.all %}
+
+        <div class="item-kit">
+
+            <div class="item-info">
+
+                <strong>
+
+                    {{ item.producto.nombre }}
+
+                </strong>
+
+                <span>
+
+                    {% if item.variante %}
+                    {{ item.variante.nombre_tono }}
+                    {% else %}
+                    Sin variante
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+            <div class="item-cantidad">
+
+                x{{ item.cantidad }}
+
+            </div>
+
+            <div class="item-precio">
+
+                ${{ item.producto.precio_base|floatformat:0|intcomma }}
+
+            </div>
+
+            <div class="item-total">
+
+                ${{ item.subtotal|floatformat:0|intcomma }}
+
+            </div>
+
+            <form method="POST" action="{% url 'eliminar_producto_kit' item.id %}" style="display:inline;">
+
+                {% csrf_token %}
+
+                <button type="submit" class="btn-eliminar-item">
+
+                    <i class="fa-solid fa-trash"></i>
+
+                </button>
+
+            </form>
+
+        </div>
+
+        {% endfor %}
+
+        {% else %}
+
+        <div class="empty">
+
+            Este kit aun no tiene productos.
+
+        </div>
+
+        {% endif %}
+
+        {% else %}
+
+        <div class="empty">
+
+            Guarda primero el kit para comenzar a agregar productos.
+
+        </div>
+
+        {% endif %}
+
+    </div>
+    <!-- ========================================= -->
+    <!-- KITS REGISTRADOS -->
+    <!-- ========================================= -->
+
+    <div class="card">
+
+        <h3>
+
+            Kits registrados
+
+        </h3>
+
+        <div class="kits-grid">
+
+            {% for kit in kits %}
+
+            <div class="kit-card {% if kit.stock <= umbral_stock_bajo %}kit-card-alerta{% endif %}">
+
+                <div class="kit-imagen">
+
+                    {% if kit.imagen %}
+
+                    <img src="{{ kit.imagen.url }}" alt="{{ kit.nombre }}">
+
+                    {% else %}
+
+                    <div class="sin-imagen">
+
+                        <i class="fa-solid fa-box-open"></i>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% if kit.destacado %}
+
+                    <span class="kit-destacado-badge">
+
+                        â­ Destacado
+
+                    </span>
+
+                    {% endif %}
+
+                    {% if kit.stock <= umbral_stock_bajo %}
+
+                    <span class="kit-stock-bajo-badge">
+
+                        ⚠ Stock bajo
+
+                    </span>
+
+                    {% endif %}
+
+                    <div class="kit-estados kit-estados-overlay">
+
+                        {% if kit.activo %}
+
+                        <span class="badge success">Activo</span>
+
+                        {% else %}
+
+                        <span class="badge danger">Inactivo</span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <div class="kit-body">
+
+                    <h3>
+
+                        {{ kit.nombre }}
+
+                    </h3>
+
+                    <div class="kit-precio-row">
+
+                        <div class="kit-precio">
+
+                            ${{ kit.precio_final|floatformat:0|intcomma }}
+
+                        </div>
+
+                        {% if kit.ahorro > 0 %}
+
+                        <span class="badge-ahorro">
+
+                            Ahorras ${{ kit.ahorro|floatformat:0|intcomma }} ({{ kit.ahorro_porcentaje|floatformat:0 }}%)
+
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <button type="button" class="btn-toggle-info" data-info="info-{{ kit.id }}">
+                    <i class="fa-solid fa-eye-slash"></i>
+                    Ocultar información
+                </button>
+
+                <div class="kit-tabs" id="info-{{ kit.id }}">
+
+                    <div class="kit-tabs-nav">
+
+                        <button type="button" class="tab-btn active" data-tab="general-{{ kit.id }}">
+
+                            General
+
+                        </button>
+
+                        <button type="button" class="tab-btn" data-tab="precio-{{ kit.id }}">
+
+                            Precio y Stock
+                            {% if kit.stock <= umbral_stock_bajo %}⚠{% endif %}
+
+                        </button>
+
+                        <button type="button" class="tab-btn" data-tab="productos-{{ kit.id }}">
+
+                            Productos
+
+                        </button>
+
+                    </div>
+
+                    <div class="tab-panel active" id="general-{{ kit.id }}">
+
+                        <div class="tab-row">
+                            <span>Categoría</span>
+                            <strong>{{ kit.categoria.nombre|default:"Sin categoría" }}</strong>
+                        </div>
+
+                        <div class="tab-row">
+                            <span>SKU</span>
+                            <strong>{{ kit.sku|default:"—" }}</strong>
+                        </div>
+
+                        <div class="tab-row tab-row-full">
+                            <span>Descripción</span>
+                            <p>{{ kit.descripcion|default:"Sin descripción." }}</p>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-panel" id="precio-{{ kit.id }}">
+
+                        {% if kit.stock <= umbral_stock_bajo %}
+
+                        <div class="tab-row-alerta">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Este kit tiene stock bajo (umbral: {{ umbral_stock_bajo }})
+                        </div>
+
+                        {% endif %}
+
+                        <div class="tab-row">
+                            <span>Descuento personalizado</span>
+                            <strong>
+                                {{ kit.descuento_personalizado|default:0|floatformat:-2 }}%
+                            </strong>
+                        </div>
+
+                        {% if kit.precio_normal > 0 %}
+
+                        <div class="tab-row">
+                            <span>Precio normal (suma productos)</span>
+                            <strong>${{ kit.precio_normal|floatformat:0|intcomma }}</strong>
+                        </div>
+
+                        <div class="tab-row">
+                            <span>Precio final con descuento</span>
+                            <strong>${{ kit.precio_final|floatformat:0|intcomma }}</strong>
+                        </div>
+
+                        {% if kit.ahorro > 0 %}
+
+                        <div class="tab-row tab-row-ahorro">
+                            <span>Ahorro del cliente</span>
+                            <strong>${{ kit.ahorro|floatformat:0|intcomma }} ({{ kit.ahorro_porcentaje|floatformat:0 }}%)</strong>
+                        </div>
+
+                        {% endif %}
+
+                        {% endif %}
+
+                        <div class="tab-row">
+                            <span>Stock</span>
+                            <strong {% if kit.stock <= umbral_stock_bajo %}class="stock-bajo" {% endif %}>
+                                {{ kit.stock }}
+                                {% if kit.stock <= umbral_stock_bajo %}⚠{% endif %}
+                            </strong>
+                        </div>
+
+                        <div class="tab-row">
+                            <span>Estado</span>
+                            <strong>
+                                {% if kit.activo %}Activo{% else %}Inactivo{% endif %}
+                            </strong>
+                        </div>
+
+                        <div class="tab-row">
+                            <span>Destacado</span>
+                            <strong>
+                                {% if kit.destacado %}­{% else %}No{% endif %}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-panel" id="productos-{{ kit.id }}">
+
+                        {% if kit.items.all %}
+
+                        {% for item in kit.items.all %}
+
+                        <div class="tab-row">
+
+                            <span>
+
+                                {{ item.producto.nombre }}
+
+                                {% if item.variante %}
+                                ({{ item.variante.nombre_tono }})
+                                {% endif %}
+
+                                x{{ item.cantidad }}
+
+                            </span>
+
+                            <strong>${{ item.subtotal|floatformat:0|intcomma }}</strong>
+
+                        </div>
+
+                        {% endfor %}
+
+                        {% else %}
+
+                        <div class="tab-row-empty">
+
+                            Este kit aun no tiene productos.
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <div class="kit-footer">
+
+                    <a href="{% url 'dashboard_kits' %}?editar={{ kit.id }}" class="btn-editar">
+
+                        <i class="fa-solid fa-pen"></i>
+
+                        Editar
+
+                    </a>
+                    <form method="POST" action="{% url 'toggle_kit_activo' kit.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-toggle {% if kit.activo %}activo{% else %}inactivo{% endif %}">
+                            <i class="fa-solid {% if kit.activo %}fa-toggle-on{% else %}fa-toggle-off{% endif %}"></i>
+                            {% if kit.activo %}Desactivar{% else %}Activar{% endif %}
+                        </button>
+                    </form>
+                    <button type="button" class="btn-eliminar"
+                        onclick="eliminarKit('{{ kit.id }}', '{{ kit.nombre|escapejs }}')">
+
+                        <i class="fa-solid fa-trash"></i>
+                        Eliminar
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="fa-solid fa-box-open"></i>
+
+                </div>
+
+                <h3>
+
+                    No hay kits registrados
+
+                </h3>
+
+                <p>
+
+                    Crea el primero utilizando el formulario superior.
+
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% if messages %}
+    <div id="django-messages" hidden>
+        {% for message in messages %}
+        <span
+            class="django-message"
+            data-icon="success"
+            data-title="{{ message|escapejs }}">
+        </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formulario = document.querySelector('form[method="POST"]:not([action])');
+
+    if (!formulario) {
+        return;
+    }
+
+    /* =========================================
+       FUNCIONES DE VALIDACIÓN
+    ========================================= */
+
+    function limpiarError(input) {
+
+        if (!input) return;
+
+        input.classList.remove("campo-error");
+        input.classList.remove("campo-exito");
+
+        const campo = input.closest(".campo");
+
+        if (campo) {
+            campo.classList.remove("has-error");
+
+            const error = campo.querySelector(".mensaje-error-campo");
+
+            if (error) {
+                error.remove();
+            }
+        }
+    }
+
+
+    function mostrarError(input, mensaje) {
+
+        if (!input) return;
+
+        limpiarError(input);
+
+        input.classList.add("campo-error");
+
+        const campo = input.closest(".campo");
+
+        if (!campo) return;
+
+        campo.classList.add("has-error");
+
+        const error = document.createElement("small");
+
+        error.className = "mensaje-error-campo";
+
+        error.innerHTML = `
+            <i class="fa-solid fa-circle-exclamation"></i>
+            ${mensaje}
+        `;
+
+        campo.appendChild(error);
+    }
+
+
+    function mostrarExito(input) {
+
+        if (!input) return;
+
+        limpiarError(input);
+
+        input.classList.add("campo-exito");
+    }
+
+
+    function validarNombre() {
+
+        const input = formulario.querySelector('[name="nombre"]');
+
+        if (!input) return true;
+
+        const valor = input.value.trim();
+
+        if (!valor) {
+
+            mostrarError(
+                input,
+                "El nombre del kit es obligatorio."
+            );
+
+            return false;
+        }
+
+        if (valor.length < 3) {
+
+            mostrarError(
+                input,
+                "El nombre debe tener al menos 3 caracteres."
+            );
+
+            return false;
+        }
+
+        if (valor.length > 150) {
+
+            mostrarError(
+                input,
+                "El nombre no puede superar los 150 caracteres."
+            );
+
+            return false;
+        }
+
+        mostrarExito(input);
+
+        return true;
+    }
+
+
+    function validarCategoria() {
+
+        const input = formulario.querySelector('[name="categoria"]');
+
+        if (!input) return true;
+
+        if (!input.value) {
+
+            mostrarError(
+                input,
+                "Selecciona una categoría para el kit."
+            );
+
+            return false;
+        }
+
+        mostrarExito(input);
+
+        return true;
+    }
+
+
+    function validarStock() {
+
+        const input = formulario.querySelector('[name="stock"]');
+
+        if (!input) return true;
+
+        const valor = input.value.trim();
+
+        if (valor === "") {
+
+            mostrarError(
+                input,
+                "El stock es obligatorio."
+            );
+
+            return false;
+        }
+
+        const stock = Number(valor);
+
+        if (!Number.isInteger(stock)) {
+
+            mostrarError(
+                input,
+                "El stock debe ser un número entero."
+            );
+
+            return false;
+        }
+
+        if (stock < 0) {
+
+            mostrarError(
+                input,
+                "El stock no puede ser negativo."
+            );
+
+            return false;
+        }
+
+        mostrarExito(input);
+
+        return true;
+    }
+
+
+    function validarDescuento() {
+
+        const input = formulario.querySelector(
+            '[name="descuento_personalizado"]'
+        );
+
+        if (!input) return true;
+
+        const valor = input.value.trim();
+
+        /*
+         * El descuento puede quedar vacío.
+         */
+
+        if (valor === "") {
+
+            limpiarError(input);
+
+            return true;
+        }
+
+        /*
+         * Permitir 15,5 o 15.5
+         */
+
+        const numero = Number(
+            valor.replace(",", ".")
+        );
+
+        if (isNaN(numero)) {
+
+            mostrarError(
+                input,
+                "Ingresa un descuento válido."
+            );
+
+            return false;
+        }
+
+        if (numero < 0 || numero > 100) {
+
+            mostrarError(
+                input,
+                "El descuento debe estar entre 0% y 100%."
+            );
+
+            return false;
+        }
+
+        mostrarExito(input);
+
+        return true;
+    }
+
+
+    function validarImagen() {
+
+        const input = formulario.querySelector(
+            '[name="imagen"]'
+        );
+
+        if (!input) return true;
+
+        /*
+         * La imagen es opcional.
+         */
+
+        if (!input.files || input.files.length === 0) {
+
+            limpiarError(input);
+
+            return true;
+        }
+
+        const archivo = input.files[0];
+
+        const formatosPermitidos = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ];
+
+        if (!formatosPermitidos.includes(archivo.type)) {
+
+            mostrarError(
+                input,
+                "La imagen debe ser JPG, PNG o WEBP."
+            );
+
+            return false;
+        }
+
+        /*
+         * Máximo 5 MB
+         */
+
+        const maximo = 5 * 1024 * 1024;
+
+        if (archivo.size > maximo) {
+
+            mostrarError(
+                input,
+                "La imagen no puede superar los 5 MB."
+            );
+
+            return false;
+        }
+
+        mostrarExito(input);
+
+        return true;
+    }
+
+
+    /* =========================================
+       VALIDACIÓN GENERAL
+    ========================================= */
+
+    function validarFormulario() {
+
+        let valido = true;
+
+        const validaciones = [
+            validarNombre(),
+            validarCategoria(),
+            validarStock(),
+            validarDescuento(),
+            validarImagen()
+        ];
+
+        if (validaciones.includes(false)) {
+            valido = false;
+        }
+
+        return valido;
+    }
+
+
+    /* =========================================
+       VALIDACIÓN EN TIEMPO REAL
+    ========================================= */
+
+    const nombre = formulario.querySelector('[name="nombre"]');
+
+    if (nombre) {
+        nombre.addEventListener("input", validarNombre);
+        nombre.addEventListener("blur", validarNombre);
+    }
+
+
+    const categoria = formulario.querySelector('[name="categoria"]');
+
+    if (categoria) {
+        categoria.addEventListener("change", validarCategoria);
+    }
+
+
+    const stock = formulario.querySelector('[name="stock"]');
+
+    if (stock) {
+        stock.addEventListener("input", validarStock);
+        stock.addEventListener("blur", validarStock);
+    }
+
+
+    const descuento = formulario.querySelector(
+        '[name="descuento_personalizado"]'
+    );
+
+    if (descuento) {
+        descuento.addEventListener("input", validarDescuento);
+        descuento.addEventListener("blur", validarDescuento);
+    }
+
+
+    const imagen = formulario.querySelector(
+        '[name="imagen"]'
+    );
+
+    if (imagen) {
+        imagen.addEventListener("change", validarImagen);
+    }
+
+
+    /* =========================================
+       SUBMIT DEL FORMULARIO
+    ========================================= */
+
+    formulario.addEventListener("submit", function (event) {
+
+        event.preventDefault();
+
+        const valido = validarFormulario();
+
+        if (!valido) {
+
+            Swal.fire({
+                icon: "error",
+                title: "Revisa el formulario",
+                text: "Hay campos que necesitan ser corregidos.",
+                confirmButtonText: "Entendido",
+                confirmButtonColor: "#df6d86"
+            });
+
+            /*
+             * Llevar al primer campo con error.
+             */
+
+            const primerError = formulario.querySelector(
+                ".campo-error"
+            );
+
+            if (primerError) {
+
+                primerError.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
+                primerError.focus();
+            }
+
+            return;
+        }
+
+
+        /* =========================================
+           CONFIRMACIÓN
+        ========================================= */
+
+        const editando = formulario.querySelector(
+            '[name="kit_id"]'
+        )?.value;
+
+
+        Swal.fire({
+            icon: "question",
+            title: editando
+                ? "¿Actualizar kit?"
+                : "¿Guardar kit?",
+            text: editando
+                ? "Se actualizará la información del kit."
+                : "Se creará un nuevo kit.",
+            showCancelButton: true,
+            confirmButtonText: editando
+                ? "Sí, actualizar"
+                : "Sí, guardar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#df6d86",
+            cancelButtonColor: "#6b7280",
+            reverseButtons: true
+        }).then((resultado) => {
+
+            if (resultado.isConfirmed) {
+
+                /*
+                 * Evitamos que el listener vuelva
+                 * a interceptar el submit.
+                 */
+
+                formulario.submit();
+            }
+
+        });
+
+    });
+
+
+    /* =========================================
+       VALIDACIÓN PRODUCTOS DEL KIT
+    ========================================= */
+
+    const formulariosProductos = document.querySelectorAll(
+        'form[action*="agregar_producto_kit"]'
+    );
+
+
+    formulariosProductos.forEach(function (formularioProducto) {
+
+        formularioProducto.addEventListener(
+            "submit",
+            function (event) {
+
+                const variante = formularioProducto.querySelector(
+                    '[name="variante"]'
+                );
+
+                const cantidad = formularioProducto.querySelector(
+                    '[name="cantidad"]'
+                );
+
+
+                if (
+                    variante &&
+                    !variante.value
+                ) {
+
+                    event.preventDefault();
+
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Selecciona una variante",
+                        text: "Debes seleccionar una variante antes de agregar el producto.",
+                        confirmButtonText: "Entendido",
+                        confirmButtonColor: "#df6d86"
+                    });
+
+                    variante.focus();
+
+                    return;
+                }
+
+
+                if (
+                    cantidad &&
+                    (
+                        cantidad.value === "" ||
+                        Number(cantidad.value) < 1
+                    )
+                ) {
+
+                    event.preventDefault();
+
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Cantidad inválida",
+                        text: "La cantidad debe ser como mínimo 1.",
+                        confirmButtonText: "Entendido",
+                        confirmButtonColor: "#df6d86"
+                    });
+
+                    cantidad.focus();
+
+                    return;
+                }
+
+
+                event.preventDefault();
+
+
+                Swal.fire({
+                    icon: "question",
+                    title: "¿Agregar producto?",
+                    text: "El producto se agregará al kit.",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, agregar",
+                    cancelButtonText: "Cancelar",
+                    confirmButtonColor: "#df6d86",
+                    cancelButtonColor: "#6b7280",
+                    reverseButtons: true
+                }).then((resultado) => {
+
+                    if (resultado.isConfirmed) {
+                        formularioProducto.submit();
+                    }
+
+                });
+
+            }
+        );
+
+    });
+
+
+});
+</script>
+
+<script src="{% static 'js/kits.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/kits.js' %}"></script>
+
+</div>
+
+{% endblock %}

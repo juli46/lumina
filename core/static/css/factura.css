@@ -1,0 +1,373 @@
+/* =====================================================================
+   LÚMINA — FACTURA
+   Mismos tokens que checkout.css: crema cálido + rosa firma +
+   ciruela profundo + destello dorado.
+   ===================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --lum-cream:        #FBF4EE;
+    --lum-cream-soft:   #FFFCF9;
+    --lum-blush:        #F6E3E8;
+    --lum-rose:         #DF6D86;
+    --lum-rose-deep:    #C24F6B;
+    --lum-plum:         #4A2536;
+    --lum-plum-soft:    #7A4A5C;
+    --lum-ink:          #2E1B22;
+    --lum-gold:         #C9A24B;
+    --lum-line:         #EAD9CF;
+    --lum-white:        #FFFFFF;
+    --lum-green:        #3F8F5F;
+
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 22px;
+    --shadow-card: 0 2px 0 rgba(74, 37, 54, 0.04), 0 18px 40px -28px rgba(74, 37, 54, 0.28);
+}
+
+/* =====================================================================
+   BASE
+   ===================================================================== */
+
+.factura-page {
+    background:
+        radial-gradient(1100px 460px at 85% -10%, var(--lum-blush) 0%, transparent 60%),
+        var(--lum-cream);
+    min-height: 100vh;
+    padding: 56px 24px 96px;
+    color: var(--lum-ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    justify-content: center;
+}
+
+.factura-page * {
+    box-sizing: border-box;
+}
+
+.factura-card {
+    width: 100%;
+    max-width: 780px;
+    background: var(--lum-cream-soft);
+    border: 1px solid var(--lum-line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 40px 44px 44px;
+}
+
+/* =====================================================================
+   ENCABEZADO
+   ===================================================================== */
+
+.factura-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding-bottom: 26px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid var(--lum-line);
+}
+
+.factura-eyebrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--lum-rose-deep);
+    margin-bottom: 8px;
+}
+
+.factura-header h1 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    color: var(--lum-plum);
+    margin: 0;
+    position: relative;
+    padding-bottom: 8px;
+}
+
+.factura-header h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 70px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--lum-gold), var(--lum-rose) 70%, transparent);
+}
+
+.factura-header p {
+    margin: 12px 0 0;
+    font-size: 0.86rem;
+    color: var(--lum-plum-soft);
+}
+
+.factura-estado {
+    flex-shrink: 0;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.factura-estado-pagado {
+    background: rgba(63, 143, 95, 0.14);
+    color: var(--lum-green);
+}
+
+.factura-estado-pendiente {
+    background: rgba(201, 162, 75, 0.16);
+    color: var(--lum-gold);
+}
+
+.factura-estado-rechazado,
+.factura-estado-cancelado {
+    background: rgba(194, 79, 107, 0.14);
+    color: var(--lum-rose-deep);
+}
+
+/* =====================================================================
+   TABLA DE PRODUCTOS
+   ===================================================================== */
+
+.factura-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 28px;
+}
+
+.factura-tabla thead th {
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lum-plum-soft);
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--lum-line);
+}
+
+.factura-tabla thead th:not(:first-child),
+.factura-tabla tbody td:not(:first-child) {
+    text-align: right;
+}
+
+.factura-tabla tbody td {
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--lum-line);
+    font-size: 0.92rem;
+    vertical-align: top;
+}
+
+.factura-tabla tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.factura-tabla tbody td:first-child strong {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--lum-plum);
+    margin-bottom: 2px;
+}
+
+.factura-tabla tbody td:first-child span {
+    font-size: 0.8rem;
+    color: var(--lum-plum-soft);
+}
+
+.factura-tabla tbody td:nth-child(4) {
+    color: var(--lum-rose-deep);
+    font-weight: 600;
+}
+
+.factura-tabla tbody td:last-child {
+    font-weight: 600;
+    color: var(--lum-plum);
+}
+
+/* =====================================================================
+   RESUMEN
+   ===================================================================== */
+
+.factura-resumen {
+    background: var(--lum-white);
+    border: 1px solid var(--lum-line);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+}
+
+.factura-linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    font-size: 0.9rem;
+    color: var(--lum-plum-soft);
+}
+
+.factura-linea strong {
+    color: var(--lum-ink);
+    font-weight: 600;
+}
+
+.factura-descuento {
+    color: var(--lum-rose-deep);
+}
+
+.factura-descuento strong {
+    color: var(--lum-rose-deep);
+}
+
+.factura-resumen hr {
+    border: none;
+    border-top: 1px solid var(--lum-line);
+    margin: 12px 0;
+}
+
+.factura-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.factura-total strong:first-child {
+    font-size: 0.95rem;
+    color: var(--lum-plum);
+}
+
+.factura-total strong:last-child {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    background: linear-gradient(100deg, var(--lum-plum) 30%, var(--lum-rose-deep) 60%, var(--lum-gold) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* =====================================================================
+   PAGO
+   ===================================================================== */
+
+.factura-pago {
+    margin-bottom: 8px;
+}
+
+.factura-pago h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--lum-plum);
+    margin: 0 0 12px;
+}
+
+/* =====================================================================
+   BOTON IMPRIMIR
+   ===================================================================== */
+
+.factura-imprimir {
+    margin-top: 24px;
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(100deg, var(--lum-rose-deep), var(--lum-rose) 55%, var(--lum-gold));
+    color: var(--lum-white);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.factura-imprimir:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px -16px rgba(194, 79, 107, 0.5);
+}
+
+.factura-imprimir:focus-visible {
+    outline: 3px solid var(--lum-gold);
+    outline-offset: 3px;
+}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+
+@media (max-width: 640px) {
+    .factura-card {
+        padding: 28px 22px 32px;
+    }
+
+    .factura-header {
+        flex-direction: column;
+    }
+
+    .factura-tabla thead {
+        display: none;
+    }
+
+    .factura-tabla tbody tr {
+        display: flex;
+        flex-direction: column;
+        padding: 14px 0;
+        gap: 4px;
+    }
+
+    .factura-tabla tbody td {
+        padding: 2px 0;
+        border-bottom: none;
+        text-align: left !important;
+    }
+
+    .factura-tabla tbody tr {
+        border-bottom: 1px dashed var(--lum-line);
+    }
+}
+
+/* =====================================================================
+   IMPRESIÓN — oculta cabecera/footer del sitio y el botón
+   ===================================================================== */
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .factura-card,
+    .factura-card * {
+        visibility: visible;
+    }
+
+    .factura-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        box-shadow: none;
+        border: none;
+    }
+
+    .factura-imprimir {
+        display: none;
+    }
+
+    .factura-page {
+        background: none;
+        padding: 0;
+    }
+}

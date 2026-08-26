@@ -1,0 +1,197 @@
+{% extends 'core/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/blog.css' %}">
+
+<div class="config-container">
+
+    <h1>Gestión de Blog</h1>
+
+    <!-- ===================== FORMULARIO ===================== -->
+    <div class="config-card">
+
+        <h2>
+            {% if blog_edit %}
+                Editar
+            {% else %}
+                Crear Artículo
+            {% endif %}
+        </h2>
+    <br>
+        <form method="POST" enctype="multipart/form-data" id="blogForm">
+            {% csrf_token %}
+
+            <!-- TITULO -->
+            <input type="text"
+                   name="titulo"
+                   placeholder="Título"
+                   value="{{ blog_edit.titulo|default:'' }}"
+                   required>
+
+            <!-- RESUMEN -->
+            <textarea name="resumen" placeholder="Resumen" required>
+{{ blog_edit.resumen|default:'' }}
+            </textarea>
+
+            <!-- PORTADA ACTUAL -->
+            {% if blog_edit.portada %}
+                <img src="{{ blog_edit.portada.url }}" style="max-width:150px; margin:10px 0;">
+            {% endif %}
+
+            <label for="portada">
+            Imagen de portada (obligatoria al crear)
+            </label>
+
+            <small style="display:block; color:gray; margin-bottom:8px;">
+                Solo imágenes (.jpg, .jpeg, .png, .webp)
+            </small>
+
+            <input type="file"
+                   name="portada"
+                   id="portada"
+                   accept="image/*">
+
+            <!-- ESTADO -->
+            <select name="publicado" id="estadoPublicacion">
+                <option value="False"
+                    {% if blog_edit and not blog_edit.publicado %}selected{% endif %}>
+                    Borrador
+                </option>
+
+                <option value="True"
+                    {% if blog_edit and blog_edit.publicado %}selected{% endif %}>
+                    Publicar
+                </option>
+            </select>
+
+            <hr>
+
+            <!-- ===================== SECCIONES ===================== -->
+            <h3>Secciones</h3>
+
+            <div id="secciones-container">
+
+                {% for s in secciones %}
+                    <div class="seccion">
+
+                        <input type="hidden"
+                               name="seccion-{{ forloop.counter0 }}-id"
+                               value="{{ s.id }}">
+
+                        <input type="text"
+                               name="seccion-{{ forloop.counter0 }}-subtitulo"
+                               value="{{ s.subtitulo }}"
+                               placeholder="Subtítulo">
+
+                        <textarea name="seccion-{{ forloop.counter0 }}-contenido">
+{{ s.contenido }}
+                        </textarea>
+
+                        {% if s.imagen %}
+                            <img src="{{ s.imagen.url }}" style="max-width:120px; margin:5px 0;">
+                        {% endif %}
+
+                        <input type="file"
+                               name="seccion-{{ forloop.counter0 }}-imagen"
+                               accept="image/*">
+
+                    </div>
+                {% endfor %}
+
+            </div>
+
+            <button type="button" onclick="agregarSeccion()">
+                ➕ Agregar sección
+            </button>
+
+            <br><br>
+
+            <button type="submit">Guardar blog</button>
+        </form>
+
+    </div>
+     <br>
+    <!-- ===================== PUBLICADOS ===================== -->
+    <h2>🟢 Publicados</h2>
+
+    <div class="borradores-grid">
+
+        {% for blog in blogs_publicados %}
+        <div class="blog-card">
+
+            {% if blog.portada %}
+                <img src="{{ blog.portada.url }}" alt="{{ blog.titulo }}">
+            {% endif %}
+
+            <h3>{{ blog.titulo }}</h3>
+            <p>{{ blog.resumen }}</p>
+
+
+            <a href="{% url 'editar_blog' blog.id %}" class="btn-edit">
+                ✏️ Editar
+            </a>
+
+            <a href="{% url 'eliminar_blog' blog.id %}"
+               class="btn-delete"
+               onclick="return confirmarEliminar(event, this)">
+                🗑 Eliminar
+            </a>
+
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>🔵 Aún no hay publicaciones</p>
+            <small>Cuando publiques un blog aparecerá aquí ✨</small>
+        </div>
+        {% endfor %}
+
+    </div>
+    <br>
+    <!-- ===================== BORRADORES ===================== -->
+    <h2>🧾 Borradores guardados</h2>
+
+    <div class="borradores-grid">
+
+        {% for blog in blogs_borrador %}
+        <div class="blog-card">
+
+            {% if blog.portada %}
+                <img src="{{ blog.portada.url }}" alt="{{ blog.titulo }}">
+            {% endif %}
+
+            <h3>{{ blog.titulo }}</h3>
+            <p>{{ blog.resumen }}</p>
+
+            <a href="{% url 'editar_blog' blog.id %}" class="btn-edit">
+                ✏️ Editar borrador
+            </a>
+
+            <a href="{% url 'publicar_blog' blog.id %}"
+               class="btn-publish"
+               onclick="return confirmarPublicar(event, this)">
+                🚀 Publicar
+            </a>
+
+            <a href="{% url 'eliminar_blog' blog.id %}"
+               class="btn-delete"
+               onclick="return confirmarEliminar(event, this)">
+                🗑 Eliminar
+            </a>
+
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>🟡 No tienes borradores aún</p>
+            <small>Crea tu primer blog y lo verás aparecer aquí 🌸</small>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/blog.js' %}"></script>
+
+{% endblock %}

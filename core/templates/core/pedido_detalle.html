@@ -1,0 +1,506 @@
+{% extends "core/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/pedido_detalle.css' %}">
+
+<section class="pedido-detalle-page">
+
+    <div class="detalle-top">
+        <div>
+            <span class="detalle-label">DETALLE DEL PEDIDO</span>
+            <h1>Pedido {{ pedido.referencia }}</h1>
+            <p>Realizado el {{ pedido.creado|date:"d/m/Y" }} a las {{ pedido.creado|date:"h:i A" }}</p>
+        </div>
+
+        <div class="detalle-estados-top">
+            <div class="detalle-estado">
+                <span class="estado-label">Estado del pago</span>
+                <span class="pedido-estado estado-{{ pedido.estado|lower }}">
+                    {{ pedido.get_estado_display }}
+                </span>
+            </div>
+
+            <div class="detalle-estado">
+                <span class="estado-label">Estado del envío</span>
+                <span class="pedido-estado estado-{{ pedido.estado_envio|lower }}">
+                    {{ pedido.get_estado_envio_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="detalle-mensajes">
+        {% for message in messages %}
+        <div class="mensaje mensaje-{{ message.tags }}">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="detalle-grid">
+
+        <!-- CLIENTE -->
+        <article class="detalle-card">
+            <div class="detalle-card-header">
+                <div class="detalle-icon">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <h2>Cliente</h2>
+                    <span>Información del comprador</span>
+                </div>
+            </div>
+
+            <div class="cliente-detalle">
+                <div class="cliente-avatar">
+                    {% if pedido.usuario.foto %}
+                    <img src="{{ pedido.usuario.foto.url }}" alt="{{ pedido.usuario.username }}">
+                    {% else %}
+                    <i class="fa-solid fa-user"></i>
+                    {% endif %}
+                </div>
+
+                <div class="cliente-info">
+                    <strong>{{ pedido.usuario.username }}</strong>
+                    <span><i class="fa-solid fa-envelope"></i> {{ pedido.usuario.email }}</span>
+                    {% if pedido.usuario.telefono %}
+                    <span><i class="fa-solid fa-phone"></i> {{ pedido.usuario.telefono }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+
+        <!-- DIRECCIÓN DE ENTREGA -->
+        <article class="detalle-card">
+            <div class="detalle-card-header">
+                <div class="detalle-icon">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <div>
+                    <h2>Dirección de entrega</h2>
+                    <span>Datos de envío del pedido</span>
+                </div>
+            </div>
+
+            {% if pedido.direccion_texto %}
+            <div class="cliente-info">
+                <strong>{{ pedido.direccion_nombre_receptor }}</strong>
+                <span>{{ pedido.direccion_texto }}</span>
+                <span>{{ pedido.direccion_ciudad }}, {{ pedido.direccion_departamento }}</span>
+                {% if pedido.direccion_codigo_postal %}
+                <span>Código postal: {{ pedido.direccion_codigo_postal }}</span>
+                {% endif %}
+                <span><i class="fa-solid fa-phone"></i> {{ pedido.direccion_telefono }}</span>
+            </div>
+            {% else %}
+            <div class="sin-pago">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <p>Este pedido no tiene una dirección de entrega registrada.</p>
+            </div>
+            {% endif %}
+        </article>
+
+        <!-- RESUMEN -->
+        <article class="detalle-card">
+            <div class="detalle-card-header">
+                <div class="detalle-icon">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div>
+                    <h2>Resumen</h2>
+                    <span>Información económica</span>
+                </div>
+            </div>
+
+            <div class="resumen-detalle">
+                <div>
+                    <span>Subtotal al detal</span>
+                    <strong>${{ pedido.subtotal_detalle|floatformat:0 }}</strong>
+                </div>
+
+                {% if pedido.descuento > 0 %}
+                <div class="descuento-detalle">
+                    <span>Tu ahorro</span>
+                    <strong>-${{ pedido.descuento|floatformat:0 }}</strong>
+                </div>
+
+                <div>
+                    <span>Subtotal con descuento</span>
+                    <strong>${{ pedido.subtotal|floatformat:0 }}</strong>
+                </div>
+
+                {% if pedido.nivel_precio %}
+                <div class="descuento-motivo">
+                    <span>Nivel aplicado</span>
+                    <strong>{{ pedido.nivel_precio }}</strong>
+                </div>
+                {% endif %}
+
+                {% if pedido.porcentaje_descuento %}
+                <div class="descuento-detalle descuento-porcentaje">
+                    <span>Margen aplicado</span>
+                    <strong>{{ pedido.porcentaje_descuento|floatformat:0 }}%</strong>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                <div>
+                    <span>Envío</span>
+                    <strong>${{ pedido.costo_envio|floatformat:0 }}</strong>
+                </div>
+
+                <hr>
+
+                <div class="total-detalle">
+                    <span>Total</span>
+                    <strong>${{ pedido.total|floatformat:0 }}</strong>
+                </div>
+            </div>
+        </article>
+
+    </div>
+
+    <!-- PRODUCTOS -->
+    <article class="detalle-card productos-detalle">
+        <div class="detalle-card-header">
+            <div class="detalle-icon">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <div>
+                <h2>Productos del pedido</h2>
+                <span>{{ pedido.items.all|length }} producto{{ pedido.items.all|length|pluralize }}</span>
+            </div>
+        </div>
+
+        <div class="productos-tabla">
+            <div class="producto-fila producto-cabecera">
+                <span>Producto</span>
+                <span>Precio</span>
+                <span>Cantidad</span>
+                <span>Subtotal</span>
+            </div>
+
+            {% for item in pedido.items.all %}
+            <div class="producto-fila">
+                <div class="producto-nombre">
+                    <div class="producto-icono">
+                        {% if item.kit %}
+                        <i class="fa-solid fa-gift"></i>
+                        {% else %}
+                        <i class="fa-solid fa-box"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>{{ item.producto_nombre }}</strong>
+                        {% if item.kit %}
+                        <span class="kit-badge-tabla">Kit</span>
+                        {% endif %}
+
+                        {% if item.variante_nombre %}
+                        <small>Tono: {{ item.variante_nombre }}</small>
+                        {% endif %}
+
+                        {% if item.kit and item.selecciones_kit.all %}
+                        <div class="kit-tonos-elegidos">
+                            <small class="kit-tonos-titulo">
+                                <i class="fa-solid fa-palette"></i> Tonos elegidos:
+                            </small>
+                            <ul>
+                                {% for seleccion in item.selecciones_kit.all %}
+                                <li>
+                                    <strong>{{ seleccion.producto_nombre }}:</strong>
+                                    {{ seleccion.variante_nombre }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="producto-precio">
+                    {% if item.precio_original > item.precio_unitario %}
+                    <small>${{ item.precio_original|floatformat:0 }}</small>
+                    {% endif %}
+                    <strong>${{ item.precio_unitario|floatformat:0 }}</strong>
+
+                    {% if item.descuento > 0 %}
+                    <span class="producto-ahorro">Ahorras ${{ item.descuento|floatformat:0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="producto-cantidad">
+                    <span>x{{ item.cantidad }}</span>
+                </div>
+
+                <div class="producto-subtotal">
+                    {% if item.subtotal_detalle > item.subtotal %}
+                    <small>${{ item.subtotal_detalle|floatformat:0 }}</small>
+                    {% endif %}
+                    <strong>${{ item.subtotal|floatformat:0 }}</strong>
+                </div>
+            </div>
+            {% empty %}
+            <div class="productos-vacios">
+                <i class="fa-solid fa-box-open"></i>
+                <p>Este pedido no tiene productos registrados.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </article>
+
+    <!-- PAGO + ESTADO ENVÍO -->
+    <div class="detalle-grid">
+
+        <article class="detalle-card">
+            <div class="detalle-card-header">
+                <div class="detalle-icon pago-icon">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <div>
+                    <h2>Información del pago</h2>
+                    <span>Datos de la transacción</span>
+                </div>
+            </div>
+
+            {% if pedido.pago %}
+            <div class="pago-detalle">
+                <div class="dato-pago">
+                    <span>Estado</span>
+                    <strong class="pago-estado pago-{{ pedido.pago.estado|lower }}">
+                        {{ pedido.pago.get_estado_display }}
+                    </strong>
+                </div>
+
+                <div class="dato-pago">
+                    <span>Método de pago</span>
+                    <strong>{{ pedido.pago.metodo_pago|default:"No registrado" }}</strong>
+                </div>
+
+                <div class="dato-pago">
+                    <span>Monto</span>
+                    <strong>${{ pedido.pago.monto|floatformat:0 }}</strong>
+                </div>
+
+                {% if pedido.pago.transaccion_id %}
+                <div class="dato-pago">
+                    <span>ID de transacción</span>
+                    <code>{{ pedido.pago.transaccion_id }}</code>
+                </div>
+                {% endif %}
+
+                {% if pedido.pago.referencia_wompi %}
+                <div class="dato-pago">
+                    <span>Referencia Wompi</span>
+                    <code>{{ pedido.pago.referencia_wompi }}</code>
+                </div>
+                {% endif %}
+
+                <div class="dato-pago">
+                    <span>Fecha</span>
+                    <strong>{{ pedido.pago.creado|date:"d/m/Y H:i" }}</strong>
+                </div>
+            </div>
+            {% else %}
+            <div class="sin-pago">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <p>Este pedido todavía no tiene un registro de pago.</p>
+            </div>
+            {% endif %}
+        </article>
+
+        <article class="detalle-card">
+            <div class="detalle-card-header">
+                <div class="detalle-icon estado-icon">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </div>
+                <div>
+                    <h2>Estado del envío</h2>
+                    <span>Administración logística</span>
+                </div>
+            </div>
+
+            {% if pedido.numero_guia %}
+            <div class="pago-detalle guia-actual">
+                <div class="dato-pago">
+                    <span>Transportadora</span>
+                    <strong>{{ pedido.transportadora }}</strong>
+                </div>
+                <div class="dato-pago">
+                    <span>Número de guía</span>
+                    <code>{{ pedido.numero_guia }}</code>
+                </div>
+                {% if pedido.fecha_envio %}
+                <div class="dato-pago">
+                    <span>Fecha de envío</span>
+                    <strong>{{ pedido.fecha_envio|date:"d/m/Y H:i" }}</strong>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'dashboard_pedido_estado' pedido.id %}" class="estado-form" id="form-estado" novalidate>
+                {% csrf_token %}
+
+                <div class="campo-grupo">
+                    <label for="estado_envio">Cambiar estado de envío</label>
+
+                    <select name="estado_envio" id="estado_envio">
+                        {% for valor, nombre in pedido.ESTADOS_ENVIO %}
+                        <option value="{{ valor }}" {% if pedido.estado_envio == valor %}selected{% endif %}>
+                            {{ nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <span class="campo-error" id="error-estado" hidden>
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        El pago aún no está aprobado. No puedes marcar el pedido como "Enviado" hasta que esté en estado Pagado.
+                    </span>
+                </div>
+
+                <div id="campos-envio" class="campos-envio-wrapper" hidden>
+
+                    <div class="campo-grupo">
+                        <label for="numero_guia">Número de guía</label>
+                        <input type="text" name="numero_guia" id="numero_guia" value="{{ pedido.numero_guia }}" placeholder="Ej. 1234567890">
+                        <span class="campo-error" id="error-guia" hidden>
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            El número de guía es obligatorio para marcar el pedido como enviado.
+                        </span>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="transportadora">Transportadora</label>
+                        <input type="text" name="transportadora" id="transportadora" value="{{ pedido.transportadora }}" placeholder="Ej. Servientrega, Coordinadora...">
+                        <span class="campo-error" id="error-transportadora" hidden>
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            La transportadora es obligatoria para marcar el pedido como enviado.
+                        </span>
+                    </div>
+
+                </div>
+
+                <button type="submit" id="btn-guardar-estado">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Guardar estado
+                </button>
+            </form>
+        </article>
+
+    </div>
+
+    <div class="detalle-footer">
+        <a href="{% url 'dashboard_pedidos' %}" class="btn-volver">
+            <i class="fa-solid fa-arrow-left"></i>
+            Volver a pedidos
+        </a>
+
+        <a href="{% url 'factura_pedido' pedido.id %}" class="btn-factura">
+            <i class="fa-solid fa-file-invoice"></i>
+            Ver factura
+        </a>
+    </div>
+
+</section>
+
+<script>
+(function () {
+    const pagoEstado = '{{ pedido.estado }}';
+
+    const form = document.getElementById('form-estado');
+    const selectEstadoEnvio = document.getElementById('estado_envio');
+    const camposEnvio = document.getElementById('campos-envio');
+    const inputGuia = document.getElementById('numero_guia');
+    const inputTransportadora = document.getElementById('transportadora');
+
+    const errorEstado = document.getElementById('error-estado');
+    const errorGuia = document.getElementById('error-guia');
+    const errorTransportadora = document.getElementById('error-transportadora');
+
+    function esEnviado() {
+        return selectEstadoEnvio.value === 'ENVIADO';
+    }
+
+    function mostrarCampoError(input, errorEl) {
+        input.classList.add('input-error');
+        errorEl.hidden = false;
+    }
+
+    function limpiarCampoError(input, errorEl) {
+        input.classList.remove('input-error');
+        errorEl.hidden = true;
+    }
+
+    function toggleCamposEnvio() {
+        if (esEnviado()) {
+            camposEnvio.hidden = false;
+            inputGuia.required = true;
+            inputTransportadora.required = true;
+        } else {
+            camposEnvio.hidden = true;
+            inputGuia.required = false;
+            inputTransportadora.required = false;
+            limpiarCampoError(inputGuia, errorGuia);
+            limpiarCampoError(inputTransportadora, errorTransportadora);
+            errorEstado.hidden = true;
+            selectEstadoEnvio.classList.remove('input-error');
+        }
+    }
+
+    function validar() {
+        let valido = true;
+
+        if (esEnviado() && pagoEstado !== 'PAGADO') {
+            selectEstadoEnvio.classList.add('input-error');
+            errorEstado.hidden = false;
+            valido = false;
+        } else {
+            selectEstadoEnvio.classList.remove('input-error');
+            errorEstado.hidden = true;
+        }
+
+        if (esEnviado() && inputGuia.value.trim() === '') {
+            mostrarCampoError(inputGuia, errorGuia);
+            valido = false;
+        } else {
+            limpiarCampoError(inputGuia, errorGuia);
+        }
+
+        if (esEnviado() && inputTransportadora.value.trim() === '') {
+            mostrarCampoError(inputTransportadora, errorTransportadora);
+            valido = false;
+        } else {
+            limpiarCampoError(inputTransportadora, errorTransportadora);
+        }
+
+        return valido;
+    }
+
+    form.addEventListener('submit', function (e) {
+        if (!validar()) {
+            e.preventDefault();
+        }
+    });
+
+    inputGuia.addEventListener('input', function () {
+        if (inputGuia.value.trim() !== '') limpiarCampoError(inputGuia, errorGuia);
+    });
+
+    inputTransportadora.addEventListener('input', function () {
+        if (inputTransportadora.value.trim() !== '') limpiarCampoError(inputTransportadora, errorTransportadora);
+    });
+
+    selectEstadoEnvio.addEventListener('change', function () {
+        toggleCamposEnvio();
+        validar();
+    });
+
+    toggleCamposEnvio();
+})();
+</script>
+{% endblock %}

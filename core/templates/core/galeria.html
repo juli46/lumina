@@ -1,0 +1,134 @@
+{% extends 'core/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/galeria.css' %}">
+
+<div class="config-container">
+    <h1>Gestión de Galería</h1>
+
+    <!-- ===================== FORMULARIO ===================== -->
+    <div class="config-card">
+
+        <h2>
+            {% if galeria_edit %}
+            Editar Imagen
+            {% else %}
+            Agregar Imagen
+            {% endif %}
+        </h2>
+
+        <br>
+
+        <form id="galeriaForm" method="POST" enctype="multipart/form-data">
+            {% if galeria_edit %}
+            <input type="hidden" id="modoEdicion" value="1">
+            {% endif %}
+
+            {% csrf_token %}
+
+            <input type="text" name="titulo" placeholder="Título" value="{{ galeria_edit.titulo|default:'' }}" required>
+
+            <input type="text" name="categoria" placeholder="Categoría" value="{{ galeria_edit.categoria|default:'' }}"
+                required>
+
+            <textarea name="descripcion" placeholder="Descripción"
+                required>{{ galeria_edit.descripcion|default:'' }}</textarea>
+
+            <input type="text" name="tags" placeholder="Tags" value="{{ galeria_edit.tags|default:'' }}">
+
+            {% if galeria_edit.imagen %}
+            <img src="{{ galeria_edit.imagen.url }}" style="
+                    max-width:150px;
+                    margin:10px 0;
+                    border-radius:10px;
+                ">
+            {% endif %}
+
+            <label>
+                Imagen
+            </label>
+
+            <input type="file" name="imagen" accept="image/*">
+              
+            <button type="submit">
+
+                {% if galeria_edit %}
+                Actualizar Imagen
+                {% else %}
+                Guardar Imagen
+                {% endif %}
+
+            </button>
+
+        </form>
+
+    </div>
+
+    <br>
+
+    <!-- ===================== GALERÍA ===================== -->
+
+    <h2>Imágenes Registradas</h2>
+
+    <div class="borradores-grid">
+
+        {% for item in galeria_items %}
+
+        <div class="blog-card">
+
+            <img src="{{ item.imagen.url }}" alt="{{ item.titulo }}">
+
+            <div class="card-overlay">
+
+                <h3>{{ item.titulo }}</h3>
+
+
+                <small>{{ item.categoria }}</small>
+
+                {% if item.tags %}
+                <div class="tags">
+                    {{ item.tags }}
+                </div>
+                {% endif %}
+                <div class="card-actions">
+
+                    <a href="{% url 'editar_galeria' item.id %}" class="btn-edit">
+                        ✏️ Editar
+                    </a>
+
+                    <a href="{% url 'eliminar_galeria' item.id %}" class="btn-delete eliminar-galeria">
+
+                        🗑 Eliminar
+
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+
+            <p>📂 No hay imágenes registradas</p>
+
+            <small>
+                Agrega tu primera imagen para comenzar ✨
+            </small>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/galeria.js' %}"></script>
+
+{% endblock %}

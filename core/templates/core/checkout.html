@@ -1,0 +1,664 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+Finalizar compra | Lúmina
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="checkout-page">
+
+    <section class="checkout-header">
+        <span>FINALIZAR COMPRA</span>
+        <h1>Completa tu pedido</h1>
+        <p>Revisa tus productos y datos antes de realizar el pago.</p>
+    </section>
+
+    <section class="checkout-container">
+
+        <!-- PRODUCTOS -->
+        <div class="checkout-productos">
+
+            <h2>Tu pedido</h2>
+
+            {% for item in items %}
+            <article class="checkout-item">
+
+                <div class="checkout-item-info">
+
+                    <strong>{{ item.nombre }}</strong>
+
+                    {% if item.es_kit %}
+                    <span class="checkout-item-badge">Kit</span>
+                    {% elif item.variante.nombre_tono %}
+                    <span>Tono: {{ item.variante.nombre_tono }}</span>
+                    {% endif %}
+
+                    <span>Cantidad: {{ item.cantidad }}</span>
+
+                    {% if item.es_kit %}
+
+                    <span class="precio-mayorista">
+                        Precio del kit:
+                        <strong>${{ item.checkout_precio|floatformat:0 }}</strong>
+                    </span>
+
+                    {% if item.kit.ahorro > 0 %}
+                    <span class="checkout-ahorro">
+                        Ahorras (kit):
+                        <strong>${{ item.kit.ahorro|floatformat:0 }}</strong>
+                    </span>
+                    {% endif %}
+
+                    {% else %}
+
+                    <span class="precio-detalle">
+                        Precio al detal:
+                        <strong>${{ item.checkout_precio_detalle|floatformat:0 }}</strong>
+                    </span>
+
+                    <span class="precio-mayorista">
+                        Precio con descuento:
+                        <strong>${{ item.checkout_precio|floatformat:0 }}</strong>
+                    </span>
+
+                    {% if item.checkout_descuento > 0 %}
+                    <span class="checkout-ahorro">
+                        Ahorras:
+                        <strong>${{ item.checkout_descuento|floatformat:0 }}</strong>
+                    </span>
+                    {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+                <div class="checkout-item-precio">
+
+                    {% if not item.es_kit and item.checkout_descuento > 0 %}
+                    <span class="precio-anterior">
+                        ${{ item.checkout_subtotal_detalle|floatformat:0 }}
+                    </span>
+                    {% endif %}
+
+                    <strong>${{ item.checkout_subtotal|floatformat:0 }}</strong>
+
+                </div>
+
+            </article>
+            {% empty %}
+            <p>Tu carrito está vacío.</p>
+            {% endfor %}
+
+        </div>
+
+        <!-- DIRECCIÓN -->
+        <section class="checkout-direcciones">
+
+            <h2>Dirección de entrega</h2>
+
+            {% if direcciones %}
+            <div class="direcciones-lista">
+
+                {% for direccion in direcciones %}
+                <label class="direccion-opcion">
+
+                    <input
+                        type="radio"
+                        name="direccion"
+                        value="{{ direccion.id }}"
+                        {% if direccion.principal %}checked{% endif %}
+                    >
+
+                    <div>
+                        <strong>{{ direccion.nombre_receptor }}</strong>
+                        <span>{{ direccion.direccion }}</span>
+                        <span>{{ direccion.ciudad }}, {{ direccion.departamento }}</span>
+
+                        {% if direccion.codigo_postal %}
+                        <span>Código postal: {{ direccion.codigo_postal }}</span>
+                        {% endif %}
+
+                        <span>Teléfono: {{ direccion.telefono }}</span>
+                    </div>
+
+                </label>
+                {% endfor %}
+
+            </div>
+            {% else %}
+            <div class="checkout-sin-direccion">
+                <p>No tienes direcciones registradas.</p>
+                <a href="{% url 'mi_cuenta' %}">Agregar dirección</a>
+            </div>
+            {% endif %}
+
+        </section>
+
+        <!-- RESUMEN -->
+        <aside class="checkout-resumen">
+
+            <h2>Resumen</h2>
+
+            <div class="checkout-linea">
+                <span>Subtotal al detal</span>
+                <strong id="resumen-subtotal-detalle">${{ subtotal_detalle|floatformat:0 }}</strong>
+            </div>
+
+            <div class="checkout-linea checkout-descuento" id="linea-descuento" {% if not descuento > 0 %}style="display:none;"{% endif %}>
+                <span>Tu ahorro</span>
+                <strong id="resumen-descuento">-${{ descuento|floatformat:0 }}</strong>
+            </div>
+
+            <div class="checkout-linea">
+                <span>Subtotal con descuento</span>
+                <strong id="resumen-subtotal">${{ subtotal|floatformat:0 }}</strong>
+            </div>
+
+            <div class="checkout-nivel" id="linea-nivel" {% if not nivel_precio %}style="display:none;"{% endif %}>
+                <span>Nivel aplicado</span>
+                <strong id="resumen-nivel">{{ nivel_precio }}</strong>
+            </div>
+
+            <div class="checkout-linea" id="linea-porcentaje" {% if not porcentaje_descuento %}style="display:none;"{% endif %}>
+                <span>Margen aplicado</span>
+                <strong id="resumen-porcentaje">{{ porcentaje_descuento|floatformat:0 }}%</strong>
+            </div>
+
+            <div class="checkout-linea">
+                <span>Envío</span>
+                <strong id="resumen-envio">
+                    {% if direccion_seleccionada_id %}${{ envio|floatformat:0 }}{% else %}Selecciona una dirección{% endif %}
+                </strong>
+            </div>
+
+            <hr>
+
+            <div class="checkout-total">
+                <strong>Total</strong>
+                <strong id="checkout-total">${{ total|floatformat:0 }}</strong>
+            </div>
+
+            <div class="checkout-ahorro-total" id="linea-ahorro-total" {% if not descuento > 0 %}style="display:none;"{% endif %}>
+                🎉 Estás ahorrando <strong id="resumen-ahorro-total">${{ descuento|floatformat:0 }}</strong> en esta compra.
+            </div>
+
+            <button type="button" id="btn-pagar-wompi" class="btn-pagar-wompi">
+                <span>Pagar ahora</span>
+                <i class="fa-solid fa-lock"></i>
+            </button>
+
+            <div class="checkout-seguridad">
+                <i class="fa-solid fa-shield-halved"></i>
+                <div>
+                    <strong>Pago seguro</strong>
+                    <span>Tu pago será procesado de forma segura mediante Wompi.</span>
+                </div>
+            </div>
+
+        </aside>
+
+    </section>
+
+</main>
+
+<!-- ================================
+     MODAL DE MENSAJES (Lúmina)
+================================= -->
+<div class="lumina-modal-overlay" id="luminaModalOverlay">
+    <div class="lumina-modal" role="alertdialog" aria-modal="true">
+
+        <div class="lumina-modal-icon" id="luminaModalIcon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h3 class="lumina-modal-titulo" id="luminaModalTitulo">Proceso de pago</h3>
+        <p class="lumina-modal-texto" id="luminaModalTexto">Mensaje</p>
+
+        <button type="button" class="lumina-modal-btn" id="luminaModalBtn">
+            Entendido
+        </button>
+
+    </div>
+</div>
+
+<!-- ================================
+     TOAST (mensajes ligeros, opcional)
+================================= -->
+<div class="lumina-toast" id="luminaToast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="luminaToastTexto"></span>
+</div>
+
+<!-- WOMPI -->
+<script src="https://checkout.wompi.co/widget.js"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // =====================================================
+    // ELEMENTOS
+    // =====================================================
+
+    const boton = document.getElementById("btn-pagar-wompi");
+
+    if (!boton) {
+        console.error("No se encontró el botón de pago.");
+        return;
+    }
+
+    const textoBoton = boton.querySelector("span");
+
+    // =====================================================
+    // MODAL DE MENSAJES (reemplaza alert()/Swal)
+    // =====================================================
+
+    const modalOverlay = document.getElementById("luminaModalOverlay");
+    const modalIcono = document.getElementById("luminaModalIcon");
+    const modalTitulo = document.getElementById("luminaModalTitulo");
+    const modalTexto = document.getElementById("luminaModalTexto");
+    const modalBtn = document.getElementById("luminaModalBtn");
+
+    const ESTILOS_MODAL = {
+        success: {
+            clase: "tipo-success",
+            icono: "fa-solid fa-check",
+            titulo: "¡Listo!"
+        },
+        error: {
+            clase: "tipo-error",
+            icono: "fa-solid fa-xmark",
+            titulo: "Algo salió mal"
+        },
+        warning: {
+            clase: "tipo-warning",
+            icono: "fa-solid fa-triangle-exclamation",
+            titulo: "Atención"
+        },
+        info: {
+            clase: "tipo-info",
+            icono: "fa-solid fa-circle-info",
+            titulo: "Proceso de pago"
+        }
+    };
+
+    function mostrarMensaje(mensaje, tipo = "warning") {
+
+        const estilo = ESTILOS_MODAL[tipo] || ESTILOS_MODAL.warning;
+
+        modalIcono.className = "lumina-modal-icon " + estilo.clase;
+        modalIcono.innerHTML = `<i class="${estilo.icono}"></i>`;
+        modalTitulo.textContent = estilo.titulo;
+        modalTexto.textContent = mensaje;
+
+        modalOverlay.classList.add("activo");
+    }
+
+    function cerrarModal() {
+        modalOverlay.classList.remove("activo");
+    }
+
+    modalBtn.addEventListener("click", cerrarModal);
+
+    modalOverlay.addEventListener("click", function (evento) {
+        if (evento.target === modalOverlay) {
+            cerrarModal();
+        }
+    });
+
+    document.addEventListener("keydown", function (evento) {
+        if (evento.key === "Escape" && modalOverlay.classList.contains("activo")) {
+            cerrarModal();
+        }
+    });
+
+    // =====================================================
+    // TOAST (para el aviso de "¡pago aprobado!" antes de redirigir)
+    // =====================================================
+
+    const toast = document.getElementById("luminaToast");
+    const toastTexto = document.getElementById("luminaToastTexto");
+
+    function mostrarToast(mensaje) {
+        toastTexto.textContent = mensaje;
+        toast.classList.add("activo");
+    }
+
+    // =====================================================
+    // CSRF
+    // =====================================================
+
+    function obtenerCSRF() {
+
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith("csrftoken=")) {
+                return decodeURIComponent(cookie.substring("csrftoken=".length));
+            }
+        }
+
+        return "";
+    }
+
+    // =====================================================
+    // FORMATEAR MONEDA
+    // =====================================================
+
+    function formatearMoneda(valor) {
+        return "$" + Math.round(valor).toLocaleString("es-CO");
+    }
+
+    // =====================================================
+    // ACTUALIZAR RESUMEN SEGÚN DIRECCIÓN
+    // =====================================================
+
+    async function actualizarResumen(direccionId) {
+
+        try {
+
+            const respuesta = await fetch("{% url 'calcular_checkout' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": obtenerCSRF(),
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ direccion_id: direccionId })
+            });
+
+            const datos = await respuesta.json();
+
+            if (!respuesta.ok || !datos.ok) {
+                console.error("No se pudo recalcular el resumen:", datos.mensaje);
+                return;
+            }
+
+            document.getElementById("resumen-subtotal-detalle").textContent =
+                formatearMoneda(datos.subtotal_detalle);
+
+            document.getElementById("resumen-subtotal").textContent =
+                formatearMoneda(datos.subtotal);
+
+            document.getElementById("resumen-envio").textContent =
+                formatearMoneda(datos.costo_envio);
+
+            document.getElementById("checkout-total").textContent =
+                formatearMoneda(datos.total);
+
+            document.getElementById("resumen-nivel").textContent = datos.nivel;
+
+            document.getElementById("resumen-porcentaje").textContent =
+                Math.round(datos.margen) + "%";
+
+            const lineaDescuento = document.getElementById("linea-descuento");
+            const lineaAhorroTotal = document.getElementById("linea-ahorro-total");
+
+            if (datos.descuento > 0) {
+                document.getElementById("resumen-descuento").textContent =
+                    "-" + formatearMoneda(datos.descuento);
+                document.getElementById("resumen-ahorro-total").textContent =
+                    formatearMoneda(datos.descuento);
+                lineaDescuento.style.display = "";
+                lineaAhorroTotal.style.display = "";
+            } else {
+                lineaDescuento.style.display = "none";
+                lineaAhorroTotal.style.display = "none";
+            }
+
+        } catch (error) {
+            console.error("Error al recalcular el resumen:", error);
+        }
+    }
+
+    // =====================================================
+    // ESCUCHAR CAMBIOS DE DIRECCIÓN
+    // =====================================================
+
+    document.querySelectorAll('input[name="direccion"]').forEach(function (radio) {
+        radio.addEventListener("change", function () {
+            actualizarResumen(this.value);
+        });
+    });
+
+    const direccionInicial = document.querySelector('input[name="direccion"]:checked');
+    if (direccionInicial) {
+        actualizarResumen(direccionInicial.value);
+    }
+
+    // =====================================================
+    // LEER RESPUESTA DEL SERVIDOR
+    // =====================================================
+
+    async function obtenerJSON(respuesta) {
+
+        const texto = await respuesta.text();
+
+        console.log("Respuesta del servidor:", respuesta.status, texto);
+
+        if (!texto || !texto.trim()) {
+            throw new Error(`El servidor respondió vacío. Código HTTP: ${respuesta.status}`);
+        }
+
+        try {
+            return JSON.parse(texto);
+        } catch (error) {
+
+            console.error("La respuesta NO es JSON:", texto);
+            console.error("Código HTTP:", respuesta.status);
+
+            if (texto.includes("<html") || texto.includes("<!DOCTYPE")) {
+                throw new Error(
+                    `El servidor devolvió HTML en lugar de JSON. Código HTTP: ${respuesta.status}. Revisa la consola y la terminal de Django.`
+                );
+            }
+
+            throw new Error(`El servidor devolvió una respuesta inválida. Código HTTP: ${respuesta.status}.`);
+        }
+    }
+
+    // =====================================================
+    // CONFIRMAR PEDIDO
+    // =====================================================
+
+    async function confirmarPedido(transactionId, reference, direccionId) {
+
+        console.log("Confirmando pedido:", { transactionId, reference, direccionId });
+
+        const respuesta = await fetch("{% url 'confirmar_pedido' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": obtenerCSRF(),
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                transaction_id: transactionId,
+                reference: reference,
+                direccion_id: direccionId
+            })
+        });
+
+        console.log("Respuesta confirmar_pedido:", respuesta.status, respuesta.statusText);
+
+        const datos = await obtenerJSON(respuesta);
+
+        console.log("Datos confirmar_pedido:", datos);
+
+        if (!respuesta.ok || !datos.ok) {
+            throw new Error(datos.mensaje || datos.message || "No se pudo confirmar el pedido.");
+        }
+
+        return datos;
+    }
+
+    // =====================================================
+    // BOTÓN PAGAR
+    // =====================================================
+
+    boton.addEventListener("click", async function () {
+
+        boton.disabled = true;
+        textoBoton.textContent = "Preparando pago...";
+
+        try {
+
+            const direccionSeleccionada = document.querySelector('input[name="direccion"]:checked');
+
+            if (!direccionSeleccionada) {
+                throw new Error("Selecciona una dirección de entrega antes de continuar.");
+            }
+
+            const direccionId = direccionSeleccionada.value;
+
+            console.log("Dirección seleccionada:", direccionId);
+
+            textoBoton.textContent = "Preparando pago...";
+
+            const respuesta = await fetch("{% url 'pago_checkout' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": obtenerCSRF(),
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ direccion_id: direccionId })
+            });
+
+            console.log("Respuesta pago_checkout:", respuesta.status);
+
+            const datos = await obtenerJSON(respuesta);
+
+            console.log("Datos recibidos de pago_checkout:", datos);
+
+            if (!respuesta.ok || !datos.ok) {
+                throw new Error(datos.mensaje || datos.message || "No fue posible iniciar el pago.");
+            }
+
+            if (!datos.public_key) {
+                throw new Error("No se recibió la llave pública de Wompi.");
+            }
+
+            if (!datos.referencia) {
+                throw new Error("No se recibió la referencia del pago.");
+            }
+
+            if (!datos.monto) {
+                throw new Error("No se recibió el monto del pago.");
+            }
+
+            if (!datos.firma_integridad) {
+                throw new Error("No se recibió la firma de integridad de Wompi.");
+            }
+
+            console.log("Creando WidgetCheckout...");
+
+            const checkout = new WidgetCheckout({
+                currency: datos.moneda,
+                amountInCents: Number(datos.monto),
+                reference: datos.referencia,
+                publicKey: datos.public_key,
+                signature: { integrity: datos.firma_integridad }
+            });
+
+            console.log("Abriendo Wompi...");
+
+            checkout.open(async function (resultado) {
+
+                console.log("Resultado completo de Wompi:", resultado);
+
+                if (!resultado || !resultado.transaction) {
+                    console.warn("Wompi no devolvió una transacción.", resultado);
+                    mostrarMensaje("No se recibió información de la transacción.", "warning");
+                    return;
+                }
+
+                const transaccion = resultado.transaction;
+                const transactionId = transaccion.id;
+                const estado = transaccion.status;
+
+                console.log("ID transacción:", transactionId);
+                console.log("Estado Wompi:", estado);
+
+                if (estado === "APPROVED") {
+
+                    try {
+
+                        textoBoton.textContent = "Confirmando pedido...";
+
+                        console.log("El pago fue aprobado. Confirmando pedido...");
+
+                        const confirmacion = await confirmarPedido(
+                            transactionId,
+                            datos.referencia,
+                            direccionId
+                        );
+
+                        console.log("Pedido confirmado:", confirmacion);
+
+                        mostrarToast("¡Pago aprobado! Tu pedido fue confirmado correctamente.");
+
+                        setTimeout(function () {
+                            window.location.href = "{% url 'mi_cuenta' %}";
+                        }, 1500);
+
+                    } catch (error) {
+
+                        console.error("Error confirmando pedido:", error);
+
+                        mostrarMensaje(
+                            "El pago fue aprobado por Wompi, pero ocurrió un problema al confirmar tu pedido. No vuelvas a pagar. Revisa la consola y la terminal de Django.",
+                            "error"
+                        );
+                    }
+
+                    return;
+                }
+
+                if (estado === "PENDING") {
+                    mostrarMensaje("Tu pago está pendiente de confirmación. No realices otro pago. Te avisaremos cuando sea aprobado.", "warning");
+                    return;
+                }
+
+                if (estado === "DECLINED") {
+                    mostrarMensaje("El pago fue rechazado. Puedes intentar nuevamente con otro método de pago.", "error");
+                    return;
+                }
+
+                if (estado === "VOIDED") {
+                    mostrarMensaje("La transacción fue anulada.", "warning");
+                    return;
+                }
+
+                mostrarMensaje("El pago no fue aprobado. Estado: " + estado, "warning");
+
+            });
+
+        } catch (error) {
+
+            console.error("Error en checkout:", error);
+            mostrarMensaje(error.message || "No fue posible procesar el pago.", "error");
+
+        } finally {
+
+            boton.disabled = false;
+            textoBoton.textContent = "Pagar ahora";
+        }
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

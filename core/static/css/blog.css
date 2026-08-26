@@ -1,0 +1,305 @@
+/* ===================== */
+/* CONTENEDOR GENERAL */
+/* ===================== */
+
+.config-container{
+    max-width: 1100px;
+    margin: auto;
+    padding: 32px 20px;
+    font-family: 'Poppins', sans-serif;
+    color: var(--text);
+}
+
+/* ===================== */
+/* TITULO */
+/* ===================== */
+
+h1{
+    font-size: 30px;
+    margin-bottom: 22px;
+    font-weight: 700;
+
+    background: linear-gradient(90deg, var(--primary), var(--lavender));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ===================== */
+/* CARD PRINCIPAL */
+/* ===================== */
+
+.config-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+
+    padding: 28px;
+    box-shadow: var(--shadow);
+
+    transition: .3s ease;
+}
+
+.config-card:hover{
+    transform: translateY(-2px);
+}
+
+/* ===================== */
+/* FORM */
+/* ===================== */
+
+form{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+input[type="text"],
+textarea,
+select{
+    width: 100%;
+    padding: 12px 14px;
+
+    border-radius: 12px;
+    border: 1px solid var(--border);
+
+    background: var(--card);
+    color: var(--text);
+
+    outline: none;
+    font-size: 14px;
+
+    transition: .25s ease;
+}
+
+textarea{
+    min-height: 110px;
+    resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+/* ===================== */
+/* BOTONES */
+/* ===================== */
+
+button{
+    border: none;
+    padding: 11px 16px;
+    border-radius: 12px;
+
+    cursor: pointer;
+    font-weight: 600;
+
+    transition: .25s ease;
+}
+
+button:hover{
+    transform: translateY(-2px);
+}
+
+/* principal */
+button[type="submit"]{
+    background: var(--primary);
+    color: #fff;
+}
+
+/* secundario */
+button[type="button"]{
+    background: var(--primary);
+    color: var(--card);
+}
+
+/* ===================== */
+/* SECCIONES */
+/* ===================== */
+
+#secciones-container{
+    margin-top: 10px;
+}
+
+.bloque-seccion{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    padding: 16px;
+    margin: 12px 0;
+
+    transition: .25s ease;
+}
+
+.bloque-seccion:hover{
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+/* ===================== */
+/* BORRADORES GRID */
+/* ===================== */
+
+.borradores-grid,
+.publicados-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 18px;
+}
+
+/* ===================== */
+/* BLOG CARD */
+/* ===================== */
+
+.blog-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+
+    border-radius: 16px;
+    padding: 14px;
+
+    box-shadow: var(--shadow);
+    transition: .25s ease;
+
+    overflow: hidden;
+}
+
+.blog-card:hover{
+    transform: translateY(-4px);
+    border-color: var(--primary);
+}
+
+/* imagen */
+.blog-card img{
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+/* textos */
+.blog-card h3{
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.blog-card p{
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+/* badge estado */
+.blog-card span{
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    background: color-mix(in srgb, var(--primary) 15%, transparent);
+    color: var(--primary);
+}
+
+/* ===================== */
+/* BOTONES CARD */
+/* ===================== */
+
+.btn-edit,
+.btn-publish,
+.btn-delete{
+    display: inline-block;
+    margin-top: 8px;
+
+    padding: 8px 12px;
+    border-radius: 10px;
+
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+
+    transition: .2s ease;
+}
+
+.btn-edit{
+    background: var(--primary);
+    color: white;
+}
+
+.btn-publish{
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.btn-delete{
+    background: color-mix(in srgb, var(--primary) 25%, red);
+    color: #fff;
+}
+
+.btn-edit:hover,
+.btn-publish:hover,
+.btn-delete:hover{
+    transform: scale(1.03);
+    opacity: 0.9;
+}
+
+/* ===================== */
+/* HR */
+/* ===================== */
+
+hr{
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 18px 0;
+}
+
+/* ===================== */
+/* ANIMACIÓN */
+/* ===================== */
+
+.blog-card{
+    animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.empty-state{
+    margin-top: 18px;
+    padding: 18px;
+
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+
+    background: color-mix(in srgb, var(--card) 85%, transparent);
+
+    text-align: center;
+
+    animation: fadeIn .25s ease;
+}
+
+.empty-state p{
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.empty-state small{
+    font-size: 12px;
+    opacity: 0.7;
+}

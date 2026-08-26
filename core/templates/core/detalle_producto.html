@@ -1,0 +1,1496 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+{{ producto.nombre }} | Lúmina
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/detalle_producto.css' %}">
+
+<div class="pagina-producto">
+
+    <!-- ==========================================
+         VOLVER AL CATÁLOGO + PRODUCTO
+    =========================================== -->
+
+    <section class="producto-detalle">
+
+        <a href="{% url 'catalogo' %}" class="volver-catalogo">
+            <i class="fa-solid fa-arrow-left"></i>
+            Volver al catálogo
+        </a>
+
+
+        <div class="producto-detalle-grid">
+
+
+            <!-- ======================================
+                 GALERÍA DE IMÁGENES
+            ======================================= -->
+
+            <div class="producto-galeria">
+
+                <div class="galeria-principal">
+
+                    {% with imagen_principal=producto.imagenes.all|first %}
+
+                    {% if imagen_principal %}
+
+                    <img id="imagenPrincipal" src="{{ imagen_principal.imagen.url }}" alt="{{ producto.nombre }}">
+
+                    {% else %}
+
+                    <div class="producto-sin-imagen">
+
+                        <i class="fa-regular fa-image"></i>
+
+                        <span>
+                            Sin imagen
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% endwith %}
+
+                </div>
+
+
+                <!-- MINIATURAS -->
+
+                {% if producto.imagenes.all %}
+
+                <div class="galeria-miniaturas">
+
+                    {% for imagen in producto.imagenes.all %}
+
+                    <button type="button" class="miniatura {% if forloop.first %}active{% endif %}"
+                        data-imagen="{{ imagen.imagen.url }}"
+                        aria-label="Ver imagen {{ forloop.counter }} de {{ producto.nombre }}">
+
+                        <img src="{{ imagen.imagen.url }}" alt="{{ producto.nombre }}" loading="lazy">
+
+                    </button>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- ======================================
+                 INFORMACIÓN
+            ======================================= -->
+
+            <div class="producto-detalle-info">
+
+
+                <!-- MARCA -->
+
+                {% if producto.marca %}
+
+                <span class="producto-marca">
+
+                    {{ producto.marca.nombre }}
+
+                </span>
+
+                {% endif %}
+
+
+                <!-- NOMBRE -->
+
+                <h1>
+                    {{ producto.nombre }}
+                </h1>
+
+
+                <!-- PRECIO NORMAL -->
+
+                <div class="producto-precio-principal">
+
+                    ${{ producto.precio_base|floatformat:0 }}
+
+                </div>
+
+
+                <!-- DESCRIPCIÓN -->
+
+                {% if producto.descripcion %}
+
+                <div class="producto-descripcion">
+
+                    <h2>
+                        Descripción
+                    </h2>
+
+                    <p>
+                        {{ producto.descripcion|linebreaksbr }}
+                    </p>
+
+                </div>
+
+                {% endif %}
+                <!-- INFORMACIÓN EXTRA -->
+
+                {% if producto.info_extra %}
+
+                <div class="producto-info-extra">
+
+                    <button type="button" class="info-extra-toggle" onclick="toggleInfoExtra(this)"
+                        aria-expanded="false">
+                        <span>
+                            <i class="fa-solid fa-circle-info"></i>
+                            Información extra
+                        </span>
+
+                        <i class="fa-solid fa-chevron-down info-extra-icon"></i>
+                    </button>
+
+                    <div class="info-extra-contenido">
+                        <p>
+                            {{ producto.info_extra|linebreaksbr }}
+                        </p>
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+                <!-- ==================================
+                     DATOS DEL PRODUCTO
+                =================================== -->
+
+                <div class="producto-datos">
+
+
+                    {% if producto.categoria %}
+
+                    <div class="producto-dato">
+
+                        <span>
+                            Categoría
+                        </span>
+
+                        <strong>
+                            {{ producto.categoria.nombre }}
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    {% if producto.coleccion %}
+
+                    <div class="producto-dato">
+
+                        <span>
+                            Colección
+                        </span>
+
+                        <strong>
+                            {{ producto.coleccion.nombre }}
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+
+                </div>
+
+                <!-- ==================================
+                     VARIANTES
+                =================================== -->
+
+                {% if producto.variantes.all %}
+
+                <div class="producto-variantes">
+
+                    <h2>
+                        Elige tu tono
+                    </h2>
+
+
+                    <div class="variantes-lista">
+
+                        {% for variante in producto.variantes.all %}
+
+                        <button type="button" class="variante" data-variante="{{ variante.id }}"
+                            data-nombre="{{ variante.nombre_tono|default:'Tono único' }}"
+                            data-stock="{{ variante.stock }}"
+                            aria-label="{{ variante.nombre_tono|default:'Tono único' }}{% if variante.stock == 0 %}, agotado{% endif %}"
+                            {% if variante.stock == 0 %} disabled {% endif %}>
+
+                            {% if variante.codigo_tono %}
+
+                            <span class="variante-color" style="background-color: {{ variante.codigo_tono }};"></span>
+
+                            {% endif %}
+
+
+                            <span class="variante-nombre">
+
+                                {{ variante.nombre_tono|default:"Tono único" }}
+
+                            </span>
+
+
+                            {% if variante.stock > 0 %}
+
+                            <small>
+                                Disponible
+                            </small>
+
+                            {% else %}
+
+                            <small>
+                                Agotado
+                            </small>
+
+                            {% endif %}
+
+                        </button>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <!-- VARIANTE SELECCIONADA -->
+
+                    <div id="varianteSeleccionada" class="variante-seleccionada" hidden>
+
+                        <div>
+
+                            <span>
+                                Tono seleccionado
+                            </span>
+
+                            <strong id="nombreVariante">
+                                -
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Stock disponible
+                            </span>
+
+                            <strong id="stockVariante">
+                                -
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+            <!-- ==================================
+     SECCIÓN DE COMPRA
+=================================== -->
+
+<div class="producto-compra">
+
+    <div class="compra-titulo">
+        <span>
+            <i class="fa-solid fa-bag-shopping"></i>
+            Compra tu producto
+        </span>
+
+        <small>
+            Selecciona una variante para continuar
+        </small>
+    </div>
+
+
+    <!-- CANTIDAD -->
+
+    <div class="compra-cantidad">
+
+        <div class="cantidad-texto">
+
+            <span>
+                Cantidad
+            </span>
+
+            <small id="mensaje-stock">
+                Selecciona un tono
+            </small>
+
+        </div>
+
+
+        <div class="cantidad-control-producto">
+
+            <button
+                type="button"
+                id="btnDisminuirCantidad"
+                aria-label="Disminuir cantidad"
+                disabled
+            >
+                <i class="fa-solid fa-minus"></i>
+            </button>
+
+
+            <span id="cantidadProducto">
+                1
+            </span>
+
+
+            <button
+                type="button"
+                id="btnAumentarCantidad"
+                aria-label="Aumentar cantidad"
+                disabled
+            >
+                <i class="fa-solid fa-plus"></i>
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- BOTÓN AGREGAR -->
+
+    <button
+        type="button"
+        id="btnAgregarCarrito"
+        class="btn-agregar-carrito"
+        disabled
+    >
+
+        <span class="btn-carrito-normal">
+
+            <i class="fa-solid fa-bag-shopping"></i>
+
+            Agregar al carrito
+
+        </span>
+
+        <span class="btn-carrito-cargando">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            Agregando...
+
+        </span>
+
+    </button>
+
+
+    <!-- MENSAJE -->
+
+    <div
+        id="mensajeCarrito"
+        class="mensaje-carrito"
+        role="status"
+        aria-live="polite"
+    ></div>
+
+</div>
+
+                <!-- ==================================
+                     TABLA DE PRECIOS
+                =================================== -->
+
+                <div class="precios-escalonados">
+
+                    <div class="precios-header">
+
+                        <div>
+
+                            <span>
+                                Precios especiales
+                            </span>
+
+                            <h2>
+                                Precios por nivel de compra
+                            </h2>
+
+                        </div>
+
+                        <i class="fa-solid fa-tags"></i>
+
+                    </div>
+
+
+                    <div class="tabla-precios">
+
+                        <div class="precio-fila precio-encabezado">
+
+                            <span>
+                                Compra mínima
+                            </span>
+
+                            <span>
+                                Precio
+                            </span>
+
+                        </div>
+
+
+                        <!-- PRECIO NORMAL -->
+
+                        <div class="precio-fila">
+
+                            <span>
+
+                                <i class="fa-solid fa-bag-shopping"></i>
+
+                                Compra normal
+
+                            </span>
+
+                            <strong>
+
+                                ${{ producto.precio_base|floatformat:0 }}
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- +100 -->
+
+                        <div class="precio-fila">
+
+                            <span>
+
+                                <i class="fa-solid fa-cart-shopping"></i>
+
+                                Desde $100.000
+
+                            </span>
+
+                            <strong>
+
+                                ${{ producto.precio_100|floatformat:0 }}
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- +500 -->
+
+                        <div class="precio-fila">
+
+                            <span>
+
+                                <i class="fa-solid fa-box"></i>
+
+                                Desde $500.000
+
+                            </span>
+
+                            <strong>
+
+                                ${{ producto.precio_500|floatformat:0 }}
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- +1200 -->
+
+                        <div class="precio-fila precio-destacado">
+
+                            <span>
+
+                                <i class="fa-solid fa-crown"></i>
+
+                                Desde $1.200.000
+
+                            </span>
+
+                            <strong>
+
+                                ${{ producto.precio_1200|floatformat:0 }}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <p class="precios-nota">
+
+                        Los precios especiales se aplican según
+                        el monto total de la compra.
+
+                    </p>
+
+                </div>
+
+
+                <!-- ==================================
+                     ETIQUETAS
+                =================================== -->
+
+                {% if producto.etiquetas.all %}
+
+                <div class="producto-etiquetas">
+
+                    {% for etiqueta in producto.etiquetas.all %}
+
+                    <span>
+                        #{{ etiqueta.nombre }}
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         VIDEOS
+    =========================================== -->
+
+    {% if producto.videos.all %}
+
+    <section class="producto-seccion">
+
+        <div class="seccion-titulo">
+
+            <span>
+                Descubre más
+            </span>
+
+            <h2>
+                Videos del producto
+            </h2>
+
+        </div>
+
+
+        <div class="videos-grid">
+
+            {% for video in producto.videos.all %}
+
+            <article class="producto-video">
+
+                <video controls preload="metadata">
+
+                    <source src="{{ video.video.url }}">
+
+                    Tu navegador no puede reproducir
+                    este video.
+
+                </video>
+
+
+                {% if video.titulo %}
+
+                <h3>
+                    {{ video.titulo }}
+                </h3>
+
+                {% endif %}
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ==========================================
+         OTROS PRODUCTOS
+    =========================================== -->
+
+    {% if otros_productos %}
+
+    <section class="otros-productos">
+
+        <div class="seccion-titulo">
+
+            <span>
+                Descubre más
+            </span>
+
+            <h2>
+                También te puede gustar
+            </h2>
+
+            <p>
+                Explora otros productos de Lúmina.
+            </p>
+
+        </div>
+
+
+        <div class="otros-productos-grid">
+
+            {% for otro in otros_productos %}
+
+            <article class="otro-producto-card">
+
+                <a href="{% url 'detalle_producto' otro.slug %}" class="otro-producto-imagen">
+
+                    {% with imagen=otro.imagenes.all|first %}
+
+                    {% if imagen %}
+
+                    <img src="{{ imagen.imagen.url }}" alt="{{ otro.nombre }}" loading="lazy">
+
+                    {% else %}
+
+                    <div class="producto-sin-imagen">
+
+                        <i class="fa-regular fa-image"></i>
+
+                        <span>
+                            Sin imagen
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% endwith %}
+
+                </a>
+
+
+                <div class="otro-producto-info">
+
+                    {% if otro.marca %}
+
+                    <span class="producto-marca">
+                        {{ otro.marca.nombre }}
+                    </span>
+
+                    {% endif %}
+
+
+                    <h3>
+                        {{ otro.nombre }}
+                    </h3>
+
+
+                    <strong>
+                        ${{ otro.precio_base|floatformat:0 }}
+                    </strong>
+
+
+                    <a href="{% url 'detalle_producto' otro.slug %}" class="btn-ver-producto">
+                        Ver producto
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ==========================================
+         INFORMACIÓN EXTRA
+    =========================================== -->
+
+    <section class="producto-informacion-extra">
+
+        <div>
+
+            <i class="fa-solid fa-shield-heart"></i>
+
+            <h3>
+                Producto original
+            </h3>
+
+            <p>
+                Compra productos seleccionados por Lúmina.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <i class="fa-solid fa-box"></i>
+
+            <h3>
+                Variantes disponibles
+            </h3>
+
+            <p>
+                Consulta los tonos disponibles del producto.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <i class="fa-solid fa-tags"></i>
+
+            <h3>
+                Precios escalonados
+            </h3>
+
+            <p>
+                Obtén mejores precios según el monto de tu compra.
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ==========================================
+     GALERÍA
+=========================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        /* =====================================================
+           GALERÍA DE IMÁGENES
+        ===================================================== */
+
+        const imagenPrincipal =
+            document.getElementById(
+                "imagenPrincipal"
+            );
+
+        const miniaturas =
+            document.querySelectorAll(
+                ".miniatura"
+            );
+
+
+        miniaturas.forEach(
+            function (miniatura) {
+
+                miniatura.addEventListener(
+                    "click",
+                    function () {
+
+                        if (!imagenPrincipal) {
+                            return;
+                        }
+
+                        const nuevaImagen =
+                            miniatura.dataset.imagen;
+
+                        imagenPrincipal.src =
+                            nuevaImagen;
+
+
+                        miniaturas.forEach(
+                            function (item) {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+
+                        miniatura.classList.add(
+                            "active"
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* =====================================================
+           VARIANTES / TONOS
+        ===================================================== */
+
+        const variantes =
+            document.querySelectorAll(
+                ".variante"
+            );
+
+
+        const varianteSeleccionada =
+            document.getElementById(
+                "varianteSeleccionada"
+            );
+
+
+        const nombreVariante =
+            document.getElementById(
+                "nombreVariante"
+            );
+
+
+        const stockVariante =
+            document.getElementById(
+                "stockVariante"
+            );
+
+
+        /* =====================================================
+           ELEMENTOS DEL CARRITO
+        ===================================================== */
+
+        const btnAgregar =
+            document.getElementById(
+                "btnAgregarCarrito"
+            );
+
+
+        const btnDisminuir =
+            document.getElementById(
+                "btnDisminuirCantidad"
+            );
+
+
+        const btnAumentar =
+            document.getElementById(
+                "btnAumentarCantidad"
+            );
+
+
+        const cantidadElemento =
+            document.getElementById(
+                "cantidadProducto"
+            );
+
+
+        const mensajeStock =
+            document.getElementById(
+                "mensaje-stock"
+            );
+
+
+        const mensajeCarrito =
+            document.getElementById(
+                "mensajeCarrito"
+            );
+
+
+        /* =====================================================
+           VARIABLES
+        ===================================================== */
+
+        let varianteActual = null;
+
+        let stockActual = 0;
+
+        let cantidadActual = 1;
+
+
+        /* =====================================================
+           MENSAJES
+        ===================================================== */
+
+        function mostrarMensaje(
+            mensaje,
+            tipo
+        ) {
+
+            if (!mensajeCarrito) {
+                return;
+            }
+
+
+            mensajeCarrito.textContent =
+                mensaje;
+
+
+            mensajeCarrito.className =
+                "mensaje-carrito visible " +
+                tipo;
+
+
+            setTimeout(
+                function () {
+
+                    mensajeCarrito.classList.remove(
+                        "visible"
+                    );
+
+                },
+                4000
+            );
+
+        }
+
+
+        /* =====================================================
+           ACTUALIZAR CONTROL DE CANTIDAD
+        ===================================================== */
+
+        function actualizarCantidad() {
+
+            if (cantidadElemento) {
+
+                cantidadElemento.textContent =
+                    cantidadActual;
+
+            }
+
+
+            if (btnDisminuir) {
+
+                btnDisminuir.disabled =
+                    !varianteActual ||
+                    cantidadActual <= 1;
+
+            }
+
+
+            if (btnAumentar) {
+
+                btnAumentar.disabled =
+                    !varianteActual ||
+                    cantidadActual >= stockActual;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           SELECCIONAR VARIANTE
+        ===================================================== */
+
+        variantes.forEach(
+            function (variante) {
+
+                variante.addEventListener(
+                    "click",
+                    function () {
+
+                        if (variante.disabled) {
+                            return;
+                        }
+
+
+                        /* Quitar selección anterior */
+
+                        variantes.forEach(
+                            function (item) {
+
+                                item.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+
+                        /* Seleccionar actual */
+
+                        variante.classList.add(
+                            "active"
+                        );
+
+
+                        /* ID DE LA VARIANTE */
+
+                        varianteActual =
+                            variante.dataset.variante;
+
+
+                        /* STOCK */
+
+                        stockActual =
+                            parseInt(
+                                variante.dataset.stock,
+                                10
+                            ) || 0;
+
+
+                        /* Reiniciar cantidad */
+
+                        cantidadActual = 1;
+
+
+                        /* Mostrar información */
+
+                        if (varianteSeleccionada) {
+
+                            varianteSeleccionada.hidden =
+                                false;
+
+                        }
+
+
+                        if (nombreVariante) {
+
+                            nombreVariante.textContent =
+                                variante.dataset.nombre;
+
+                        }
+
+
+                        if (stockVariante) {
+
+                            stockVariante.textContent =
+                                stockActual;
+
+                        }
+
+
+                        /* Mensaje de stock */
+
+                        if (mensajeStock) {
+
+                            if (stockActual > 0) {
+
+                                mensajeStock.textContent =
+                                    stockActual === 1
+                                        ? "1 unidad disponible"
+                                        : stockActual +
+                                          " unidades disponibles";
+
+                            } else {
+
+                                mensajeStock.textContent =
+                                    "Agotado";
+
+                            }
+
+                        }
+
+
+                        /* Activar / desactivar carrito */
+
+                        if (btnAgregar) {
+
+                            btnAgregar.disabled =
+                                stockActual <= 0;
+
+                        }
+
+
+                        actualizarCantidad();
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* =====================================================
+           AUMENTAR CANTIDAD
+        ===================================================== */
+
+        if (btnAumentar) {
+
+            btnAumentar.addEventListener(
+                "click",
+                function () {
+
+                    if (!varianteActual) {
+
+                        mostrarMensaje(
+                            "Primero selecciona un tono.",
+                            "error"
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        cantidadActual <
+                        stockActual
+                    ) {
+
+                        cantidadActual++;
+
+                        actualizarCantidad();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           DISMINUIR CANTIDAD
+        ===================================================== */
+
+        if (btnDisminuir) {
+
+            btnDisminuir.addEventListener(
+                "click",
+                function () {
+
+                    if (
+                        cantidadActual > 1
+                    ) {
+
+                        cantidadActual--;
+
+                        actualizarCantidad();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           OBTENER CSRF
+        ===================================================== */
+
+        function obtenerCSRF() {
+
+            const cookies =
+                document.cookie.split(";");
+
+
+            for (
+                let cookie of cookies
+            ) {
+
+                cookie = cookie.trim();
+
+
+                if (
+                    cookie.startsWith(
+                        "csrftoken="
+                    )
+                ) {
+
+                    return decodeURIComponent(
+                        cookie.substring(
+                            "csrftoken=".length
+                        )
+                    );
+
+                }
+
+            }
+
+
+            return "";
+
+        }
+
+
+        /* =====================================================
+           AGREGAR AL CARRITO
+        ===================================================== */
+
+        if (btnAgregar) {
+
+            btnAgregar.addEventListener(
+                "click",
+                async function () {
+
+                    /* -----------------------------------------
+                       VALIDAR VARIANTE
+                    ----------------------------------------- */
+
+                    if (!varianteActual) {
+
+                        mostrarMensaje(
+                            "Selecciona una variante antes de continuar.",
+                            "error"
+                        );
+
+                        return;
+
+                    }
+
+
+                    /* -----------------------------------------
+                       VALIDAR STOCK
+                    ----------------------------------------- */
+
+                    if (stockActual <= 0) {
+
+                        mostrarMensaje(
+                            "Esta variante está agotada.",
+                            "error"
+                        );
+
+                        return;
+
+                    }
+
+
+                    /* -----------------------------------------
+                       VALIDAR CANTIDAD
+                    ----------------------------------------- */
+
+                    if (
+                        cantidadActual >
+                        stockActual
+                    ) {
+
+                        mostrarMensaje(
+                            "No hay suficiente stock disponible.",
+                            "error"
+                        );
+
+                        return;
+
+                    }
+
+
+                    /* -----------------------------------------
+                       ESTADO CARGANDO
+                    ----------------------------------------- */
+
+                    btnAgregar.disabled = true;
+
+                    btnAgregar.classList.add(
+                        "cargando"
+                    );
+
+
+                    try {
+
+                        /* -------------------------------------
+                           URL
+                        ------------------------------------- */
+
+                        const urlCarrito =
+                            "{% url 'agregar_al_carrito' 0 %}"
+                                .replace(
+                                    "/0/",
+                                    "/" +
+                                    varianteActual +
+                                    "/"
+                                );
+
+
+                        /* -------------------------------------
+                           PETICIÓN
+                        ------------------------------------- */
+
+                        const respuesta =
+                            await fetch(
+                                urlCarrito,
+                                {
+
+                                    method: "POST",
+
+                                    headers: {
+
+                                        "X-CSRFToken":
+                                            obtenerCSRF(),
+
+                                        "X-Requested-With":
+                                            "XMLHttpRequest",
+
+                                        "Content-Type":
+                                            "application/x-www-form-urlencoded"
+
+                                    },
+
+                                    body:
+                                        new URLSearchParams({
+
+                                            cantidad:
+                                                cantidadActual
+
+                                        })
+
+                                }
+                            );
+
+
+                        /* -------------------------------------
+                           RESPUESTA
+                        ------------------------------------- */
+
+                        const datos =
+                            await respuesta.json();
+
+
+                        if (
+                            !respuesta.ok ||
+                            !datos.ok
+                        ) {
+
+                            throw new Error(
+                                datos.mensaje ||
+                                "No se pudo agregar el producto al carrito."
+                            );
+
+                        }
+
+
+                        /* -------------------------------------
+                           ÉXITO
+                        ------------------------------------- */
+
+                        mostrarMensaje(
+                            "¡Producto agregado al carrito! 💗",
+                            "exito"
+                        );
+
+
+                        /* -------------------------------------
+                           ACTUALIZAR CONTADOR
+                        ------------------------------------- */
+
+                        const contador =
+                            document.getElementById(
+                                "contador-carrito"
+                            );
+
+
+                        if (contador) {
+
+                            contador.textContent =
+                                datos.cantidad_carrito;
+
+
+                            contador.classList.remove(
+                                "vacio"
+                            );
+
+
+                            contador.classList.add(
+                                "actualizado"
+                            );
+
+
+                            setTimeout(
+                                function () {
+
+                                    contador.classList.remove(
+                                        "actualizado"
+                                    );
+
+                                },
+                                300
+                            );
+
+                        }
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error al agregar al carrito:",
+                            error
+                        );
+
+
+                        mostrarMensaje(
+                            error.message ||
+                            "Ocurrió un error al agregar el producto.",
+                            "error"
+                        );
+
+                    } finally {
+
+                        /* -------------------------------------
+                           RESTAURAR BOTÓN
+                        ------------------------------------- */
+
+                        btnAgregar.classList.remove(
+                            "cargando"
+                        );
+
+
+                        btnAgregar.disabled =
+                            !varianteActual ||
+                            stockActual <= 0;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           ESTADO INICIAL
+        ===================================================== */
+
+        actualizarCantidad();
+
+    }
+);
+
+
+/* =========================================================
+   INFORMACIÓN EXTRA
+========================================================= */
+
+function toggleInfoExtra(button) {
+
+    const contenedor =
+        button.closest(
+            ".producto-info-extra"
+        );
+
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    const abierto =
+        contenedor.classList.toggle(
+            "abierto"
+        );
+
+
+    button.setAttribute(
+        "aria-expanded",
+        abierto
+            ? "true"
+            : "false"
+    );
+
+}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,438 @@
+/* ===================== */
+/* CONTENEDOR GENERAL */
+/* ===================== */
+
+.config-container{
+
+
+max-width:1100px;
+
+margin:auto;
+
+padding:32px 20px;
+
+color:var(--text);
+
+}
+
+/* ===================== */
+/* TITULOS */
+/* ===================== */
+
+.config-container h1{
+
+
+font-size:30px;
+
+margin-bottom:22px;
+
+font-weight:700;
+
+background:
+linear-gradient(
+    90deg,
+    var(--primary),
+    var(--lavender)
+);
+
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+
+
+}
+
+.config-container h2{
+
+
+margin-bottom:15px;
+
+color:var(--text);
+
+
+}
+
+/* ===================== */
+/* CARD FORMULARIO */
+/* ===================== */
+
+.config-card{
+
+
+background:var(--card);
+
+border:1px solid var(--border);
+
+border-radius:18px;
+
+padding:28px;
+
+box-shadow:var(--shadow);
+
+
+}
+
+/* ===================== */
+/* FORMULARIO */
+/* ===================== */
+
+form{
+
+
+display:flex;
+
+flex-direction:column;
+
+gap:14px;
+
+
+}
+
+input[type="text"],
+textarea{
+
+
+width:100%;
+
+padding:12px 14px;
+
+border-radius:12px;
+
+border:1px solid var(--border);
+
+background:var(--card);
+
+color:var(--text);
+
+outline:none;
+
+transition:.25s;
+
+
+}
+
+textarea{
+
+
+min-height:120px;
+
+resize:vertical;
+
+
+}
+
+input:focus,
+textarea:focus{
+
+
+border-color:var(--primary);
+
+
+}
+
+input[type="file"]{
+
+
+padding:10px;
+
+border-radius:12px;
+
+border:1px dashed var(--border);
+
+background:var(--card);
+
+color:var(--text);
+
+
+}
+
+/* ===================== */
+/* BOTON GUARDAR */
+/* ===================== */
+
+button[type="submit"]{
+
+
+background:var(--primary);
+
+color:white;
+
+border:none;
+
+padding:12px;
+
+border-radius:12px;
+
+cursor:pointer;
+
+font-weight:600;
+
+transition:.25s;
+
+
+}
+
+button[type="submit"]:hover{
+
+
+transform:translateY(-2px);
+
+
+}
+
+/* ===================== */
+/* PREVIEW */
+/* ===================== */
+
+.galeria-preview{
+
+
+width:180px;
+
+border-radius:12px;
+
+border:1px solid var(--border);
+
+box-shadow:var(--shadow);
+
+
+}
+
+/* ===================== */
+/* GRID */
+/* ===================== */
+
+.borradores-grid{
+
+
+display:grid;
+
+grid-template-columns:
+    repeat(auto-fit,minmax(260px,1fr));
+
+gap:18px;
+
+margin-top:20px;
+
+
+}
+
+/* ===================== */
+/* TARJETA */
+/* ===================== */
+
+.blog-card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    border-radius:16px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    box-shadow:var(--shadow);
+
+    height:260px;
+
+}
+
+.blog-card img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+    display:block;
+
+}
+
+.card-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    padding:20px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    gap:10px;
+
+    background:color-mix(
+        in srgb,
+        var(--card) 85%,
+        transparent
+    );
+
+    backdrop-filter:blur(8px);
+
+    opacity:0;
+
+    transition:.3s;
+
+}
+
+.blog-card:hover .card-overlay{
+
+    opacity:1;
+
+}
+
+.card-overlay h3{
+
+    margin:0;
+
+    color:var(--text);
+
+}
+
+.card-overlay p{
+
+    margin:0;
+
+    font-size:14px;
+
+    line-height:1.4;
+
+    color:var(--text);
+
+}
+
+.card-overlay small{
+
+    opacity:.8;
+
+}
+
+.tags{
+
+    font-size:12px;
+
+    opacity:.8;
+
+}
+
+.card-actions{
+
+    position:absolute;
+
+    bottom:10px;
+
+    left:10px;
+
+    right:10px;
+
+    display:flex;
+
+    gap:10px;
+
+    z-index:20;
+
+}
+
+.btn-edit,
+.btn-delete{
+
+    flex:1;
+
+    text-align:center;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+.btn-edit{
+
+    background:var(--primary);
+
+    color:white;
+
+}
+
+.btn-delete{
+
+    background:color-mix(
+        in srgb,
+        var(--primary) 40%,
+        red
+    );
+
+    color:white;
+
+}
+/* ===================== */
+/* VACIO */
+/* ===================== */
+
+.empty-state{
+
+
+padding:30px;
+
+text-align:center;
+
+border:1px dashed var(--border);
+
+border-radius:16px;
+
+background:var(--card);
+
+
+}
+
+.empty-state p{
+
+
+margin-bottom:8px;
+
+font-weight:600;
+
+
+}
+
+/* ===================== */
+/* ANIMACION */
+/* ===================== */
+
+.blog-card{
+
+
+animation:fadeIn .25s ease;
+
+
+}
+
+@keyframes fadeIn{
+
+
+from{
+
+    opacity:0;
+
+    transform:translateY(10px);
+
+}
+
+to{
+
+    opacity:1;
+
+    transform:translateY(0);
+
+}
+
+}

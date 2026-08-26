@@ -1,0 +1,547 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>
+        Lúmina | Panel Administrativo
+    </title>
+
+
+    <link rel="icon" href="{% static 'img/logos/logo2.png' %}">
+
+
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+
+    <link 
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    >
+
+
+
+    <script>
+
+        (function(){
+
+            const theme = localStorage.getItem("theme");
+
+
+            if(theme === "dark"){
+
+                document.addEventListener(
+                    "DOMContentLoaded",
+                    function(){
+
+                        document.body.classList.add("dark");
+
+                    }
+                );
+
+            }
+
+
+        })();
+
+
+    </script>
+
+
+</head>
+
+
+
+<body>
+
+
+
+<div class="layout">
+
+
+
+<!-- =====================================
+     SIDEBAR
+===================================== -->
+
+
+<aside class="sidebar">
+
+<!-- =====================================
+     PERFIL ADMIN
+===================================== -->
+<div class="admin-profile" id="profileMenu">
+
+
+
+
+
+{% if request.user.foto %}
+
+
+<img 
+    src="{{ request.user.foto.url }}"
+    alt="Administrador"
+>
+
+
+
+{% else %}
+
+
+
+<div class="avatar">
+
+    <i class="fa-solid fa-user"></i>
+
+</div>
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+<div class="admin-info">
+
+
+<h4>
+
+{{ request.user.username }}
+
+</h4>
+
+
+
+<span>
+
+Administrador
+
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<i class="fa-solid fa-chevron-down profile-arrow"></i> 
+
+
+
+
+
+<!-- DROPDOWN PERFIL -->
+
+
+<div class="profile-dropdown">
+
+
+
+<a href="{% url 'home' %}">
+
+
+<i class="fa-solid fa-user"></i>
+
+
+Mi cuenta
+
+
+</a>
+
+
+
+
+
+
+<a href="{% url 'logout' %}" class="logout">
+
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+
+Cerrar sesión
+
+
+</a>
+
+
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+<!-- =====================================
+     MENU
+===================================== -->
+
+
+<nav class="menu">
+
+    <!-- =====================================
+     GENERAL
+===================================== -->
+
+
+<p class="menu-title">
+    GENERAL
+</p>
+
+
+
+
+<a href="{% url 'admin_dashboard' %}">
+
+
+    <i class="fa-solid fa-gauge"></i>
+
+
+    <span>
+        Dashboard
+    </span>
+
+
+</a>
+
+
+
+
+
+<a href="{% url 'dashboard_productos' %}">
+
+
+    <i class="fa-solid fa-box-open"></i>
+
+
+    <span>
+        Productos
+    </span>
+
+
+</a>
+<li>
+    <a href="{% url 'dashboard_kits' %}">
+        <i class="fa-solid fa-box-open"></i>
+        <span>Kits</span>
+    </a>
+</li>
+
+<a href="{% url 'dashboard_recomendaciones' %}">
+
+    <i class="fa-solid fa-lightbulb"></i>
+
+    <span>
+        Recomendaciones
+    </span>
+
+</a>
+
+
+
+
+<a href="{% url 'dashboard_catalogo' %}">
+
+
+    <i class="fa-solid fa-layer-group"></i>
+
+
+    <span>
+        Organización
+    </span>
+
+
+</a>
+
+<a href="{% url 'dashboard_pedidos' %}">
+    <i class="fa-solid fa-box"></i>
+    <span>Pedidos</span>
+</a>
+
+
+
+<a href="{% url 'usuario_d' %}">
+
+
+    <i class="fa-solid fa-users"></i>
+
+
+    <span>
+        Usuarios
+    </span>
+
+
+</a>
+
+
+
+
+
+
+
+<!-- =====================================
+     CONTENIDO
+===================================== -->
+
+
+<p class="menu-title">
+    CONTENIDO
+</p>
+
+
+
+
+
+<a href="{% url 'blog' %}">
+
+
+    <i class="fa-solid fa-newspaper"></i>
+
+
+    <span>
+        Blog
+    </span>
+
+
+</a>
+
+
+
+
+
+<a href="{% url 'galeria' %}">
+
+
+    <i class="fa-solid fa-images"></i>
+
+
+    <span>
+        Galería
+    </span>
+
+
+</a>
+
+
+
+
+
+<a href="{% url 'test' %}">
+
+
+    <i class="fa-solid fa-clipboard-question"></i>
+
+
+    <span>
+        Tests
+    </span>
+
+
+</a>
+
+
+
+
+
+
+
+
+<!-- =====================================
+     ANALISIS
+===================================== -->
+
+
+<p class="menu-title">
+    ANÁLISIS
+</p>
+
+
+
+
+
+<a href="{% url 'estadisticas' %}">
+
+
+    <i class="fa-solid fa-chart-line"></i>
+
+
+    <span>
+        Estadísticas
+    </span>
+
+
+</a>
+
+
+
+
+
+
+
+
+<!-- =====================================
+     SISTEMA
+===================================== -->
+
+
+<p class="menu-title">
+    SISTEMA
+</p>
+
+
+
+
+
+<a href="{% url 'configuracion' %}">
+
+
+    <i class="fa-solid fa-gear"></i>
+
+
+    <span>
+        Configuración
+    </span>
+
+
+</a>
+
+
+
+
+
+</nav>
+
+
+</aside>
+
+
+
+
+
+
+
+<!-- =====================================
+     MAIN
+===================================== -->
+
+
+<main class="main">
+
+<!-- =====================================
+     TOPBAR
+===================================== -->
+
+
+<header class="topbar">
+<div class="welcome">
+
+
+<h2>
+
+Panel Administrativo
+
+</h2>
+
+
+
+
+<p>
+
+Bienvenido nuevamente,
+
+<strong>
+{{ request.user.username }}
+</strong>
+
+</p>
+
+
+
+</div>
+
+<div class="top-actions">
+
+<a href="{% url 'dashboard_contacto' %}" class="icon-btn notification-btn">
+
+    <i class="fa-solid fa-envelope"></i>
+
+    {% if mensajes_nuevos > 0 %}
+        <span class="notification-badge">
+            {{ mensajes_nuevos }}
+        </span>
+    {% endif %}
+
+</a>
+<div class="status-online">
+
+
+<span></span>
+
+
+Conectado
+
+
+</div>
+
+
+
+</div>
+
+
+
+</header>
+
+<!-- =====================================
+     CONTENIDO DINÁMICO
+===================================== -->
+
+
+{% block content %}
+
+{% endblock %}
+</main>
+</div>
+
+
+
+
+
+
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+
+
+
+{% block scripts %}
+
+{% endblock %}
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+</body>
+
+
+</html>

@@ -1,0 +1,738 @@
+/* =====================================================================
+   LÚMINA — CHECKOUT
+   Paleta: crema cálido + rosa firma + ciruela profundo + destello dorado
+   Tipografía: Fraunces (display) + Manrope (texto/UI)
+   Firma visual: "trazo de luz" — un barrido dorado que ilumina el total
+   y el botón de pago, como un iluminador sobre la piel.
+   ===================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* ---- color ---- */
+    --lum-cream:        #FBF4EE;
+    --lum-cream-soft:   #FFFCF9;
+    --lum-blush:        #F6E3E8;
+    --lum-rose:         #DF6D86;
+    --lum-rose-deep:    #C24F6B;
+    --lum-plum:         #4A2536;
+    --lum-plum-soft:    #7A4A5C;
+    --lum-ink:          #2E1B22;
+    --lum-gold:         #C9A24B;
+    --lum-gold-light:   #EAD9A8;
+    --lum-line:         #EAD9CF;
+    --lum-white:        #FFFFFF;
+
+    /* ---- tipografia ---- */
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* ---- forma ---- */
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 22px;
+    --shadow-soft: 0 12px 30px -18px rgba(74, 37, 54, 0.35);
+    --shadow-card: 0 2px 0 rgba(74, 37, 54, 0.04), 0 18px 40px -28px rgba(74, 37, 54, 0.28);
+}
+
+/* =====================================================================
+   BASE
+   ===================================================================== */
+
+.checkout-page {
+    background:
+        radial-gradient(1200px 500px at 15% -10%, var(--lum-blush) 0%, transparent 60%),
+        var(--lum-cream);
+    min-height: 100vh;
+    padding: 56px 24px 96px;
+    color: var(--lum-ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+.checkout-page * {
+    box-sizing: border-box;
+}
+
+.checkout-page h1,
+.checkout-page h2 {
+    font-family: var(--font-display);
+    color: var(--lum-plum);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+/* =====================================================================
+   ENCABEZADO
+   ===================================================================== */
+
+.checkout-header {
+    max-width: 1180px;
+    margin: 0 auto 40px;
+    text-align: left;
+}
+
+.checkout-header > span {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: var(--lum-rose-deep);
+    margin-bottom: 10px;
+}
+
+.checkout-header h1 {
+    font-size: clamp(1.9rem, 3vw, 2.6rem);
+    font-weight: 500;
+    font-style: italic;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+/* el "trazo de luz": un barrido dorado bajo el titulo, firma de marca */
+.checkout-header h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 92px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--lum-gold), var(--lum-rose) 70%, transparent);
+}
+
+.checkout-header p {
+    margin: 14px 0 0;
+    color: var(--lum-plum-soft);
+    font-size: 0.98rem;
+}
+
+/* =====================================================================
+   GRID PRINCIPAL
+   ===================================================================== */
+
+.checkout-container {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    grid-template-areas:
+        "productos resumen"
+        "direcciones resumen";
+    gap: 28px;
+    align-items: start;
+}
+
+.checkout-productos { grid-area: productos; }
+.checkout-direcciones { grid-area: direcciones; }
+.checkout-resumen { grid-area: resumen; position: sticky; top: 32px; }
+
+.checkout-productos,
+.checkout-direcciones,
+.checkout-resumen {
+    background: var(--lum-cream-soft);
+    border: 1px solid var(--lum-line);
+    border-radius: var(--radius-lg);
+    padding: 30px 30px 34px;
+    box-shadow: var(--shadow-card);
+}
+
+.checkout-container h2 {
+    font-size: 1.28rem;
+    font-weight: 500;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--lum-line);
+}
+
+/* =====================================================================
+   PRODUCTOS
+   ===================================================================== */
+
+.checkout-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px dashed var(--lum-line);
+}
+
+.checkout-item:last-child {
+    border-bottom: none;
+    padding-bottom: 4px;
+}
+
+.checkout-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.checkout-item-info strong {
+    font-family: var(--font-display);
+    font-size: 1.06rem;
+    font-weight: 500;
+    color: var(--lum-plum);
+    margin-bottom: 2px;
+}
+
+.checkout-item-info > span {
+    font-size: 0.88rem;
+    color: var(--lum-plum-soft);
+}
+
+.precio-detalle {
+    margin-top: 6px;
+    text-decoration: line-through;
+    color: #B79AA6;
+}
+
+.precio-detalle strong {
+    font-weight: 600;
+    color: #B79AA6;
+}
+
+.precio-mayorista {
+    color: var(--lum-rose-deep);
+    font-weight: 600;
+}
+
+.precio-mayorista strong {
+    color: var(--lum-rose-deep);
+}
+
+.checkout-ahorro {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+    margin-top: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--lum-blush);
+    color: var(--lum-rose-deep);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.checkout-item-precio {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.checkout-item-precio .precio-anterior {
+    font-size: 0.85rem;
+    text-decoration: line-through;
+    color: #B79AA6;
+}
+
+.checkout-item-precio strong {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--lum-plum);
+}
+
+.checkout-productos > p {
+    text-align: center;
+    color: var(--lum-plum-soft);
+    padding: 30px 0;
+}
+
+/* =====================================================================
+   DIRECCIONES
+   ===================================================================== */
+
+.direcciones-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.direccion-opcion {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1.5px solid var(--lum-line);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    background: var(--lum-white);
+}
+
+.direccion-opcion:hover {
+    border-color: var(--lum-rose);
+    background: var(--lum-blush);
+}
+
+.direccion-opcion:has(input:checked) {
+    border-color: var(--lum-rose);
+    background: var(--lum-blush);
+    box-shadow: 0 0 0 3px rgba(223, 109, 134, 0.14);
+}
+
+.direccion-opcion input[type="radio"] {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--lum-rose-deep);
+    flex-shrink: 0;
+}
+
+.direccion-opcion div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.direccion-opcion strong {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--lum-plum);
+}
+
+.direccion-opcion span {
+    font-size: 0.87rem;
+    color: var(--lum-plum-soft);
+}
+
+.checkout-sin-direccion {
+    text-align: center;
+    padding: 24px 10px;
+}
+
+.checkout-sin-direccion p {
+    color: var(--lum-plum-soft);
+    margin-bottom: 12px;
+}
+
+.checkout-sin-direccion a {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: var(--lum-plum);
+    color: var(--lum-cream-soft);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s ease;
+}
+
+.checkout-sin-direccion a:hover {
+    background: var(--lum-rose-deep);
+}
+
+/* =====================================================================
+   RESUMEN
+   ===================================================================== */
+
+.checkout-linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    font-size: 0.92rem;
+    color: var(--lum-plum-soft);
+}
+
+.checkout-linea strong {
+    color: var(--lum-ink);
+    font-weight: 600;
+}
+
+.checkout-descuento {
+    color: var(--lum-rose-deep);
+}
+
+.checkout-descuento strong {
+    color: var(--lum-rose-deep);
+}
+
+.checkout-nivel strong,
+.checkout-nivel {
+    color: var(--lum-gold);
+}
+
+.checkout-nivel strong {
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.checkout-resumen hr {
+    border: none;
+    border-top: 1px solid var(--lum-line);
+    margin: 14px 0;
+}
+
+.checkout-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0 4px;
+}
+
+.checkout-total strong:first-child {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--lum-plum);
+}
+
+/* el numero final recibe el "destello" dorado, eco del titulo */
+#checkout-total {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 600;
+    background: linear-gradient(100deg, var(--lum-plum) 30%, var(--lum-rose-deep) 60%, var(--lum-gold) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.checkout-ahorro-total {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--lum-blush);
+    color: var(--lum-rose-deep);
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.checkout-ahorro-total strong {
+    color: var(--lum-rose-deep);
+}
+
+/* =====================================================================
+   BOTON PAGAR — punto focal luminoso
+   ===================================================================== */
+
+.btn-pagar-wompi {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 22px;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(100deg, var(--lum-rose-deep), var(--lum-rose) 55%, var(--lum-gold));
+    color: var(--lum-white);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-pagar-wompi::before {
+    /* barrido de luz que cruza el boton, referencia directa al nombre "Lúmina" */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    transform: skewX(-20deg);
+    animation: lum-sweep 3.2s ease-in-out infinite;
+}
+
+@keyframes lum-sweep {
+    0%   { left: -60%; }
+    45%  { left: 130%; }
+    100% { left: 130%; }
+}
+
+.btn-pagar-wompi:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px -16px rgba(194, 79, 107, 0.55);
+    filter: saturate(1.05);
+}
+
+.btn-pagar-wompi:active {
+    transform: translateY(0);
+}
+
+.btn-pagar-wompi:focus-visible {
+    outline: 3px solid var(--lum-gold);
+    outline-offset: 3px;
+}
+
+.btn-pagar-wompi:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-pagar-wompi:disabled::before {
+    animation: none;
+}
+
+.btn-pagar-wompi i {
+    font-size: 0.9rem;
+}
+
+/* =====================================================================
+   SEGURIDAD
+   ===================================================================== */
+
+.checkout-seguridad {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--lum-line);
+}
+
+.checkout-seguridad i {
+    margin-top: 3px;
+    color: var(--lum-gold);
+    font-size: 1.1rem;
+}
+
+.checkout-seguridad strong {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--lum-plum);
+    margin-bottom: 2px;
+}
+
+.checkout-seguridad span {
+    font-size: 0.82rem;
+    color: var(--lum-plum-soft);
+    line-height: 1.4;
+}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+
+@media (max-width: 980px) {
+    .checkout-container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "productos"
+            "direcciones"
+            "resumen";
+    }
+
+    .checkout-resumen {
+        position: static;
+    }
+}
+
+@media (max-width: 560px) {
+    .checkout-page {
+        padding: 36px 16px 72px;
+    }
+
+    .checkout-productos,
+    .checkout-direcciones,
+    .checkout-resumen {
+        padding: 22px 20px 26px;
+    }
+
+    .checkout-item {
+        flex-direction: column;
+    }
+
+    .checkout-item-precio {
+        align-items: flex-start;
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 4px;
+    }
+}
+
+/* =====================================================================
+   ACCESIBILIDAD — respeta preferencia de movimiento reducido
+   ===================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .btn-pagar-wompi::before {
+        animation: none;
+    }
+
+    .btn-pagar-wompi,
+    .direccion-opcion {
+        transition: none;
+    }
+}
+/* ==========================================================
+   MODAL DE MENSAJES — LÚMINA
+========================================================== */
+
+.lumina-modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:rgba(67,59,74,.45);
+    backdrop-filter:blur(3px);
+
+    opacity:0;
+    visibility:hidden;
+    transition:.25s ease;
+}
+
+.lumina-modal-overlay.activo{
+    opacity:1;
+    visibility:visible;
+}
+
+.lumina-modal{
+    width:min(380px,90vw);
+
+    background:#ffffff;
+    border-radius:28px;
+
+    padding:36px 30px 28px;
+    text-align:center;
+
+    box-shadow:0 25px 60px rgba(223,109,134,.25);
+
+    transform:translateY(14px) scale(.96);
+    transition:.25s ease;
+}
+
+.lumina-modal-overlay.activo .lumina-modal{
+    transform:translateY(0) scale(1);
+}
+
+.lumina-modal-icon{
+    width:64px;
+    height:64px;
+    margin:0 auto 18px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+    font-size:1.6rem;
+    color:#fff;
+
+    background:linear-gradient(135deg,#df6d86,#c4b2ff);
+}
+
+.lumina-modal-icon.tipo-success{
+    background:linear-gradient(135deg,#35c76e,#7be3a3);
+}
+
+.lumina-modal-icon.tipo-error{
+    background:linear-gradient(135deg,#e11d48,#f26d8d);
+}
+
+.lumina-modal-icon.tipo-warning{
+    background:linear-gradient(135deg,#b8860b,#e8b84b);
+}
+
+.lumina-modal-icon.tipo-info{
+    background:linear-gradient(135deg,#2563eb,#6ea8ff);
+}
+
+.lumina-modal-titulo{
+    color:#433b4a;
+    font-size:1.15rem;
+    font-weight:700;
+    margin:0 0 8px 0;
+}
+
+.lumina-modal-texto{
+    color:#8b8593;
+    font-size:.9rem;
+    line-height:1.55;
+    margin:0 0 24px 0;
+}
+
+.lumina-modal-btn{
+    width:100%;
+    padding:13px;
+
+    border:none;
+    border-radius:16px;
+
+    background:#df6d86;
+    color:#fff;
+
+    font-weight:700;
+    font-size:.92rem;
+    cursor:pointer;
+
+    transition:.25s ease;
+}
+
+.lumina-modal-btn:hover{
+    background:#433b4a;
+    transform:translateY(-1px);
+}
+
+/* ==========================================================
+   TOAST — LÚMINA
+========================================================== */
+
+.lumina-toast{
+    position:fixed;
+    bottom:28px;
+    left:50%;
+    z-index:9999;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    background:#ffffff;
+    color:#433b4a;
+
+    padding:16px 22px;
+    border-radius:16px;
+    border-left:4px solid #35c76e;
+
+    box-shadow:0 15px 35px rgba(223,109,134,.18);
+
+    font-weight:600;
+    font-size:.9rem;
+
+    opacity:0;
+    visibility:hidden;
+    transform:translate(-50%,14px);
+    transition:.3s ease;
+}
+
+.lumina-toast.activo{
+    opacity:1;
+    visibility:visible;
+    transform:translate(-50%,0);
+}
+
+.lumina-toast i{
+    color:#35c76e;
+    font-size:1.1rem;
+}
+
+@media (max-width:480px){
+    .lumina-toast{
+        width:90vw;
+        left:5vw;
+        transform:translateY(14px);
+    }
+
+    .lumina-toast.activo{
+        transform:translateY(0);
+    }
+}

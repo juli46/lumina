@@ -1,0 +1,221 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}
+Sobre Nosotros | Lúmina
+{% endblock %} 
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/nosotros.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="lumina-about">
+
+    <div class="container">
+
+        <!-- INTRO -->
+
+        <div class="about-intro">
+
+            <span class="badge">✨ LÚMINA • MAYORISTA BEAUTY</span>
+
+            <h1>
+                Compra maquillaje mayorista
+                con precios según tu inversión.
+            </h1>
+
+            <p>
+                Lúmina es una plataforma mayorista de maquillaje donde puedes acceder a productos de diferentes marcas y obtener mejores precios según el monto total de tu compra.
+            </p>
+
+        </div>
+
+        <!-- QUIÉNES SOMOS -->
+
+        <div class="about-section">
+
+            <div class="text">
+
+                <h2>¿Qué es Lúmina?</h2>
+
+                <p>
+                    Somos un distribuidor mayorista de productos de belleza de distintas marcas.
+                    Facilitamos el acceso a maquillaje de calidad tanto para uso personal como para emprendimientos.
+                </p>
+
+                <p>
+                    Nuestro sistema está diseñado para ofrecer mejores precios a medida que aumenta el valor de compra.
+                </p>
+
+            </div>
+
+            <div class="image">
+                <img src="{% static 'img/pagina/cajas.png' %}" alt="mayorista beauty">
+            </div>
+
+        </div>
+
+        <!-- SISTEMA DE PRECIOS -->
+
+        <div class="section-title">
+
+            <h2>Sistema de precios mayoristas</h2>
+
+            <p>Precios escalonados según el monto total de compra.</p>
+
+        </div>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>💸 Base</h3>
+                <p>
+                    Precio inicial para compras pequeñas o individuales.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>🛍️ +$100.000 COP</h3>
+                <p>
+                    Acceso a precios mayoristas con mejores descuentos.
+                </p>
+            </div>
+
+            <div class="card highlight">
+                <h3>📦 +$500.000 COP</h3>
+                <p>
+                    Descuentos más altos en productos seleccionados.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="cards">
+
+            <div class="card highlight">
+                <h3>💎 +$1.200.000 COP</h3>
+                <p>
+                    Nivel premium con los precios más bajos del catálogo.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- KITS -->
+
+        <div class="section-title">
+
+            <h2>Kits disponibles</h2>
+
+        </div>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>🌸 Kit Principiantes</h3>
+                <p>
+                    Ideal para aprender maquillaje o uso personal.
+                </p>
+            </div>
+
+            <div class="card highlight">
+                <h3>🚀 Kit Emprendedores</h3>
+                <p>
+                    Diseñado para iniciar un negocio de reventa en el mundo beauty.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- DIFERENCIA -->
+        <br><br><br><br>
+        <div class="about-section reverse">
+
+            <div class="image">
+                <img src="{% static 'img/pagina/kit.png' %}" alt="kits beauty">
+            </div>
+
+            <div class="text">
+
+                <h2>Diferencia de nuestros kits</h2>
+
+                <p>
+                    El kit de principiantes está pensado para aprendizaje y uso personal.
+                </p>
+
+                <p>
+                    El kit de emprendedores está diseñado para generar ingresos mediante reventa de productos beauty.
+                </p>
+
+            </div>
+
+        </div>
+
+<!-- OBJETIVO PREMIUM -->
+
+<div class="goal-box">
+
+    <!-- glow decorativo -->
+    <div class="goal-glow"></div>
+
+    <span class="goal-badge">
+        ✨ NUESTRA ESENCIA
+    </span>
+
+    <h2>
+        Creamos oportunidades dentro
+        del universo beauty 💖
+    </h2>
+
+    <p>
+        En Lúmina queremos que cualquier persona pueda iniciar,
+        aprender y crecer dentro del mundo del maquillaje.
+        Por eso ofrecemos productos mayoristas, kits para principiantes
+        y opciones especiales para emprendedores con precios escalonados
+        según el monto de compra.
+    </p>
+
+    <div class="goal-stats">
+
+        <div class="stat-card">
+            <h3>$100+</h3>
+            <span>Productos accesibles</span>
+        </div>
+
+        <div class="stat-card">
+            <h3>Mayorista</h3>
+            <span>Beneficios por monto</span>
+        </div>
+
+        <div class="stat-card">
+            <h3>Beauty</h3>
+            <span>Kits especializados</span>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- FRASE WOW -->
+
+<div class="quote-box">
+
+    <div class="quote-stars"></div>
+
+    <h2>
+        “Empieza con lo que tengas,
+        <span>brilla con lo que sueñas.</span>”
+    </h2>
+
+    <p>
+        Cada maquillaje es una oportunidad para expresarte,
+        aprender y construir algo hermoso para ti 💫
+    </p>
+
+</div>
+
+</section>
+
+{% endblock %}

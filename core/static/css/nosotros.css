@@ -1,0 +1,662 @@
+/* =========================
+   GENERAL
+========================= */
+
+.lumina-about{
+    padding:120px 0;
+
+    background:
+    linear-gradient(
+        180deg,
+        #df6d7791 0%,
+        #fff6f8 35%,
+        #ffffff 100%
+    );
+
+    font-family:'Poppins',sans-serif;
+    color:#1a1a1a;
+
+    position:relative;
+    overflow:hidden;
+}
+
+/* GLOWS */
+
+.lumina-about::before,
+.lumina-about::after{
+    content:"";
+    position:absolute;
+    border-radius:50%;
+    filter:blur(90px);
+    z-index:0;
+}
+
+.lumina-about::before{
+    width:320px;
+    height:320px;
+
+    background:rgba(223,109,134,.16);
+
+    top:50px;
+    left:-120px;
+}
+
+.lumina-about::after{
+    width:400px;
+    height:400px;
+
+    background:rgba(240,168,186,.14);
+
+    bottom:-80px;
+    right:-150px;
+}
+
+/* =========================
+   INTRO
+========================= */
+
+.about-intro{
+    position:relative;
+    z-index:2;
+
+    text-align:center;
+
+    max-width:920px;
+
+    margin:auto auto 90px;
+
+    padding:0 20px;
+}
+
+.badge{
+    display:inline-block;
+
+    background:rgba(223,109,134,.12);
+
+    color:#df6d86;
+
+    padding:10px 18px;
+
+    border-radius:30px;
+
+    font-size:12px;
+    font-weight:700;
+
+    letter-spacing:2px;
+
+    margin-bottom:28px;
+}
+
+.about-intro h1{
+    font-size:68px;
+    line-height:1.1;
+
+    font-weight:800;
+
+    margin-bottom:30px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #1a1a1a 20%,
+        #df6d86 85%
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.about-intro p{
+    max-width:760px;
+
+    margin:auto;
+
+    color:#666;
+
+    font-size:18px;
+    line-height:2;
+}
+
+/* =========================
+   SECCIONES
+========================= */
+
+.about-section{
+    position:relative;
+    z-index:2;
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+
+    gap:70px;
+
+    align-items:center;
+
+    margin-bottom:100px;
+
+    padding:0 20px;
+}
+
+.about-section.reverse .image{
+    order:2;
+}
+
+.about-section.reverse .text{
+    order:1;
+}
+
+/* TEXTO */
+
+.text h2{
+    font-size:46px;
+    line-height:1.2;
+
+    margin-bottom:24px;
+
+    font-weight:800;
+}
+
+.text p{
+    color:#666;
+
+    line-height:2;
+
+    font-size:16px;
+
+    margin-bottom:18px;
+}
+
+/* IMAGENES */
+
+.image{
+    display:flex;
+    justify-content:center;
+}
+
+.image img{
+    width:100%;
+    max-width:390px;
+
+    border-radius:30px;
+
+    display:block;
+
+    object-fit:cover;
+
+    border:8px solid rgba(255,255,255,.7);
+
+    background:white;
+
+    box-shadow:
+    0 20px 45px rgba(0,0,0,.08),
+    0 8px 20px rgba(223,109,134,.12);
+
+    transition:.4s ease;
+}
+
+.image img:hover{
+    transform:
+    translateY(-10px)
+    rotate(-1deg);
+}
+
+/* =========================
+   TITULOS
+========================= */
+
+.section-title{
+    position:relative;
+    z-index:2;
+
+    text-align:center;
+
+    margin:70px 0 40px;
+
+    padding:0 20px;
+}
+
+.section-title h2{
+    font-size:48px;
+
+    font-weight:800;
+
+    margin-bottom:12px;
+}
+
+.section-title p{
+    color:#777;
+    font-size:16px;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.cards{
+    position:relative;
+    z-index:2;
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+
+    gap:28px;
+
+    margin-bottom:40px;
+
+    padding:0 20px;
+}
+
+.card{
+    position:relative;
+    overflow:hidden;
+
+    padding:40px 32px;
+
+    border-radius:30px;
+
+    background:
+    linear-gradient(
+        180deg,
+        rgba(255,255,255,.96),
+        rgba(255,248,250,.88)
+    );
+
+    border:1px solid rgba(255,255,255,.8);
+
+    backdrop-filter:blur(14px);
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.05);
+
+    transition:.35s ease;
+}
+
+/* LINEA */
+
+.card::before{
+    content:"";
+
+    position:absolute;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:4px;
+
+    background:#df6d86;
+
+    opacity:0;
+
+    transition:.3s;
+}
+
+/* REFLEJO */
+
+.card::after{
+    content:"";
+
+    position:absolute;
+
+    top:-100%;
+    left:-40%;
+
+    width:90px;
+    height:300px;
+
+    background:rgba(255,255,255,.4);
+
+    transform:rotate(25deg);
+
+    transition:.8s;
+}
+
+.card:hover::after{
+    left:130%;
+}
+
+.card:hover{
+    transform:
+    translateY(-10px)
+    scale(1.02);
+
+    box-shadow:
+    0 25px 60px rgba(223,109,134,.14);
+}
+
+.card:hover::before{
+    opacity:1;
+}
+
+.card h3{
+    font-size:24px;
+
+    margin-bottom:16px;
+
+    font-weight:700;
+}
+
+.card p{
+    color:#666;
+
+    line-height:1.9;
+
+    font-size:15.5px;
+}
+
+/* CARD DESTACADA */
+
+.highlight{
+    background:
+    linear-gradient(
+        135deg,
+        #df6d86,
+        #f0a8ba
+    );
+
+    color:#fff;
+}
+
+.highlight p{
+    color:#fff;
+}
+
+/* =========================
+   OBJETIVO
+========================= */
+
+.goal-box{
+    position:relative;
+    z-index:2;
+
+    max-width:1000px;
+
+    margin:70px auto 0;
+
+    padding:75px 45px;
+
+    border-radius:40px;
+
+    overflow:hidden;
+
+    text-align:center;
+
+    background:
+    linear-gradient(
+        135deg,
+        rgba(255,255,255,.94),
+        rgba(255,244,247,.88)
+    );
+
+    box-shadow:
+    0 20px 60px rgba(223,109,134,.12);
+}
+
+/* GLOW */
+
+.goal-glow{
+    position:absolute;
+
+    width:300px;
+    height:300px;
+
+    background:rgba(223,109,134,.14);
+
+    border-radius:50%;
+
+    filter:blur(80px);
+
+    top:-120px;
+    right:-100px;
+}
+
+/* BADGE */
+
+.goal-badge{
+    display:inline-block;
+
+    padding:10px 18px;
+
+    border-radius:30px;
+
+    background:rgba(223,109,134,.12);
+
+    color:#df6d86;
+
+    font-size:12px;
+    font-weight:700;
+
+    letter-spacing:2px;
+
+    margin-bottom:25px;
+}
+
+/* TITULO */
+
+.goal-box h2{
+    font-size:56px;
+    line-height:1.15;
+
+    margin-bottom:24px;
+
+    font-weight:800;
+
+    background:
+    linear-gradient(
+        135deg,
+        #1a1a1a,
+        #df6d86
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.goal-box p{
+    max-width:760px;
+
+    margin:auto;
+
+    color:#666;
+
+    font-size:18px;
+    line-height:2;
+}
+
+/* STATS */
+
+.goal-stats{
+    display:flex;
+    justify-content:center;
+
+    flex-wrap:wrap;
+
+    gap:25px;
+
+    margin-top:50px;
+}
+
+.stat-card{
+    min-width:220px;
+
+    padding:28px;
+
+    border-radius:24px;
+
+    background:white;
+
+    box-shadow:
+    0 15px 35px rgba(0,0,0,.05);
+
+    transition:.3s ease;
+}
+
+.stat-card:hover{
+    transform:translateY(-8px);
+}
+
+.stat-card h3{
+    font-size:34px;
+
+    color:#df6d86;
+
+    margin-bottom:10px;
+
+    font-weight:800;
+}
+
+.stat-card span{
+    color:#666;
+}
+
+/* =========================
+   FRASE FINAL
+========================= */
+
+.quote-box{
+    position:relative;
+    z-index:2;
+
+    margin:80px auto 0;
+
+    max-width:950px;
+
+    text-align:center;
+
+    padding:0 20px;
+}
+
+/* ESTRELLAS */
+
+.quote-stars::before,
+.quote-stars::after{
+    content:"✦";
+
+    position:absolute;
+
+    color:#f0a8ba;
+
+    font-size:40px;
+
+    animation:floatStars 4s ease-in-out infinite;
+}
+
+.quote-stars::before{
+    left:10%;
+    top:0;
+}
+
+.quote-stars::after{
+    right:10%;
+    top:40px;
+}
+
+/* ANIMACION */
+
+@keyframes floatStars{
+
+    0%{
+        transform:translateY(0px);
+    }
+
+    50%{
+        transform:translateY(-12px);
+    }
+
+    100%{
+        transform:translateY(0px);
+    }
+
+}
+
+/* FRASE */
+
+.quote-box h2{
+    font-size:62px;
+    line-height:1.3;
+
+    font-weight:800;
+
+    margin-bottom:24px;
+}
+
+.quote-box h2 span{
+    background:
+    linear-gradient(
+        135deg,
+        #df6d86,
+        #f0a8ba
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.quote-box p{
+    max-width:700px;
+
+    margin:auto;
+
+    color:#777;
+
+    font-size:18px;
+    line-height:2;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:992px){
+
+    .about-section{
+        grid-template-columns:1fr;
+
+        gap:50px;
+    }
+
+    .cards{
+        grid-template-columns:1fr;
+    }
+
+    .about-section.reverse .image,
+    .about-section.reverse .text{
+        order:unset;
+    }
+
+}
+
+@media(max-width:768px){
+
+    .lumina-about{
+        padding:90px 0;
+    }
+
+    .about-intro h1{
+        font-size:42px;
+    }
+
+    .text h2,
+    .section-title h2{
+        font-size:34px;
+    }
+
+    .goal-box{
+        padding:55px 28px;
+    }
+
+    .goal-box h2{
+        font-size:38px;
+    }
+
+    .quote-box h2{
+        font-size:38px;
+    }
+
+    .about-intro p,
+    .goal-box p,
+    .quote-box p{
+        font-size:16px;
+    }
+
+}

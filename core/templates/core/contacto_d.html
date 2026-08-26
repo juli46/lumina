@@ -1,0 +1,1248 @@
+{% extends "core/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/contacto_d.css' %}">
+
+
+<div class="contacto-dashboard">
+
+
+<!-- =====================================
+                HEADER
+===================================== -->
+
+
+<div class="page-header">
+
+
+    <div>
+
+        <h1>
+
+            <i class="fa-solid fa-envelope"></i>
+
+            Centro de Mensajes
+
+        </h1>
+
+
+        <p>
+
+            Administra mensajes, respuestas y conversaciones con clientes.
+
+        </p>
+
+
+    </div>
+
+
+
+    <div class="header-actions">
+
+
+        <a href="?vista=entrada"
+        class="btn-header {% if vista != 'archivados' %}active{% endif %}">
+
+
+            <i class="fa-solid fa-inbox"></i>
+
+            Bandeja
+
+
+        </a>
+
+
+
+
+        <a href="?vista=archivados"
+        class="btn-header {% if vista == 'archivados' %}active{% endif %}">
+
+
+            <i class="fa-solid fa-box-archive"></i>
+
+            Archivados
+
+
+        </a>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+<!-- =====================================
+        MENSAJES DJANGO
+===================================== -->
+
+
+{% if messages %}
+
+
+<div class="mensajes-alerta" id="djangoMensajes">
+
+
+{% for message in messages %}
+
+
+<div class="alerta {{ message.tags }}">
+
+    {{ message }}
+
+</div>
+
+
+{% endfor %}
+
+
+</div>
+
+
+{% endif %}
+
+
+
+
+
+
+<!-- =====================================
+            ESTADÍSTICAS
+===================================== -->
+
+
+<div class="stats-grid">
+
+
+<div class="stat-card">
+
+
+<div class="stat-icon total">
+
+<i class="fa-solid fa-envelope"></i>
+
+</div>
+
+
+<div>
+
+<h3>{{ total }}</h3>
+
+<span>Total mensajes</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<div class="stat-icon nuevo">
+
+<i class="fa-solid fa-envelope-open-text"></i>
+
+</div>
+
+
+<div>
+
+<h3>{{ sin_leer }}</h3>
+
+<span>Sin leer</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<div class="stat-icon respondido">
+
+<i class="fa-solid fa-paper-plane"></i>
+
+</div>
+
+
+<div>
+
+<h3>{{ respondidos }}</h3>
+
+<span>Respondidos Lúmina</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<div class="stat-icon cliente">
+
+<i class="fa-solid fa-user-check"></i>
+
+</div>
+
+
+<div>
+
+<h3>{{ cliente_respondio }}</h3>
+
+<span>Respondidos por cliente</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<div class="stat-icon pendiente">
+
+<i class="fa-solid fa-clock"></i>
+
+</div>
+
+
+<div>
+
+<h3>{{ pendientes }}</h3>
+
+<span>Pendientes</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<div class="stat-icon archivado">
+
+<i class="fa-solid fa-box-archive"></i>
+
+</div>
+
+
+<div>
+
+<h3>{{ archivados }}</h3>
+
+<span>Archivados</span>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+<!-- =====================================
+                TOOLBAR
+===================================== -->
+
+
+<div class="toolbar">
+
+
+    <div class="search-box">
+
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+
+        <input
+
+        type="text"
+
+        id="buscarMensaje"
+
+        placeholder="Buscar por nombre, correo, asunto o contenido..."
+
+        autocomplete="off">
+
+
+    </div>
+
+
+
+
+    <div class="toolbar-actions">
+
+
+        <a href="{% url 'sincronizar_respuestas_gmail' %}"
+        class="btn-sync">
+
+
+            <i class="fa-solid fa-rotate"></i>
+
+
+            Sincronizar Gmail
+
+
+        </a>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- =====================================
+                TABLA
+===================================== -->
+
+
+<div class="table-container">
+
+
+<table class="tabla-contacto">
+
+
+<thead>
+
+
+<tr>
+
+
+<th>Estado</th>
+
+<th>Nombre</th>
+
+<th>Correo</th>
+
+<th>Asunto</th>
+
+<th>Fecha</th>
+
+<th>Acciones</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+
+<tbody id="tablaMensajes">
+
+
+
+{% for mensaje in mensajes %}
+
+
+
+<tr class="
+
+{% if mensaje.archivado %}
+
+fila-archivada
+
+{% elif mensaje.respuesta_cliente %}
+
+fila-cliente
+
+{% elif mensaje.respondido %}
+
+fila-respondido
+
+{% elif mensaje.leido %}
+
+fila-leido
+
+{% else %}
+
+fila-nuevo
+
+{% endif %}
+
+">
+
+
+
+
+
+<td>
+
+
+{% if mensaje.archivado %}
+
+
+<span class="badge archivado">
+
+
+<i class="fa-solid fa-box-archive"></i>
+
+Archivado
+
+
+</span>
+
+
+
+
+{% elif mensaje.respuesta_cliente %}
+
+
+<span class="badge cliente">
+
+
+<i class="fa-solid fa-user-check"></i>
+
+Respondió cliente
+
+
+</span>
+
+
+
+
+{% elif mensaje.respondido %}
+
+
+<span class="badge respondido">
+
+
+<i class="fa-solid fa-paper-plane"></i>
+
+Respondido Lúmina
+
+
+</span>
+
+
+
+
+{% elif mensaje.leido %}
+
+
+<span class="badge leido">
+
+
+<i class="fa-solid fa-envelope-open"></i>
+
+Leído
+
+
+</span>
+
+
+
+
+{% else %}
+
+
+<span class="badge nuevo">
+
+
+<i class="fa-solid fa-circle"></i>
+
+Nuevo
+
+
+</span>
+
+
+{% endif %}
+
+
+
+</td>
+
+
+
+
+
+
+
+<td>
+
+
+{{ mensaje.nombre }}
+
+
+</td>
+
+
+
+
+
+
+
+<td>
+
+
+<a href="mailto:{{ mensaje.correo }}"
+class="correo-link">
+
+
+{{ mensaje.correo }}
+
+
+</a>
+
+
+</td>
+
+
+
+
+
+
+
+<td>
+
+
+{{ mensaje.asunto }}
+
+
+</td>
+
+
+
+
+
+
+
+<td>
+
+
+{{ mensaje.fecha|date:"d/m/Y H:i" }}
+
+
+</td>
+
+
+
+
+
+
+
+<td class="acciones">
+
+
+<button
+
+type="button"
+
+class="btn-ver"
+
+data-id="{{ mensaje.id }}"
+
+data-nombre="{{ mensaje.nombre }}"
+
+data-correo="{{ mensaje.correo }}"
+
+data-asunto="{{ mensaje.asunto }}"
+
+data-mensaje="{{ mensaje.mensaje|escapejs }}"
+
+data-fecha="{{ mensaje.fecha|date:'d/m/Y H:i' }}"
+
+data-respondido="{{ mensaje.respondido }}"
+
+data-archivado="{{ mensaje.archivado }}"
+
+data-respuesta="{{ mensaje.respuesta|default:''|escapejs }}"
+
+data-respuesta-cliente="{{ mensaje.respuesta_cliente|default:''|escapejs }}"
+
+data-fecha-cliente="{{ mensaje.fecha_cliente|date:'d/m/Y H:i' }}">
+
+
+
+<i class="fa-solid fa-eye"></i>
+
+
+Abrir conversación
+
+
+
+</button>
+
+
+</td>
+
+
+
+</tr>
+
+
+
+
+
+{% empty %}
+
+
+
+<tr>
+
+
+<td colspan="6">
+
+
+<div class="sin-mensajes">
+
+
+<i class="fa-solid fa-inbox"></i>
+
+
+<h3>
+
+No hay mensajes registrados
+
+</h3>
+
+
+
+<p>
+
+Cuando los usuarios escriban aparecerán aquí.
+
+</p>
+
+
+</div>
+
+
+</td>
+
+
+</tr>
+
+
+
+{% endfor %}
+
+
+
+
+
+<tr id="sinResultados" style="display:none;">
+
+
+<td colspan="6">
+
+
+<div class="sin-mensajes">
+
+
+<i class="fa-solid fa-magnifying-glass"></i>
+
+
+<h3>
+
+No se encontraron resultados
+
+</h3>
+
+
+<p>
+
+No existen coincidencias.
+
+</p>
+
+
+</div>
+
+
+</td>
+
+
+</tr>
+
+
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+</div>
+<!-- =====================================
+        PANEL DE DETALLE
+===================================== -->
+
+
+<div class="detalle-contacto oculto" id="detalleContacto">
+
+
+
+<div class="detalle-header">
+
+
+<h2>
+
+<i class="fa-solid fa-envelope-open-text"></i>
+
+Información del mensaje
+
+
+</h2>
+
+
+
+
+<button
+
+type="button"
+
+class="btn-cerrar-detalle"
+
+id="cerrarDetalle">
+
+
+<i class="fa-solid fa-xmark"></i>
+
+
+Cerrar
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+<div class="detalle-body">
+
+
+
+<input type="hidden" id="contactoId">
+
+
+<input type="hidden" id="contactoArchivado">
+
+
+
+
+
+
+
+<!-- ======================
+        DATOS CLIENTE
+======================= -->
+
+
+<div class="campo">
+
+
+<label>
+
+Nombre
+
+</label>
+
+
+
+<input
+
+type="text"
+
+id="detalleNombre"
+
+readonly>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="campo">
+
+
+<label>
+
+Correo electrónico
+
+</label>
+
+
+
+<input
+
+type="email"
+
+id="detalleCorreo"
+
+readonly>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="campo">
+
+
+<label>
+
+Asunto
+
+</label>
+
+
+
+<input
+
+type="text"
+
+id="detalleAsunto"
+
+readonly>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="campo">
+
+
+<label>
+
+Fecha de envío
+
+</label>
+
+
+
+<input
+
+type="text"
+
+id="detalleFecha"
+
+readonly>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ===============================
+        HISTORIAL CONVERSACIÓN
+================================ -->
+
+
+<div class="historial-conversacion">
+
+
+
+<h3>
+
+
+<i class="fa-solid fa-comments"></i>
+
+
+Historial de conversación
+
+
+
+</h3>
+
+
+
+
+
+<div id="historialMensajes">
+
+
+
+
+
+<!-- Se carga dinámicamente con JS -->
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ===============================
+        NUEVA RESPUESTA
+================================ -->
+
+
+<div class="nueva-respuesta">
+
+
+
+<h3>
+
+
+<i class="fa-solid fa-paper-plane"></i>
+
+
+Nueva respuesta
+
+
+</h3>
+
+
+
+
+
+
+<form
+
+id="formRespuesta"
+
+method="POST">
+
+
+{% csrf_token %}
+
+
+
+
+
+
+<input
+
+type="hidden"
+
+name="id"
+
+id="contactoIdFormulario">
+
+
+
+
+
+
+<textarea
+
+id="respuesta"
+
+name="respuesta"
+
+rows="7"
+
+required
+
+placeholder="Escribe la respuesta para el cliente..."></textarea>
+
+
+
+
+
+
+<!-- VALIDACIÓN -->
+
+<small
+
+id="errorRespuesta"
+
+class="error-campo">
+
+</small>
+
+
+
+
+
+
+
+
+<div class="acciones-respuesta">
+
+
+
+
+
+<button
+
+type="reset"
+
+class="btn-secundario">
+
+
+<i class="fa-solid fa-eraser"></i>
+
+
+Limpiar
+
+
+</button>
+
+
+
+
+
+
+
+<button
+
+type="submit"
+
+class="btn-principal">
+
+
+<i class="fa-solid fa-paper-plane"></i>
+
+
+Enviar respuesta
+
+
+</button>
+
+
+
+
+
+
+</div>
+
+
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ===============================
+        ACCIONES CHAT
+================================ -->
+
+
+<div class="acciones-conversacion">
+
+
+
+
+
+<button
+
+type="button"
+
+id="btnEliminar"
+
+class="btn-eliminar">
+
+
+
+<i class="fa-solid fa-trash"></i>
+
+
+
+Eliminar conversación
+
+
+
+</button>
+
+
+
+
+
+
+
+
+<button
+
+type="button"
+
+id="btnArchivar"
+
+class="btn-archivar">
+
+
+
+<i class="fa-solid fa-box-archive"></i>
+
+
+
+Archivar conversación
+
+
+
+</button>
+
+
+
+
+
+
+
+
+<button
+
+type="button"
+
+id="btnRestaurar"
+
+class="btn-restaurar"
+
+style="display:none;">
+
+
+
+<i class="fa-solid fa-box-open"></i>
+
+
+
+Restaurar conversación
+
+
+
+</button>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+</div>
+<!-- =====================================
+        ALERTAS SWEETALERT DJANGO
+===================================== -->
+
+
+{% if messages %}
+
+<div id="djangoMensajes" style="display:none;">
+
+
+{% for message in messages %}
+
+<span
+
+class="mensaje-django"
+
+data-tipo="{{ message.tags }}"
+
+data-texto="{{ message }}">
+
+</span>
+
+
+{% endfor %}
+
+
+</div>
+
+{% endif %}
+
+
+
+
+
+
+
+
+<!-- =====================================
+        JAVASCRIPT
+===================================== -->
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script src="{% static 'js/contacto_d.js' %}"></script>
+
+{% endblock %}

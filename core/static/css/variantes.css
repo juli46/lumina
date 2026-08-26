@@ -1,0 +1,895 @@
+
+/* ======================================
+   GENERAL
+====================================== */
+
+.container {
+
+    width: 100%;
+    max-width: 1450px;
+    margin: auto;
+    padding: 35px;
+
+}
+body {
+
+    background: var(--bg);
+    color: var(--text);
+
+}
+
+
+h1,
+h2,
+h3,
+h4 {
+
+    color: var(--text);
+    margin: 0;
+
+}
+
+
+
+/* ======================================
+   HEADER
+====================================== */
+
+.page-header {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+
+    background: var(--card);
+
+    padding: 30px;
+
+    border-radius: 30px;
+
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow);
+
+    margin-bottom: 35px;
+
+}
+
+
+
+.badge-dashboard {
+
+    display: inline-block;
+
+    background: var(--primary-light);
+
+    color: var(--primary);
+
+    padding: 8px 18px;
+
+    border-radius: 30px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+}
+
+
+
+.page-header h1 {
+
+    font-size: 38px;
+
+    margin: 15px 0 10px;
+
+}
+
+
+
+.page-header p {
+
+    color: var(--text);
+
+}
+
+
+
+/* BUSCADOR */
+
+.header-search input {
+
+    width: 350px;
+
+    padding: 15px 20px;
+
+    border-radius: 18px;
+
+    border: 1px solid var(--border);
+
+    background: var(--card);
+
+    color: var(--text);
+
+    outline: none;
+
+}
+
+
+
+.header-search input:focus {
+
+    border-color: var(--primary);
+
+}
+
+
+
+/* ======================================
+   ESTADÍSTICAS
+====================================== */
+
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 25px;
+
+    margin-bottom: 35px;
+
+}
+
+
+
+.stat-card {
+
+    background: var(--card);
+
+    padding: 28px;
+
+    border-radius: 25px;
+
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow);
+
+}
+
+
+
+.stat-card h4 {
+
+    font-size: 14px;
+
+}
+
+
+
+.stat-card h2 {
+
+    color: var(--primary);
+
+    font-size: 42px;
+
+    margin: 12px 0;
+
+}
+
+
+
+.stat-card span {
+
+    color: var(--text);
+
+}
+
+
+
+/* ======================================
+   GRID
+====================================== */
+
+
+.catalogo-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+
+    gap: 30px;
+
+}
+
+
+
+/* ======================================
+   CARDS
+====================================== */
+
+
+.card {
+
+    background: var(--card);
+
+    padding: 30px;
+
+    border-radius: 30px;
+
+    border: 1px solid var(--border);
+
+    box-shadow: var(--shadow);
+
+    transition: .3s;
+
+}
+
+
+
+.card:hover {
+
+    transform: translateY(-5px);
+
+}
+
+
+
+.card-top {
+
+    margin-bottom: 25px;
+
+}
+
+
+
+.card-top h3 {
+
+    font-size: 24px;
+
+    color: var(--text);
+
+}
+
+
+
+.card-top p {
+
+    margin-top: 8px;
+
+    color: var(--text);
+
+}
+
+
+
+/* ======================================
+   FORMULARIOS
+====================================== */
+
+
+.form-card {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+
+}
+
+
+
+.input-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+}
+
+
+
+.input-group label {
+
+    color: var(--text);
+
+    font-weight: 600;
+
+}
+
+
+
+.input-group input,
+.input-group select {
+
+    width: 100%;
+
+    padding: 14px 16px;
+
+    border-radius: 15px;
+
+    border: 1px solid var(--border);
+
+    background: var(--bg);
+
+    color: var(--text);
+
+    outline: none;
+
+}
+
+
+
+.input-group input:focus,
+.input-group select:focus {
+
+    border-color: var(--primary);
+
+}
+
+
+
+/* ======================================
+   BOTONES
+====================================== */
+
+
+.form-buttons {
+
+    display: flex;
+
+    gap: 12px;
+
+}
+
+
+
+.btn-primary,
+.btn-secondary {
+
+    padding: 13px 22px;
+
+    border-radius: 15px;
+
+    border: none;
+
+    cursor: pointer;
+
+    font-weight: 700;
+
+    transition: .3s;
+
+}
+
+
+
+.btn-primary {
+
+    background: var(--primary);
+
+    color: var(--card);
+
+}
+
+
+
+.btn-primary:hover {
+
+    opacity: .85;
+
+}
+
+
+
+.btn-secondary {
+
+    background: var(--primary-light);
+
+    color: var(--primary);
+
+    border: 1px solid var(--border);
+
+}
+
+
+
+.btn-secondary:hover {
+
+    background: var(--lavender);
+
+}
+
+
+
+/* ======================================
+   TABLAS
+====================================== */
+
+
+.table-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin: 30px 0 15px;
+
+}
+
+
+
+.table-header span {
+
+    background: var(--primary);
+
+    color: var(--card);
+
+    padding: 6px 14px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+}
+
+
+
+.table-responsive {
+
+    overflow: auto;
+
+}
+
+
+
+.tablaCatalogo {
+
+    width: 100%;
+
+    border-collapse: separate;
+
+    border-spacing: 0 8px;
+
+}
+
+
+
+.tablaCatalogo th {
+    background: linear-gradient(100deg, var(--primary),
+            color-mix(in srgb, var(--primary) 10%, white));
+
+    text-align: left;
+
+    padding: 12px;
+
+    color: var(--card);
+
+}
+
+
+
+.tablaCatalogo td {
+
+    background: var(--bg);
+
+    padding: 15px;
+
+    color: var(--text);
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+
+
+.tablaCatalogo tr td:first-child {
+
+    border-radius: 15px 0 0 15px;
+
+}
+
+
+
+.tablaCatalogo tr td:last-child {
+
+    border-radius: 0 15px 15px 0;
+
+}
+
+
+
+.tablaCatalogo tr:hover td {
+
+    background: var(--primary);
+
+}
+
+
+
+/* ======================================
+   ACCIONES
+====================================== */
+
+
+.acciones {
+
+    text-align: right;
+
+}
+
+
+
+.btn-action {
+
+    border: none;
+
+    padding: 8px 15px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-weight: 600;
+
+}
+
+
+
+.editar {
+
+    background: rgb(189, 189, 255);
+
+    color: var(--card);
+
+}
+
+
+
+.eliminar {
+
+    background: var(--danger);
+
+    color: var(--card);
+
+}
+
+
+
+.form-eliminar {
+
+    display: inline;
+
+}
+
+
+
+/* ======================================
+   RESPONSIVE
+====================================== */
+
+
+@media(max-width:900px) {
+
+    .page-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+
+    .header-search input {
+
+        width: 100%;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+
+
+@media(max-width:600px) {
+
+    .container {
+
+        padding: 15px;
+
+    }
+
+
+    .catalogo-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .form-buttons {
+
+        flex-direction: column;
+
+    }
+
+}
+
+/* ======================================
+   MENU INTERNO CATALOGO
+====================================== */
+
+
+.catalogo-tabs {
+
+    display: flex;
+
+    gap: 15px;
+
+    padding: 12px;
+
+    margin-bottom: 30px;
+
+
+    background: var(--card-glass);
+
+
+    backdrop-filter: blur(15px);
+
+
+    border-radius: 25px;
+
+
+    box-shadow: var(--shadow);
+
+
+    border: 1px solid var(--border);
+
+}
+
+
+
+
+
+.tab-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 18px;
+    background: var(--bg-soft);
+    color: var(--primary);
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .35s ease;
+    overflow: hidden;
+
+}
+
+/* efecto brillo */
+
+.tab-btn::before {
+    content: "";
+
+    position: absolute;
+
+
+    width: 0;
+
+    height: 0;
+
+
+    background:
+        rgba(255, 255, 255, .5);
+
+
+    border-radius: 50%;
+
+
+    transform: translate(-50%, -50%);
+
+
+    transition: .5s;
+
+
+}
+
+
+
+
+
+.tab-btn:hover::before {
+
+
+    width: 250px;
+
+    height: 250px;
+
+
+}
+
+
+
+
+
+.tab-btn:hover {
+
+
+    transform: translateY(-4px);
+
+
+    box-shadow: var(--shadow-hover);
+
+
+}
+
+
+
+
+
+
+/* BOTON ACTIVO */
+
+
+.tab-btn.active {
+
+
+    background: var(--gradient-primary);
+
+
+    color: var(--text);
+
+
+    box-shadow: var(--shadow-hover);
+
+
+}
+.tab-btn.active::after {
+
+
+    content: "";
+
+
+    position: absolute;
+
+
+    bottom: 0;
+
+
+    left: 20%;
+
+
+    width: 60%;
+
+
+    height: 3px;
+
+
+    background: white;
+
+
+    border-radius: 20px;
+
+
+}
+
+
+
+
+
+
+/* RESPONSIVE */
+
+
+@media(max-width:700px) {
+
+
+    .catalogo-tabs {
+
+
+        flex-direction: column;
+
+
+    }
+    .tab-btn {
+
+
+        width: 100%;
+    }
+
+
+}
+
+.catalogo-panel {
+    display: none;
+}
+
+.catalogo-panel.activo {
+    display: block;
+}
+/*=========================
+PAGINACIÓN
+=========================*/
+
+.paginacion{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    margin:25px 0 10px;
+    flex-wrap:wrap;
+}
+
+.paginacion a,
+.paginacion span{
+
+    min-width:38px;
+    height:38px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.25s;
+
+    border:1px solid #e3e3e3;
+}
+
+.paginacion a{
+
+    color:#555;
+    background:#fff;
+}
+
+.paginacion a:hover{
+
+    background:#f4d7e4;
+    color:#b85b8a;
+    border-color:#f4d7e4;
+}
+
+.paginacion .activo{
+
+    background:#d46a92;
+    color:white;
+    border-color:#d46a92;
+}
+.input-error{
+
+    border:2px solid #e53935 !important;
+    background:#fff8f8;
+
+}
+
+.error-text{
+
+    display:block;
+    min-height:18px;
+    margin-top:5px;
+    font-size:13px;
+    color:#e53935;
+    font-weight:500;
+
+}

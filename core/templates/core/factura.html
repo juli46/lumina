@@ -1,0 +1,144 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+Factura {{ pedido.referencia }} | Lúmina
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/factura.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="factura-page">
+
+    <section class="factura-card">
+
+        <!-- ENCABEZADO -->
+        <header class="factura-header">
+            <div>
+                <span class="factura-eyebrow">FACTURA DE VENTA</span>
+                <h1>{{ pedido.referencia }}</h1>
+                <p>Emitida el {{ pedido.creado|date:"d/m/Y H:i" }}</p>
+            </div>
+
+            <span class="factura-estado factura-estado-{{ pedido.estado|lower }}">
+                {{ pedido.get_estado_display }}
+            </span>
+        </header>
+
+        <!-- DIRECCIÓN DE ENTREGA -->
+        {% if pedido.direccion_texto %}
+        <div class="factura-direccion">
+            <h2>Dirección de entrega</h2>
+            <p>
+                <strong>{{ pedido.direccion_nombre_receptor }}</strong><br>
+                {{ pedido.direccion_texto }}<br>
+                {{ pedido.direccion_ciudad }}, {{ pedido.direccion_departamento }}
+                {% if pedido.direccion_codigo_postal %}
+                — CP {{ pedido.direccion_codigo_postal }}
+                {% endif %}
+                <br>
+                Tel: {{ pedido.direccion_telefono }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- ITEMS -->
+        <table class="factura-tabla">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cant.</th>
+                    <th>Precio unitario</th>
+                    <th>Descuento</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        <strong>{{ item.producto_nombre }}</strong>
+                        {% if item.variante_nombre %}
+                        <span>Tono: {{ item.variante_nombre }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>${{ item.precio_unitario|floatformat:0 }}</td>
+                    <td>
+                        {% if item.descuento > 0 %}
+                            -${{ item.descuento|floatformat:0 }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>${{ item.subtotal|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- RESUMEN -->
+        <div class="factura-resumen">
+
+            <div class="factura-linea">
+                <span>Subtotal al detal</span>
+                <strong>${{ pedido.subtotal_detalle|floatformat:0 }}</strong>
+            </div>
+
+            {% if pedido.descuento > 0 %}
+            <div class="factura-linea factura-descuento">
+                <span>Descuento aplicado ({{ pedido.nivel_precio }})</span>
+                <strong>-${{ pedido.descuento|floatformat:0 }}</strong>
+            </div>
+
+            <div class="factura-linea">
+                <span>Subtotal con descuento</span>
+                <strong>${{ pedido.subtotal|floatformat:0 }}</strong>
+            </div>
+            {% endif %}
+
+            <div class="factura-linea">
+                <span>Envío</span>
+                <strong>${{ pedido.costo_envio|floatformat:0 }}</strong>
+            </div>
+
+            <hr>
+
+            <div class="factura-total">
+                <strong>Total pagado</strong>
+                <strong>${{ pedido.total|floatformat:0 }}</strong>
+            </div>
+
+        </div>
+
+        <!-- PAGO -->
+        {% if pago %}
+        <div class="factura-pago">
+            <h2>Información del pago</h2>
+            <div class="factura-linea">
+                <span>Método de pago</span>
+                <strong>{{ pago.metodo_pago|default:"—" }}</strong>
+            </div>
+            <div class="factura-linea">
+                <span>ID de transacción</span>
+                <strong>{{ pago.transaccion_id }}</strong>
+            </div>
+            <div class="factura-linea">
+                <span>Estado</span>
+                <strong>{{ pago.get_estado_display }}</strong>
+            </div>
+        </div>
+        {% endif %}
+
+        <button onclick="window.print()" class="factura-imprimir">
+            Descargar / Imprimir
+        </button>
+
+    </section>
+
+</main>
+
+{% endblock %}

@@ -1,0 +1,764 @@
+{% extends 'core/dashboard.html' %}
+{% load static %}
+
+{% block title %}
+Dashboard | Lúmina
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/inicio_dashboard.css' %}">
+
+<div class="dashboard-home">
+
+<section class="dashboard-header">
+
+    <div class="header-content">
+
+        <h1>✨ Centro de Control</h1>
+
+        <p>
+            Gestiona tu contenido, organiza tus ideas y mantén el control de tu negocio desde un solo lugar.
+        </p>
+
+    </div>
+
+</section>
+
+<section class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div>
+            <h2>{{ total_notas }}</h2>
+            <p>Listas</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">💡</div>
+        <div>
+            <h2>{{ total_ideas }}</h2>
+            <p>Ideas</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div>
+            <h2>{{ total_eventos }}</h2>
+            <p>Eventos</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">⏰</div>
+        <div>
+            <h2>{{ total_recordatorios }}</h2>
+            <p>Recordatorios</p>
+        </div>
+    </div>
+
+</section>
+
+<section class="card frase-card">
+
+    <div class="icon-card">
+        ✨
+    </div>
+
+    <div>
+
+        <h3>Frase del día</h3>
+
+        <p>{{ frase_dia }}</p>
+
+    </div>
+
+</section>
+
+<div class="dashboard-grid">
+
+<section class="card calendario-card">
+
+<div class="section-header">
+
+    <h3>📅 Calendario</h3>
+
+    <button class="btn-add" onclick="mostrarEvento()">
+        +
+    </button>
+
+</div>
+
+<div id="formEvento" class="form-dashboard hidden">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input type="hidden" name="accion" value="crear_evento">
+
+<input type="text" name="titulo" placeholder="Título del evento" required>
+
+<textarea
+name="descripcion"
+placeholder="Descripción del evento">
+</textarea>
+
+<input type="date" name="fecha" required>
+
+<input type="time" name="hora">
+
+<select name="tipo">
+
+<option value="contenido">Contenido</option>
+<option value="pedido">Pedido</option>
+<option value="reunion">Reunión</option>
+<option value="otro">Otro</option>
+
+</select>
+
+<button type="submit">
+Guardar evento
+</button>
+
+</form>
+
+</div>
+
+<div id="calendar"></div>
+
+<div class="eventos-lista">
+
+{% for evento in eventos %}
+
+<div class="evento-item">
+
+<div>
+
+<strong>{{ evento.titulo }}</strong>
+
+<small>
+{{ evento.fecha }}
+{% if evento.hora %}
+- {{ evento.hora }}
+{% endif %}
+</small>
+
+</div>
+
+<div class="evento-actions">
+
+<button
+type="button"
+class="action-btn edit-btn"
+onclick="editarEvento(
+'{{ evento.id }}',
+'{{ evento.titulo|escapejs }}',
+'{{ evento.descripcion|escapejs }}',
+'{{ evento.fecha|date:"Y-m-d" }}',
+'{% if evento.hora %}{{ evento.hora|time:"H:i" }}{% endif %}',
+'{{ evento.tipo }}'
+)">
+✏️
+</button>
+
+<a
+href="{% url 'eliminar_evento' evento.id %}"
+class="action-btn danger"
+onclick="return confirmarEliminar(event,this)">
+🗑
+</a>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<p class="empty">
+No tienes eventos registrados.
+</p>
+
+{% endfor %}
+
+</div>
+
+</section>
+
+<section class="card recordatorios-card">
+
+<div class="section-header">
+
+<h3>⏰ Recordatorios</h3>
+
+<button
+class="btn-add"
+onclick="mostrarRecordatorio()">
++
+</button>
+
+</div>
+
+<div
+id="formRecordatorio"
+class="form-dashboard hidden">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input
+type="hidden"
+name="accion"
+value="crear_recordatorio">
+
+<input
+type="text"
+name="titulo"
+placeholder="Nuevo recordatorio"
+required>
+
+<input
+type="date"
+name="fecha"
+required>
+
+<select name="prioridad">
+
+<option value="baja">Baja</option>
+<option value="media">Media</option>
+<option value="alta">Alta</option>
+
+</select>
+
+<button type="submit">
+Guardar
+</button>
+
+</form>
+
+</div>
+
+<div class="recordatorios-list">
+
+{% for r in recordatorios %}
+
+<div class="recordatorio-item {% if r.completado %}completado{% endif %}">
+
+<div class="recordatorio-info">
+
+<div class="recordatorio-info">
+
+    <a
+    href="{% url 'toggle_recordatorio' r.id %}"
+    class="check-box"
+    onclick="return confirmarEstado(event,this)">
+
+        {% if r.completado %}
+        ✓
+        {% endif %}
+
+    </a>
+
+    <div>
+
+        <strong>{{ r.titulo }}</strong>
+
+        <span>
+            {{ r.fecha|date:"d/m/Y" }}
+        </span>
+
+    </div>
+
+</div>
+
+<div class="acciones">
+
+<button
+type="button"
+class="action-btn edit-btn"
+onclick="editarRecordatorio(
+'{{ r.id }}',
+'{{ r.titulo|escapejs }}',
+'{{ r.fecha|date:"Y-m-d" }}',
+'{{ r.prioridad }}'
+)">
+✏️
+</button>
+
+<a
+href="{% url 'eliminar_recordatorio' r.id %}"
+class="action-btn danger"
+onclick="return confirmarEliminar(event,this)">
+🗑
+</a>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<p class="empty">
+No tienes recordatorios.
+</p>
+
+{% endfor %}
+
+</div>
+
+</section>
+
+</div>
+<!-- =========================
+     CHECKLIST
+========================= -->
+
+<section class="card">
+
+<div class="section-header">
+
+<h3>
+    ✅ Checklist
+</h3>
+
+<button
+class="btn-add"
+onclick="mostrarNota()">
+
++
+</button>
+
+</div>
+
+<div
+id="formNota"
+class="form-dashboard hidden">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input
+type="hidden"
+name="accion"
+value="crear_nota">
+
+<input
+type="text"
+name="texto"
+placeholder="Nueva tarea..."
+required>
+
+<button type="submit">
+Guardar
+</button>
+
+</form>
+
+</div>
+
+<div class="checklist-progress">
+
+<div class="progress-header">
+
+<span>Progreso</span>
+
+<span>{{ total_notas }} tareas</span>
+
+</div>
+
+<div class="progress-bar">
+
+<div class="progress-fill"></div>
+
+</div>
+
+</div>
+
+{% for nota in notas %}
+
+<div class="nota-item {% if nota.completada %}completed{% endif %}">
+
+<div class="nota-info">
+
+<a
+href="{% url 'toggle_nota' nota.id %}"
+class="check-box {% if nota.completada %}checked{% endif %}"
+onclick="return confirmarEstado(event,this)">
+
+{% if nota.completada %}
+✓
+{% endif %}
+
+</a>
+
+<span class="{% if nota.completada %}completada{% endif %}">
+{{ nota.texto }}
+</span>
+
+</div>
+
+<div class="acciones">
+
+<button
+type="button"
+class="action-btn edit-btn"
+onclick="editarNota(
+'{{ nota.id }}',
+'{{ nota.texto|escapejs }}'
+)">
+✏️
+</button>
+
+<a
+href="{% url 'eliminar_nota' nota.id %}"
+class="action-btn danger"
+onclick="return confirmarEliminar(event,this)">
+🗑
+</a>
+
+</div>
+
+</div>
+
+{% empty %}
+
+<p class="empty">
+No tienes tareas registradas.
+</p>
+
+{% endfor %}
+
+</section>
+
+</div>
+
+
+<!-- =========================
+     MURO DE NOTAS
+========================= -->
+
+<section class="card postit-card">
+
+<div class="section-header">
+
+<h3>
+📌 Muro de Notas
+</h3>
+
+<button
+class="btn-add"
+onclick="mostrarPostit()">
+
++
+
+</button>
+
+</div>
+
+<div
+id="formPostit"
+class="form-dashboard hidden">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input
+type="hidden"
+name="accion"
+value="crear_postit">
+
+<textarea
+name="contenido"
+placeholder="Escribe una nota rápida..."
+required>
+</textarea>
+
+<select name="color">
+
+<option value="rosa">🌸 Rosa</option>
+<option value="amarillo">🌼 Amarillo</option>
+<option value="lila">💜 Lila</option>
+<option value="azul">💙 Azul</option>
+
+</select>
+
+<button type="submit">
+Guardar nota
+</button>
+
+</form>
+
+</div>
+
+<div class="postit-grid">
+
+{% for postit in postits %}
+
+<div class="postit {{ postit.color }}">
+
+<div class="postit-header">
+
+<div>
+
+<span>📌</span>
+
+<button
+type="button"
+class="action-btn edit-btn"
+onclick="editarPostit(
+'{{ postit.id }}',
+'{{ postit.contenido|escapejs }}'
+)">
+✏️
+</button>
+
+</div>
+
+<a
+href="{% url 'eliminar_postit' postit.id %}"
+class="action-btn danger"
+onclick="return confirmarEliminar(event,this)">
+🗑
+</a>
+
+</div>
+
+<p>
+{{ postit.contenido }}
+</p>
+
+<small>
+{{ postit.fecha_creacion|date:"d/m/Y" }}
+</small>
+
+</div>
+
+{% empty %}
+
+<p class="empty">
+No tienes notas rápidas.
+</p>
+
+{% endfor %}
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     IDEAS DE CONTENIDO
+========================= -->
+
+<section class="card ideas-card">
+
+<div class="section-header">
+
+<h3>
+💡 Ideas de contenido
+</h3>
+
+<button
+class="btn-add"
+onclick="mostrarIdea()">
+
++
+
+</button>
+
+</div>
+
+<div
+id="formIdea"
+class="form-dashboard hidden">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input
+type="hidden"
+name="accion"
+value="crear_idea">
+
+<input
+type="text"
+name="titulo"
+placeholder="Título de la idea"
+required>
+
+<textarea
+name="descripcion"
+placeholder="Describe tu idea...">
+</textarea>
+
+<select name="categoria" class="swal2-input">
+
+<option value="galeria">Galeria</option>
+<option value="post">Post</option>
+<option value="historia">Historia</option>
+<option value="blog">Blog</option>
+<option value="otro">Otro</option>
+
+</select>
+
+<button type="submit">
+Guardar idea
+</button>
+
+</form>
+
+</div>
+
+<div class="ideas-grid">
+
+{% for idea in ideas %}
+
+<article class="idea-card">
+
+<span class="idea-badge">
+{{ idea.get_categoria_display }}
+</span>
+
+<h4>
+{{ idea.titulo }}
+</h4>
+
+<p>
+{{ idea.descripcion|truncatechars:120 }}
+</p>
+
+<div class="idea-footer">
+
+<small>
+{{ idea.get_estado_display }}
+</small>
+
+<div class="acciones">
+
+<button
+type="button"
+class="action-btn edit-btn"
+onclick="editarIdea(
+'{{ idea.id }}',
+'{{ idea.titulo|escapejs }}',
+'{{ idea.descripcion|escapejs }}',
+'{{ idea.categoria }}'
+)">
+✏️
+</button>
+
+<a
+href="{% url 'eliminar_idea' idea.id %}"
+class="action-btn danger"
+onclick="return confirmarEliminar(event,this)">
+🗑
+</a>
+
+</div>
+
+</div>
+
+</article>
+
+{% empty %}
+
+<p class="empty">
+No tienes ideas guardadas.
+</p>
+
+{% endfor %}
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     DATOS CALENDARIO
+========================= -->
+
+<script
+id="eventos-data"
+type="application/json">
+
+{{ eventos_json|safe }}
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+
+<script>
+
+function confirmarEliminar(e,enlace){
+
+    e.preventDefault();
+
+    Swal.fire({
+        title:'¿Eliminar elemento?',
+        text:'Esta acción no se puede deshacer',
+        icon:'warning',
+        showCancelButton:true,
+        confirmButtonText:'Sí, eliminar',
+        cancelButtonText:'Cancelar',
+        reverseButtons:true
+    }).then((result)=>{
+
+        if(result.isConfirmed){
+
+            Swal.fire({
+                title:'Eliminando...',
+                icon:'success',
+                timer:700,
+                showConfirmButton:false
+            });
+
+            setTimeout(()=>{
+                window.location.href = enlace.href;
+            },700);
+
+        }
+
+    });
+
+    return false;
+}
+
+
+function confirmarEstado(e,enlace){
+
+    e.preventDefault();
+
+    Swal.fire({
+        title:'¿Cambiar estado?',
+        text:'La información será actualizada',
+        icon:'question',
+        showCancelButton:true,
+        confirmButtonText:'Sí',
+        cancelButtonText:'Cancelar'
+    }).then((result)=>{
+
+        if(result.isConfirmed){
+
+            window.location.href = enlace.href;
+
+        }
+
+    });
+
+    return false;
+}
+
+</script>
+
+<script src="{% static 'js/inicio_dashboard.js' %}"></script>
+
+{% endblock %}
