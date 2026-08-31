@@ -167,24 +167,25 @@ urlpatterns = [
     path("pedidos/<int:pedido_id>/",views.dashboard_pedido_detalle,name="dashboard_pedido_detalle"),
     path("pedidos/<int:pedido_id>/estado/",views.dashboard_pedido_estado,name="dashboard_pedido_estado"),
     path("carrito/agregar-kit/<int:kit_id>/", views.agregar_kit_al_carrito, name="agregar_kit_al_carrito"),
-    path("dashboard/recomendaciones/",views.dashboard_recomendaciones,name="dashboard_recomendaciones"),
+    path(
+        "dashboard/recomendaciones/",
+        views.dashboard_recomendaciones,
+        name="dashboard_recomendaciones",
+    ),
+    path(
+        "dashboard/recomendaciones/<int:id>/eliminar/",
+        views.eliminar_recomendacion,
+        name="eliminar_recomendacion",
+    ),
+    path(
+        "api/recomendar-emprendimiento/",
+        views.recomendar_emprendimiento,
+        name="recomendar_emprendimiento",
+    ),
+    path("api/guardar-reporte-emprendimiento/", views.guardar_reporte_emprendimiento, name="guardar_reporte_emprendimiento"),
+path("emprender/reportes/<int:id>/", views.reporte_emprendimiento_detalle, name="reporte_emprendimiento_detalle"),
+path("emprender/reportes/<int:id>/eliminar/", views.eliminar_reporte_emprendimiento, name="eliminar_reporte_emprendimiento"),
 
-path(
-    "dashboard/recomendaciones/editar/<int:recomendacion_id>/",
-    views.editar_recomendacion,
-    name="editar_recomendacion"
-),
-
-path(
-    "dashboard/recomendaciones/eliminar/<int:recomendacion_id>/",
-    views.eliminar_recomendacion,
-    name="eliminar_recomendacion"
-),
-path(
-    "api/recomendaciones-emprendimiento/",
-    views.recomendaciones_emprendimiento_api,
-    name="recomendaciones_emprendimiento_api"
-),
 ]
 
 # ==================================================

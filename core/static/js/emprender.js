@@ -1,626 +1,439 @@
-document.addEventListener("DOMContentLoaded", function () {
+console.log("emprender.js v8 cargado — si no ves este mensaje, el navegador está usando una versión vieja en caché");
 
-    const presupuesto = document.getElementById("presupuesto");
-    const producto = document.getElementById("producto");
-    const ventas = document.getElementById("ventas");
-
-    const btnTest = document.getElementById("btnTest");
-    const testError = document.getElementById("testError");
-
-    const resultado = document.getElementById("resultado");
-
-    const resultadoNombre = document.getElementById("resultadoNombre");
-    const resultadoProducto = document.getElementById("resultadoProducto");
-    const resultadoPresupuesto = document.getElementById("resultadoPresupuesto");
-    const resultadoNivel = document.getElementById("resultadoNivel");
-    const resultadoPlataforma = document.getElementById("resultadoPlataforma");
-    const resultadoGanancia = document.getElementById("resultadoGanancia");
-    const resultadoRoi = document.getElementById("resultadoRoi");
-    const resultadoTexto = document.getElementById("resultadoTexto");
-
-    const resultadoProductos = document.getElementById("resultadoProductos");
-    const resultadoKits = document.getElementById("resultadoKits");
-
-    const listaProductos = document.getElementById("listaProductos");
-    const listaKits = document.getElementById("listaKits");
-
-    const invTotal = document.getElementById("invTotal");
-    const gananciaTotal = document.getElementById("gananciaTotal");
-    const roi = document.getElementById("roi");
-
-    const canvas = document.getElementById("graficoGanancias");
-
-    let grafico = null;
-
-
-    // =====================================================
-    // RECOMENDACIONES QUE VIENEN DESDE DJANGO
-    // =====================================================
-
-    const recomendaciones = window.LUMINA_RECOMENDACIONES || [];
-
-
-    // =====================================================
-    // FORMATEAR DINERO
-    // =====================================================
-
-    function formatoPesos(valor) {
-
-        if (valor === null || valor === undefined || valor === "") {
-            return "$0";
-        }
-
-        return "$" + Number(valor).toLocaleString("es-CO");
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    for (let cookie of document.cookie.split(";")) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-
-
-    // =====================================================
-    // NOMBRES BONITOS
-    // =====================================================
-
-    const nombresProductos = {
-        gloss: "Gloss",
-        skincare: "Skincare",
-        pestanas: "Pestañas",
-        kits: "Kits beauty"
-    };
-
-
-    const nombresPlataformas = {
-        instagram: "Instagram",
-        tiktok: "TikTok",
-        whatsapp: "WhatsApp"
-    };
-
-
-    // =====================================================
-    // NIVEL SEGÚN INVERSIÓN
-    // =====================================================
-
-    function obtenerNivel(inversion) {
-
-        inversion = Number(inversion);
-
-        if (inversion <= 100000) {
-            return "🌱 Principiante";
-        }
-
-        if (inversion <= 300000) {
-            return "✨ Emprendedor en crecimiento";
-        }
-
-        return "💎 Emprendedor avanzado";
-    }
-
-
-    // =====================================================
-    // BUSCAR RECOMENDACIÓN
-    // =====================================================
-
-    function buscarRecomendacion() {
-
-        const presupuestoUsuario = Number(presupuesto.value);
-        const productoUsuario = producto.value;
-        const plataformaUsuario = ventas.value;
-
-
-        console.log("=================================");
-        console.log("BUSCANDO RECOMENDACIÓN");
-        console.log("Presupuesto:", presupuestoUsuario);
-        console.log("Producto:", productoUsuario);
-        console.log("Plataforma:", plataformaUsuario);
-        console.log("Recomendaciones:", recomendaciones);
-        console.log("=================================");
-
-
-        if (!recomendaciones.length) {
-
-            console.warn(
-                "No existen recomendaciones activas en la base de datos."
-            );
-
-            return null;
-        }
-
-
-        // -------------------------------------------------
-        // 1. COINCIDENCIA PERFECTA
-        // -------------------------------------------------
-
-        let coincidencia = recomendaciones.find(function (rec) {
-
-            const presupuestoCorrecto =
-                presupuestoUsuario >= Number(rec.presupuesto_min) &&
-                presupuestoUsuario <= Number(rec.presupuesto_max);
-
-            const productoCorrecto =
-                !rec.producto_interes ||
-                rec.producto_interes === productoUsuario;
-
-            const plataformaCorrecta =
-                !rec.plataforma ||
-                rec.plataforma === plataformaUsuario;
-
-            return (
-                presupuestoCorrecto &&
-                productoCorrecto &&
-                plataformaCorrecta
-            );
-        });
-
-
-        if (coincidencia) {
-            return coincidencia;
-        }
-
-
-        // -------------------------------------------------
-        // 2. COINCIDENCIA POR PRESUPUESTO + PRODUCTO
-        // -------------------------------------------------
-
-        coincidencia = recomendaciones.find(function (rec) {
-
-            const presupuestoCorrecto =
-                presupuestoUsuario >= Number(rec.presupuesto_min) &&
-                presupuestoUsuario <= Number(rec.presupuesto_max);
-
-            const productoCorrecto =
-                !rec.producto_interes ||
-                rec.producto_interes === productoUsuario;
-
-            return (
-                presupuestoCorrecto &&
-                productoCorrecto
-            );
-        });
-
-
-        if (coincidencia) {
-            return coincidencia;
-        }
-
-
-        // -------------------------------------------------
-        // 3. COINCIDENCIA SOLO POR PRESUPUESTO
-        // -------------------------------------------------
-
-        coincidencia = recomendaciones.find(function (rec) {
-
-            return (
-                presupuestoUsuario >= Number(rec.presupuesto_min) &&
-                presupuestoUsuario <= Number(rec.presupuesto_max)
-            );
-        });
-
-
-        if (coincidencia) {
-            return coincidencia;
-        }
-
-
-        // -------------------------------------------------
-        // 4. BUSCAR LA MÁS CERCANA
-        // -------------------------------------------------
-
-        let recomendacionCercana = null;
-        let diferenciaMenor = Infinity;
-
-
-        recomendaciones.forEach(function (rec) {
-
-            const minimo = Number(rec.presupuesto_min);
-            const maximo = Number(rec.presupuesto_max);
-
-            let diferencia = 0;
-
-            if (presupuestoUsuario < minimo) {
-                diferencia = minimo - presupuestoUsuario;
-            }
-
-            else if (presupuestoUsuario > maximo) {
-                diferencia = presupuestoUsuario - maximo;
-            }
-
-            else {
-                diferencia = 0;
-            }
-
-
-            if (diferencia < diferenciaMenor) {
-
-                diferenciaMenor = diferencia;
-                recomendacionCercana = rec;
-            }
-
-        });
-
-
-        return recomendacionCercana;
-    }
-
-
-    // =====================================================
-    // MOSTRAR PRODUCTOS
-    // =====================================================
-
-    function mostrarProductos(productos) {
-
-        listaProductos.innerHTML = "";
-
-        if (!productos || !productos.length) {
-
-            resultadoProductos.hidden = true;
-
-            return;
-        }
-
-
-        resultadoProductos.hidden = false;
-
-
-        productos.forEach(function (producto) {
-
-            const item = document.createElement("div");
-
-            item.className = "lm-result-item";
-
-
-            item.innerHTML = `
-                <span>
-                    💄 ${producto.nombre}
-                </span>
-                ${
-                    producto.precio
-                    ? `<strong>${formatoPesos(producto.precio)}</strong>`
-                    : ""
-                }
-            `;
-
-
-            listaProductos.appendChild(item);
-
-        });
-
-    }
-
-
-    // =====================================================
-    // MOSTRAR KITS
-    // =====================================================
-
-    function mostrarKits(kits) {
-
-        listaKits.innerHTML = "";
-
-        if (!kits || !kits.length) {
-
-            resultadoKits.hidden = true;
-
-            return;
-        }
-
-
-        resultadoKits.hidden = false;
-
-
-        kits.forEach(function (kit) {
-
-            const item = document.createElement("div");
-
-            item.className = "lm-result-item";
-
-
-            item.innerHTML = `
-                <span>
-                    📦 ${kit.nombre}
-                </span>
-                ${
-                    kit.precio
-                    ? `<strong>${formatoPesos(kit.precio)}</strong>`
-                    : ""
-                }
-            `;
-
-
-            listaKits.appendChild(item);
-
-        });
-
-    }
-
-
-    // =====================================================
-    // ACTUALIZAR GRÁFICO
-    // =====================================================
-
-    function actualizarGrafico(inversion, ganancia) {
-
-        if (!canvas) {
-            return;
-        }
-
-
-        if (grafico) {
-            grafico.destroy();
-        }
-
-
-        grafico = new Chart(canvas, {
-
-            type: "bar",
-
-            data: {
-
-                labels: [
-                    "Inversión",
-                    "Ganancia"
-                ],
-
-                datasets: [
-                    {
-                        label: "Proyección",
-                        data: [
-                            inversion,
-                            ganancia
-                        ]
-                    }
-                ]
-
-            },
-
-            options: {
-
-                responsive: true,
-
-                maintainAspectRatio: false,
-
-                plugins: {
-
-                    legend: {
-                        display: false
-                    }
-
-                },
-
-                scales: {
-
-                    y: {
-
-                        beginAtZero: true,
-
-                        ticks: {
-
-                            callback: function (value) {
-                                return formatoPesos(value);
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        });
-
-    }
-
-
-    // =====================================================
-    // MOSTRAR RESULTADO
-    // =====================================================
-
-    function mostrarResultado(rec) {
-
-        if (!rec) {
-
-            resultado.hidden = false;
-
-            resultadoNombre.textContent =
-                "No encontramos una recomendación exacta.";
-
-            resultadoProducto.textContent =
-                nombresProductos[producto.value] || "Beauty";
-
-            resultadoPresupuesto.textContent =
-                formatoPesos(presupuesto.value);
-
-            resultadoNivel.textContent =
-                obtenerNivel(presupuesto.value);
-
-            resultadoPlataforma.textContent =
-                nombresPlataformas[ventas.value] || "Tu plataforma";
-
-            resultadoGanancia.textContent = "$0";
-
-            resultadoRoi.textContent = "0%";
-
-            resultadoTexto.textContent =
-                "Prueba con otro presupuesto o configura más recomendaciones desde el panel administrativo.";
-
-            resultadoProductos.hidden = true;
-            resultadoKits.hidden = true;
-
-            invTotal.textContent = "$0";
-            gananciaTotal.textContent = "$0";
-            roi.textContent = "0%";
-
-            return;
-        }
-
-
-        // =================================================
-        // DATOS
-        // =================================================
-
-        const inversion = Number(rec.inversion_estimada || 0);
-
-        const ganancia = Number(rec.ganancia_estimada || 0);
-
-        const roiCalculado =
-            inversion > 0
-                ? ((ganancia / inversion) * 100)
-                : 0;
-
-
-        // =================================================
-        // RESULTADO
-        // =================================================
-
-        resultado.hidden = false;
-
-
-        resultadoNombre.textContent =
-            rec.nombre || "Recomendación personalizada";
-
-
-        resultadoProducto.textContent =
-            nombresProductos[rec.producto_interes]
-            || nombresProductos[producto.value]
-            || "Productos beauty";
-
-
-        resultadoPresupuesto.textContent =
-            formatoPesos(inversion);
-
-
-        resultadoNivel.textContent =
-            obtenerNivel(inversion);
-
-
-        resultadoPlataforma.textContent =
-            nombresPlataformas[rec.plataforma]
-            || nombresPlataformas[ventas.value]
-            || "Redes sociales";
-
-
-        resultadoGanancia.textContent =
-            formatoPesos(ganancia);
-
-
-        resultadoRoi.textContent =
-            roiCalculado.toFixed(2) + "%";
-
-
-        resultadoTexto.textContent =
-            rec.recomendacion ||
-            "Con esta inversión puedes comenzar tu emprendimiento beauty y crecer progresivamente.";
-
-
-        // =================================================
-        // PRODUCTOS Y KITS
-        // =================================================
-
-        mostrarProductos(rec.productos);
-
-        mostrarKits(rec.kits);
-
-
-        // =================================================
-        // DASHBOARD
-        // =================================================
-
-        invTotal.textContent =
-            formatoPesos(inversion);
-
-
-        gananciaTotal.textContent =
-            formatoPesos(ganancia);
-
-
-        roi.textContent =
-            roiCalculado.toFixed(2) + "%";
-
-
-        actualizarGrafico(
-            inversion,
-            ganancia
-        );
-
-
-        // =================================================
-        // SCROLL AL RESULTADO
-        // =================================================
-
-        setTimeout(function () {
-
-            resultado.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-
-        }, 100);
-
-    }
-
-
-    // =====================================================
-    // BOTÓN TEST
-    // =====================================================
-
-    if (btnTest) {
-
-        btnTest.addEventListener("click", function () {
-
-            testError.textContent = "";
-
-
-            // ---------------------------------------------
-            // VALIDACIÓN
-            // ---------------------------------------------
-
-            if (!presupuesto.value) {
-
-                testError.textContent =
-                    "💸 Selecciona tu presupuesto.";
-
-                presupuesto.focus();
-
-                return;
-            }
-
-
-            if (!producto.value) {
-
-                testError.textContent =
-                    "💄 Selecciona qué quieres vender.";
-
-                producto.focus();
-
-                return;
-            }
-
-
-            if (!ventas.value) {
-
-                testError.textContent =
-                    "📱 Selecciona dónde quieres vender.";
-
-                ventas.focus();
-
-                return;
-            }
-
-
-            // ---------------------------------------------
-            // BUSCAR
-            // ---------------------------------------------
-
-            const recomendacion =
-                buscarRecomendacion();
-
-
-            // ---------------------------------------------
-            // MOSTRAR
-            // ---------------------------------------------
-
-            mostrarResultado(
-                recomendacion
-            );
-
-        });
-
-    }
-
+  }
+  return cookieValue;
+}
+
+function getCsrfToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.content : getCookie("csrftoken");
+}
+
+function formatoCOP(valor) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(valor || 0);
+}
+
+function textoSugerenciaSobrante(sugerencia) {
+  if (!sugerencia || !sugerencia.monto || sugerencia.monto <= 0) return "";
+
+  if (sugerencia.producto_sugerido) {
+    return (
+      ` Con los ${formatoCOP(sugerencia.monto)} que sobran, podrías sumar ` +
+      `1x ${sugerencia.producto_sugerido.nombre} (${formatoCOP(sugerencia.producto_sugerido.costo)}) ` +
+      `y dejar toda tu inversión en mercancía, o guardarlos para cubrir el envío.`
+    );
+  }
+
+  return (
+    ` Los ${formatoCOP(sugerencia.monto)} que sobran no alcanzan para sumar otro ` +
+    `producto de esta selección, así que puedes destinarlos a cubrir el envío.`
+  );
+}
+
+let graficoGanancias = null;
+
+// Se guardan el último resultado y los filtros usados para poder
+// descargarlo en PDF o guardarlo en la cuenta sin volver a pedirlos.
+let ultimoResultado = null;
+let ultimosFiltros = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnTest = document.getElementById("btnTest");
+  if (btnTest) btnTest.addEventListener("click", ejecutarTest);
+
+  const resultadoEl = document.getElementById("resultado");
+  const testErrorEl = document.getElementById("testError");
+  if (resultadoEl) resultadoEl.setAttribute("aria-live", "polite");
+  if (testErrorEl) testErrorEl.setAttribute("aria-live", "polite");
+
+  const btnImprimir = document.getElementById("btnImprimirPdf");
+  if (btnImprimir) btnImprimir.addEventListener("click", () => window.print());
+
+  const btnGuardar = document.getElementById("btnGuardarReporte");
+  if (btnGuardar) btnGuardar.addEventListener("click", guardarReporte);
 });
+
+async function ejecutarTest() {
+  const presupuesto = document.getElementById("presupuesto").value;
+  const producto = document.getElementById("producto").value;
+  const ventas = document.getElementById("ventas").value;
+  const testError = document.getElementById("testError");
+  const resultado = document.getElementById("resultado");
+
+  testError.textContent = "";
+
+  if (!presupuesto || !producto || !ventas) {
+    testError.textContent = "Responde las 3 preguntas para ver tu recomendación.";
+    return;
+  }
+
+  const btnTest = document.getElementById("btnTest");
+  const textoOriginal = btnTest.textContent;
+  btnTest.disabled = true;
+  btnTest.textContent = "Buscando...";
+
+  try {
+    const response = await fetch("/api/recomendar-emprendimiento/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: new URLSearchParams({ presupuesto, producto, plataforma: ventas }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.encontrada) {
+      resultado.hidden = true;
+      testError.textContent =
+        data.mensaje ||
+        "No encontramos una recomendación para esa combinación. Intenta con otros valores.";
+      return;
+    }
+
+    ultimoResultado = data;
+    ultimosFiltros = { presupuesto, producto, plataforma: ventas };
+
+    pintarResultado(data);
+    resultado.hidden = false;
+    resultado.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    testError.textContent = "Ocurrió un error al buscar tu recomendación. Intenta de nuevo.";
+  } finally {
+    btnTest.disabled = false;
+    btnTest.textContent = textoOriginal;
+  }
+}
+
+async function guardarReporte() {
+  const btnGuardar = document.getElementById("btnGuardarReporte");
+  const msgEl = document.getElementById("guardarReporteMsg");
+
+  if (!ultimoResultado || !ultimosFiltros) return;
+
+  const textoOriginal = btnGuardar.textContent;
+  btnGuardar.disabled = true;
+  btnGuardar.textContent = "Guardando...";
+  msgEl.textContent = "";
+
+  try {
+    const response = await fetch(window.LUMINA_URL_GUARDAR_REPORTE, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: JSON.stringify({
+        data: ultimoResultado,
+        presupuesto: ultimosFiltros.presupuesto,
+        producto: ultimosFiltros.producto,
+        plataforma: ultimosFiltros.plataforma,
+      }),
+    });
+
+    const resultado = await response.json();
+
+    if (!response.ok || !resultado.ok) {
+      msgEl.textContent = resultado.mensaje || "No se pudo guardar el reporte. Intenta de nuevo.";
+      return;
+    }
+
+    msgEl.textContent = "✅ Reporte guardado. Puedes verlo en tu cuenta, sección 'Mis reportes de emprendimiento'.";
+  } catch (err) {
+    msgEl.textContent = "Ocurrió un error al guardar el reporte. Intenta de nuevo.";
+  } finally {
+    btnGuardar.disabled = false;
+    btnGuardar.textContent = textoOriginal;
+  }
+}
+
+function pintarResultado(data) {
+  document.getElementById("resultadoNombre").textContent = data.nombre;
+  document.getElementById("resultadoProducto").textContent = data.producto_interes_display;
+  document.getElementById("resultadoPresupuesto").textContent = formatoCOP(
+    data.inversion_estimada
+  );
+  document.getElementById("resultadoNivel").textContent = data.nivel;
+  document.getElementById("resultadoPlataforma").textContent = data.plataforma_display;
+  document.getElementById("resultadoGanancia").textContent = formatoCOP(
+    data.ganancia_estimada
+  );
+  document.getElementById("resultadoRoi").textContent = `${data.roi}%`;
+  document.getElementById("resultadoTexto").textContent = data.recomendacion || "";
+
+  const tieneListaCompra = data.lista_compra && data.lista_compra.length > 0;
+
+  const explicacionEl = document.getElementById("resultadoExplicacion");
+  if (explicacionEl) {
+    let texto;
+
+    if (tieneListaCompra) {
+      texto =
+        `Con ${formatoCOP(data.compra_total_costo)} compras exactamente los productos ` +
+        `que ves abajo. Si los vendes todos al precio sugerido, recibirías ` +
+        `${formatoCOP(data.compra_total_venta)}, lo que te deja ` +
+        `${formatoCOP(data.ganancia_estimada)} de ganancia.`;
+
+      if (data.presupuesto_sobrante && data.presupuesto_sobrante > 0) {
+        texto += ` Te quedan ${formatoCOP(data.presupuesto_sobrante)} sin usar (no alcanza para otra unidad de estos productos).`;
+      }
+    } else {
+      const venta = data.inversion_estimada + data.ganancia_estimada;
+      texto =
+        `Con ${formatoCOP(data.inversion_estimada)} compras productos, y si los vendes todos, ` +
+        `recibirías cerca de ${formatoCOP(venta)}. Es decir: recuperas lo que invertiste y te ` +
+        `queda ${formatoCOP(data.ganancia_estimada)} de ganancia. Esta cifra es un promedio ` +
+        `típico de este rango de inversión, no de productos específicos.`;
+    }
+
+    if (data.kits_estimados) {
+      texto += ` Si prefieres kits, con este presupuesto alcanzas cerca de ${data.kits_estimados} kit${data.kits_estimados === 1 ? "" : "s"} completo${data.kits_estimados === 1 ? "" : "s"} (estimado).`;
+      texto += textoSugerenciaSobrante(data.kits_sobrante_sugerencia);
+    }
+
+    if (data.formula_precio_venta && data.margen_porcentaje != null) {
+      const margenDecimal = data.margen_porcentaje / 100;
+      const ejemploCosto = 10000;
+      const ejemploVenta = margenDecimal < 1 ? ejemploCosto / (1 - margenDecimal) : ejemploCosto;
+      texto +=
+        ` Así se calcula el precio de venta sugerido: ${data.formula_precio_venta}. ` +
+        `En tu tramo (${data.tramo_etiqueta || ""}) el margen sugerido es del ${data.margen_porcentaje}%: ` +
+        `por ejemplo, un producto que te cuesta comprarle a Lúmina ${formatoCOP(ejemploCosto)} se vendería en ${formatoCOP(ejemploVenta)}.`;
+    }
+
+    texto +=
+      ` Ten en cuenta que esto no incluye gastos como envíos, publicidad, ` +
+      `pasarela de pago o empaques, así que tu ganancia real puede ser un poco menor.`;
+
+    explicacionEl.textContent = texto;
+  }
+
+  const nombreEl = document.getElementById("resultadoNombre");
+  if (data.generica && nombreEl) {
+    nombreEl.textContent = `${data.nombre} (estimación general para tu presupuesto)`;
+  }
+
+  pintarListaCompra(data.lista_compra, data.presupuesto_sobrante, data.presupuesto_sobrante_sugerencia);
+  pintarListaProductos(data.productos);
+  pintarListaKits(data.kits);
+
+  actualizarDashboard(data);
+
+  const btnGuardar = document.getElementById("btnGuardarReporte");
+  const msgEl = document.getElementById("guardarReporteMsg");
+  if (btnGuardar) {
+    btnGuardar.hidden = !window.LUMINA_USER_AUTENTICADO;
+  }
+  if (msgEl) msgEl.textContent = "";
+}
+
+function pintarListaCompra(lineas, sobrante, sugerencia) {
+  const contenedor = document.getElementById("resultadoListaCompra");
+  const lista = document.getElementById("listaCompraItems");
+  const sobranteEl = document.getElementById("resultadoSobrante");
+
+  if (!contenedor || !lista) return;
+
+  lista.innerHTML = "";
+
+  if (!lineas || !lineas.length) {
+    contenedor.hidden = true;
+    return;
+  }
+
+  lineas.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "lm-result-item";
+    row.innerHTML = `
+      <span class="lm-result-item-nombre">${item.cantidad}x ${item.nombre}</span>
+      <span class="lm-result-item-precio">
+        ${formatoCOP(item.subtotal_costo)} → ${formatoCOP(item.subtotal_venta)}
+        <small style="display:block;opacity:.7;">
+          Margen sugerido: ${item.margen_porcentaje}% · te cuesta ${formatoCOP(item.costo_unitario)} → vendés a ${formatoCOP(item.precio_venta_unitario)}
+        </small>
+      </span>
+    `;
+    lista.appendChild(row);
+  });
+
+  if (sobranteEl) {
+    let textoSobrante =
+      sobrante && sobrante > 0
+        ? `Sobran ${formatoCOP(sobrante)} sin invertir en esta combinación.`
+        : "Usas prácticamente todo tu presupuesto en estos productos.";
+    textoSobrante += textoSugerenciaSobrante(sugerencia);
+    sobranteEl.textContent = textoSobrante;
+  }
+
+  contenedor.hidden = false;
+}
+
+function pintarLista(contenedorId, listaId, items) {
+  const contenedor = document.getElementById(contenedorId);
+  const lista = document.getElementById(listaId);
+  lista.innerHTML = "";
+
+  if (!items || !items.length) {
+    contenedor.hidden = true;
+    return;
+  }
+
+  items.forEach((item) => {
+    const link = document.createElement("a");
+    link.href = item.url;
+    link.className = "lm-result-item";
+    link.innerHTML = `
+      <span class="lm-result-item-nombre">${item.nombre}</span>
+      <span class="lm-result-item-precio">${formatoCOP(item.precio)}</span>
+    `;
+    lista.appendChild(link);
+  });
+
+  contenedor.hidden = false;
+}
+
+function pintarListaKits(items) {
+  const contenedor = document.getElementById("resultadoKits");
+  const lista = document.getElementById("listaKits");
+  lista.innerHTML = "";
+
+  if (!items || !items.length) {
+    contenedor.hidden = true;
+    return;
+  }
+
+  items.forEach((item) => {
+    const wrap = document.createElement("div");
+    wrap.className = "lm-result-item";
+
+    const comp = item.composicion;
+    const reventa = item.reventa_individual;
+
+    let detalleComposicion = "";
+    if (comp) {
+      const listaProductos = comp.productos
+        .map((p) => `${p.cantidad}x ${p.nombre}`)
+        .join(", ");
+      detalleComposicion = `
+        <small style="display:block;opacity:.7;">
+          Trae ${comp.num_productos_distintos} producto${comp.num_productos_distintos === 1 ? "" : "s"}
+          (${comp.unidades_totales} unidad${comp.unidades_totales === 1 ? "" : "es"} en total): ${listaProductos}.
+          Ahorras ${comp.ahorro_porcentaje}% (${formatoCOP(comp.ahorro)}) vs. comprarlos sueltos al precio de catálogo.
+        </small>
+      `;
+    }
+
+    let detalleReventa = "";
+    if (reventa) {
+      detalleReventa = `
+        <small style="display:block;opacity:.7;margin-top:2px;">
+          Si prefieres venderlos por separado con el margen sugerido, en total sumarían
+          ${formatoCOP(reventa.total_venta)} (el kit te cuesta ${formatoCOP(item.precio)}).
+        </small>
+      `;
+    }
+
+    wrap.innerHTML = `
+      <a href="${item.url}" class="lm-result-item-nombre">${item.nombre}</a>
+      <span class="lm-result-item-precio">${formatoCOP(item.precio)}</span>
+      ${detalleComposicion}
+      ${detalleReventa}
+    `;
+    lista.appendChild(wrap);
+  });
+
+  contenedor.hidden = false;
+}
+
+function actualizarDashboard(data) {
+  document.getElementById("invTotal").textContent = formatoCOP(data.inversion_estimada);
+  document.getElementById("gananciaTotal").textContent = formatoCOP(data.ganancia_estimada);
+  document.getElementById("roi").textContent = `${data.roi}%`;
+
+  const ctx = document.getElementById("graficoGanancias");
+  if (!ctx) return;
+
+  const meses = ["Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5", "Mes 6"];
+  const inversion = data.inversion_estimada;
+  const gananciaMensual = data.ganancia_estimada;
+  const proyeccion = meses.map((_, i) => Math.round(inversion + gananciaMensual * (i + 1)));
+
+  if (graficoGanancias) {
+    graficoGanancias.data.labels = meses;
+    graficoGanancias.data.datasets[0].data = proyeccion;
+    graficoGanancias.update();
+    return;
+  }
+
+  graficoGanancias = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: meses,
+      datasets: [
+        {
+          label: "Proyección de ganancias acumuladas",
+          data: proyeccion,
+          borderColor: "#df6d86",
+          backgroundColor: "rgba(223, 109, 134, 0.15)",
+          fill: true,
+          tension: 0.35,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: (v) => formatoCOP(v) } },
+      },
+    },
+  });
+}
+
+function pintarListaProductos(items) {
+  const contenedor = document.getElementById("resultadoProductos");
+  const lista = document.getElementById("listaProductos");
+  lista.innerHTML = "";
+
+  if (!items || !items.length) {
+    contenedor.hidden = true;
+    return;
+  }
+
+  items.forEach((item) => {
+    const link = document.createElement("a");
+    link.href = item.url;
+    link.className = "lm-result-item";
+
+    const detalleCosto =
+      item.costo != null
+        ? ` · Te cuesta: ${formatoCOP(item.costo)} · Margen sugerido: ${item.margen_porcentaje}%`
+        : "";
+
+    link.innerHTML = `
+      <span class="lm-result-item-nombre">${item.nombre}</span>
+      <span class="lm-result-item-precio">
+        Reventa sugerida: ${formatoCOP(item.precio_sugerido)}
+        <small style="display:block;opacity:.7;">Precio de catálogo: ${formatoCOP(item.precio_catalogo)}${detalleCosto}</small>
+      </span>
+    `;
+    lista.appendChild(link);
+  });
+
+  contenedor.hidden = false;
+}

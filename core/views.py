@@ -2,6 +2,7 @@ from datetime import datetime
 import uuid
 import hashlib
 import requests
+from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -35,7 +36,7 @@ from .models import (
     BlogPost, BlogSeccion, Direccion, Galeria, Pedido, Usuario, Test, Resultado,
     Pregunta, Opcion, ResultadoUsuario, NotaAdmin, Recordatorio, PedidoItem, Etiqueta,
     Producto, Categoria, Marca, Coleccion, ProductoImagen, ProductoVideo, Kit,
-    KitProducto, Carrito, CarritoItem, Variante, Contacto, EventoCalendario,
+    KitProducto, Carrito, CarritoItem, Variante, Contacto, EventoCalendario,ReporteEmprendimiento,
     IdeaContenido, PostIt, Pago, Pedido, CarritoItemKitSeleccion, PedidoItemKitSeleccion, RecomendacionEmprendimiento,
 )
 from django.db import transaction
@@ -152,10 +153,13 @@ def mi_cuenta(request):
         "resultado"
     )
 
+    reportes_emprendimiento = request.user.reportes_emprendimiento.all()
+
     return render(request, "core/cuenta.html", {
         "form": form,
         "pedidos": pedidos,
         "resultados_usuario": resultados_usuario,
+        "reportes_emprendimiento": reportes_emprendimiento,
     })
 # =========================
 # REGISTRO
@@ -5163,470 +5167,689 @@ def agregar_kit_al_carrito(request, kit_id):
         "cantidad_carrito": carrito.cantidad_total,
         "subtotal_item": str(item_carrito.subtotal),
     })
+import logging
+from decimal import Decimal, InvalidOperation
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+
+from .models import RecomendacionEmprendimiento, Kit, Producto
+
+logger = logging.getLogger(__name__)
+
+
 # =========================
 # RECOMENDACIONES
 # =========================
 @login_required
-@admin_required
 def dashboard_recomendaciones(request):
-
-    # =====================================
-    # CREAR RECOMENDACIÓN
-    # =====================================
-
     if request.method == "POST":
+        recomendacion_id = request.POST.get("recomendacion_id")
 
-        nombre = (
-            request.POST.get("nombre") or ""
-        ).strip()
-
-        presupuesto_min = (
-            request.POST.get("presupuesto_min") or "0"
-        ).strip()
-
-        presupuesto_max = (
-            request.POST.get("presupuesto_max") or "0"
-        ).strip()
-
-        producto_interes = (
-            request.POST.get("producto_interes") or ""
-        ).strip()
-
-        plataforma = (
-            request.POST.get("plataforma") or ""
-        ).strip()
-
-        inversion_estimada = (
-            request.POST.get("inversion_estimada") or "0"
-        ).strip()
-
-        ganancia_estimada = (
-            request.POST.get("ganancia_estimada") or "0"
-        ).strip()
-
-        recomendacion = (
-            request.POST.get("recomendacion") or ""
-        ).strip()
-
+        nombre = request.POST.get("nombre", "").strip()
+        producto_interes = request.POST.get("producto_interes") or None
+        plataforma = request.POST.get("plataforma") or None
+        recomendacion_texto = request.POST.get("recomendacion", "").strip()
         activa = request.POST.get("activa") == "on"
-
-        # =====================================
-        # CREAR
-        # =====================================
-
-        nueva_recomendacion = RecomendacionEmprendimiento.objects.create(
-
-            nombre=nombre,
-
-            presupuesto_min=presupuesto_min,
-
-            presupuesto_max=presupuesto_max,
-
-            producto_interes=producto_interes,
-
-            plataforma=plataforma,
-
-            inversion_estimada=inversion_estimada,
-
-            ganancia_estimada=ganancia_estimada,
-
-            recomendacion=recomendacion,
-
-            activa=activa,
-
-        )
-
-        # =====================================
-        # KITS
-        # =====================================
-
         kits_ids = request.POST.getlist("kits")
-
-        if kits_ids:
-
-            nueva_recomendacion.kits.set(
-                Kit.objects.filter(
-                    id__in=kits_ids,
-                    activo=True
-                )
-            )
-
-        # =====================================
-        # PRODUCTOS
-        # =====================================
-
         productos_ids = request.POST.getlist("productos")
 
-        if productos_ids:
+        if not nombre:
+            messages.error(request, "El nombre de la recomendación es obligatorio.")
+            return redirect("dashboard_recomendaciones")
 
-            nueva_recomendacion.productos.set(
-                Producto.objects.filter(
-                    id__in=productos_ids,
-                    activo=True
-                )
+        try:
+            presupuesto_min = Decimal(str(request.POST.get("presupuesto_min", "0")))
+            presupuesto_max = Decimal(str(request.POST.get("presupuesto_max", "0")))
+        except InvalidOperation:
+            messages.error(request, "El rango de inversión no es válido.")
+            return redirect("dashboard_recomendaciones")
+
+        if presupuesto_max < presupuesto_min:
+            messages.error(
+                request,
+                "El presupuesto máximo no puede ser menor que el presupuesto mínimo.",
             )
+            return redirect("dashboard_recomendaciones")
 
-        messages.success(
-            request,
-            "Recomendación creada correctamente."
-        )
+        if recomendacion_id:
+            recomendacion = get_object_or_404(
+                RecomendacionEmprendimiento, id=recomendacion_id
+            )
+            accion = "actualizada"
+        else:
+            recomendacion = RecomendacionEmprendimiento()
+            accion = "creada"
 
-        return redirect(
-            "dashboard_recomendaciones"
-        )
+        recomendacion.nombre = nombre
+        recomendacion.presupuesto_min = presupuesto_min
+        recomendacion.presupuesto_max = presupuesto_max
+        recomendacion.producto_interes = producto_interes
+        recomendacion.plataforma = plataforma
+        recomendacion.recomendacion = recomendacion_texto
+        recomendacion.activa = activa
+        recomendacion.save()
 
-    # =====================================
-    # LISTADO
-    # =====================================
+        recomendacion.kits.set(kits_ids)
+        recomendacion.productos.set(productos_ids)
 
-    recomendaciones = (
-        RecomendacionEmprendimiento.objects
-        .prefetch_related(
-            "kits",
-            "productos"
-        )
-        .order_by("-fecha_creacion")
-    )
+        messages.success(request, f"Recomendación «{nombre}» {accion} correctamente.")
+        return redirect("dashboard_recomendaciones")
 
-    contexto = {
-
-        "recomendaciones": recomendaciones,
-
-        "kits": (
-            Kit.objects
-            .filter(activo=True)
-            .order_by("nombre")
-        ),
-
-        "productos": (
-            Producto.objects
-            .filter(activo=True)
-            .order_by("nombre")
-        ),
-
-    }
+    recomendaciones = RecomendacionEmprendimiento.objects.prefetch_related(
+        "kits", "productos"
+    ).all()
+    kits = Kit.objects.filter(activo=True)
+    productos = Producto.objects.filter(activo=True)
 
     return render(
         request,
         "core/recomendaciones.html",
-        contexto
+        {
+            "recomendaciones": recomendaciones,
+            "kits": kits,
+            "productos": productos,
+        },
     )
-# =========================
-# EDITAR RECOMENDACIÓN
-# =========================
+
 
 @login_required
-@admin_required
-def editar_recomendacion(request, recomendacion_id):
+def eliminar_recomendacion(request, id):
+    recomendacion = get_object_or_404(RecomendacionEmprendimiento, id=id)
+    nombre = recomendacion.nombre
+    recomendacion.delete()
+    messages.success(request, f"Recomendación «{nombre}» eliminada.")
+    return redirect("dashboard_recomendaciones")
 
-    recomendacion = get_object_or_404(
-        RecomendacionEmprendimiento,
-        id=recomendacion_id
+
+# =====================================================================
+# API PÚBLICA: usada por el test de /emprender/ (emprender.js)
+# =====================================================================
+def _nivel_desde_presupuesto(presupuesto):
+    if presupuesto <= 100000:
+        return "Principiante"
+    if presupuesto <= 300000:
+        return "Intermedio"
+    return "Avanzado"
+
+
+# atributo_precio (precio_base / precio_500 / precio_1200) es lo que LE
+# CUESTA AL EMPRENDEDOR comprarle a Lúmina, según el tramo de volumen de su
+# compra — NO es un precio de reventa. precio_base es "el mismo que ve
+# cualquier cliente" (sin descuento por volumen, para compras chicas);
+# precio_500 y precio_1200 son precios con descuento por volumen para
+# compras mayores. costo_base es el costo INTERNO de Lúmina y no participa
+# en este cálculo: es contabilidad nuestra, no del emprendedor.
+#
+# El primer tramo es "hasta $99.999" (no $100.000), para que un presupuesto
+# de exactamente $100.000 caiga en el segundo tramo.
+#
+# `divisor` es la base del margen sugerido de reventa para ese tramo:
+# margen = 1 − divisor, y el precio de venta al cliente final sale de
+# precio_venta = costo_emprendedor ÷ divisor (ver FORMULA_PRECIO_VENTA).
+TRAMOS_MARGEN = [
+    (Decimal("99999"), Decimal("0.75"), "precio_base", "hasta $99.999"),
+    (Decimal("500000"), Decimal("0.85"), "precio_500", "entre $100.000 y $500.000"),
+    (None, Decimal("0.90"), "precio_1200", "más de $500.000"),
+]
+
+# Fórmula de precio de venta sugerido al cliente final, expuesta tal cual
+# al frontend para que la explicación al usuario no dependa de texto
+# hardcodeado en el JS. costo = lo que el emprendedor le paga a Lúmina
+# (atributo_precio del tramo), margen = el margen sugerido de ese tramo.
+FORMULA_PRECIO_VENTA = "precio_venta = costo ÷ (1 − margen)"
+
+
+def _tramo_margen_por_presupuesto(presupuesto):
+    for limite, divisor, atributo_precio, etiqueta in TRAMOS_MARGEN:
+        if limite is None or presupuesto <= limite:
+            return divisor, atributo_precio, etiqueta
+    ultimo = TRAMOS_MARGEN[-1]
+    return ultimo[1], ultimo[2], ultimo[3]
+
+
+def _ganancia_y_roi_generico(presupuesto, divisor):
+    """
+    Fallback SOLO para cuando no hay productos con precio configurado para
+    este tramo (atributo_precio) y por tanto no se puede armar una lista de
+    compra real. Es un promedio del tramo, no un cálculo trazable.
+    """
+    factor = (Decimal("1") / divisor) - Decimal("1")
+    ganancia = (presupuesto * factor).quantize(Decimal("1"))
+    roi = (factor * 100).quantize(Decimal("0.01"))
+    return ganancia, roi, factor
+
+
+MAX_UNIDADES_POR_PRODUCTO = 3  # evita recomendar "8x lo mismo" cuando hay poca variedad
+
+
+def _productos_activos(recomendacion):
+    """
+    Filtra sobre la caché ya traída por prefetch_related("productos") en vez
+    de volver a golpear la base con .filter(activo=True), que invalida el
+    prefetch y dispara una query nueva cada vez que se llama.
+    """
+    return [p for p in recomendacion.productos.all() if p.activo]
+
+
+def _kits_activos(recomendacion):
+    """
+    Igual que _productos_activos pero para kits: usa la caché del
+    prefetch_related("kits") en vez de volver a consultar la base.
+    """
+    return [k for k in recomendacion.kits.all() if k.activo]
+
+
+def _construir_lista_compra(productos_activos, presupuesto, atributo_precio, divisor):
+    """
+    Arma una lista de compra concreta repartiendo el presupuesto entre los
+    productos activos ya filtrados (ver _productos_activos), del más barato
+    al más caro, usando lo que REALMENTE le cuesta al emprendedor comprarle
+    a Lúmina en este tramo (atributo_precio: precio_base / precio_500 /
+    precio_1200, según el volumen de la compra). costo_base NO se usa acá:
+    es el costo interno de Lúmina, no el del emprendedor.
+
+    El precio de venta sugerido al cliente final sale de aplicar el margen
+    del tramo sobre ese costo: precio_venta = costo ÷ divisor (ver
+    FORMULA_PRECIO_VENTA, donde margen = 1 − divisor).
+
+    Pone un tope de MAX_UNIDADES_POR_PRODUCTO por producto: si con eso no
+    se agota el presupuesto, es señal de que a esta recomendación le faltan
+    productos asociados (se deja advertencia en logs) en vez de comprar
+    cantidades absurdas de un solo producto.
+
+    Devuelve None si ningún producto activo tiene precio > 0 para este
+    tramo (el caller debe usar el fallback genérico del tramo en ese caso).
+    """
+    productos = [
+        p for p in productos_activos
+        if getattr(p, atributo_precio) and getattr(p, atributo_precio) > 0
+    ]
+    if not productos:
+        return None
+
+    productos = sorted(productos, key=lambda p: getattr(p, atributo_precio))
+
+    restante = presupuesto
+    cantidades = {p.id: 0 for p in productos}
+
+    compro_algo = True
+    while compro_algo:
+        compro_algo = False
+        for p in productos:
+            if cantidades[p.id] >= MAX_UNIDADES_POR_PRODUCTO:
+                continue
+            costo_unit = getattr(p, atributo_precio)
+            if costo_unit <= restante:
+                cantidades[p.id] += 1
+                restante -= costo_unit
+                compro_algo = True
+
+    margen_tramo = ((1 - divisor) * 100).quantize(Decimal("0.1"))
+
+    lineas = []
+    total_costo = Decimal("0")
+    total_venta = Decimal("0")
+
+    for p in productos:
+        cantidad = cantidades[p.id]
+        if cantidad == 0:
+            continue
+
+        costo_unit = getattr(p, atributo_precio)
+        precio_venta_unit = (costo_unit / divisor).quantize(Decimal("1"))
+
+        subtotal_costo = (costo_unit * cantidad).quantize(Decimal("1"))
+        subtotal_venta = (precio_venta_unit * cantidad).quantize(Decimal("1"))
+
+        total_costo += subtotal_costo
+        total_venta += subtotal_venta
+
+        lineas.append(
+            {
+                "nombre": p.nombre,
+                "cantidad": cantidad,
+                "costo_unitario": float(costo_unit),
+                "precio_venta_unitario": float(precio_venta_unit),
+                "margen_porcentaje": float(margen_tramo),
+                "subtotal_costo": float(subtotal_costo),
+                "subtotal_venta": float(subtotal_venta),
+            }
+        )
+
+    if not lineas:
+        return None
+
+    limite_alcanzado_en_todos = all(
+        cantidades[p.id] >= MAX_UNIDADES_POR_PRODUCTO for p in productos
     )
-
-    if request.method == "POST":
-
-        recomendacion.nombre = (
-            request.POST.get("nombre") or ""
-        ).strip()
-
-        recomendacion.presupuesto_min = (
-            request.POST.get("presupuesto_min") or 0
+    if limite_alcanzado_en_todos and restante > (presupuesto * Decimal("0.15")):
+        logger.warning(
+            "recomendación: solo tiene %d producto(s) configurado(s) y "
+            "queda %.0f sin usar del presupuesto tras topar %d unidades por "
+            "producto — considera asociar más productos a esta regla.",
+            len(productos), restante, MAX_UNIDADES_POR_PRODUCTO,
         )
 
-        recomendacion.presupuesto_max = (
-            request.POST.get("presupuesto_max") or 0
-        )
-
-        recomendacion.producto_interes = (
-            request.POST.get("producto_interes") or ""
-        ).strip()
-
-        recomendacion.plataforma = (
-            request.POST.get("plataforma") or ""
-        ).strip()
-
-        recomendacion.inversion_estimada = (
-            request.POST.get("inversion_estimada") or 0
-        )
-
-        recomendacion.ganancia_estimada = (
-            request.POST.get("ganancia_estimada") or 0
-        )
-
-        recomendacion.recomendacion = (
-            request.POST.get("recomendacion") or ""
-        ).strip()
-
-        recomendacion.activa = (
-            request.POST.get("activa") == "on"
-        )
-
-        recomendacion.save()
-
-        # Actualizar kits
-        kits_ids = request.POST.getlist("kits")
-
-        recomendacion.kits.set(
-            Kit.objects.filter(
-                id__in=kits_ids,
-                activo=True
-            )
-        )
-
-        # Actualizar productos
-        productos_ids = request.POST.getlist("productos")
-
-        recomendacion.productos.set(
-            Producto.objects.filter(
-                id__in=productos_ids,
-                activo=True
-            )
-        )
-
-        messages.success(
-            request,
-            "Recomendación actualizada correctamente."
-        )
-
-        return redirect(
-            "dashboard_recomendaciones"
-        )
-
-    contexto = {
-
-        "recomendacion": recomendacion,
-
-        "kits": (
-            Kit.objects
-            .filter(activo=True)
-            .order_by("nombre")
-        ),
-
-        "productos": (
-            Producto.objects
-            .filter(activo=True)
-            .order_by("nombre")
-        ),
-
+    return {
+        "lineas": lineas,
+        "total_costo": total_costo,
+        "total_venta": total_venta,
+        "sobrante": restante,
     }
 
-    return render(
-        request,
-        "core/editar_recomendacion.html",
-        contexto
-    )
+
+def _composicion_kit(kit):
+    """
+    Detalle de qué trae un kit: cada producto (agrupado, sumando
+    cantidades entre variantes distintas del mismo producto — un mismo
+    producto puede aparecer en varias filas de KitProducto si el kit
+    ofrece distintos tonos de ese producto), y el ahorro real del kit
+    (kit.ahorro / kit.ahorro_porcentaje ya calculan precio_normal vs
+    precio_final en el modelo) vs comprar todo suelto al precio de
+    catálogo.
+    """
+    items = list(kit.items.all())
+
+    por_producto = {}
+    orden_productos = []
+    for item in items:
+        pid = item.producto_id
+        if pid not in por_producto:
+            por_producto[pid] = {"nombre": item.producto.nombre, "cantidad": 0}
+            orden_productos.append(pid)
+        por_producto[pid]["cantidad"] += item.cantidad
+
+    productos_agrupados = [por_producto[pid] for pid in orden_productos]
+
+    return {
+        "num_productos_distintos": len(productos_agrupados),
+        "unidades_totales": sum(item.cantidad for item in items),
+        "productos": productos_agrupados,
+        "precio_normal": float(kit.precio_normal),
+        "precio_final": float(kit.precio_final),
+        "ahorro": float(kit.ahorro),
+        "ahorro_porcentaje": float(kit.ahorro_porcentaje),
+    }
 
 
-# =========================
-# ELIMINAR RECOMENDACIÓN
-# =========================
+def _reventa_individual_kit(kit, atributo_precio, divisor):
+    """
+    Para quien compra el kit y prefiere revender los productos por
+    separado: aplica la MISMA fórmula de precio de venta que se usa para
+    productos sueltos (FORMULA_PRECIO_VENTA) a cada producto del kit
+    (agrupado por producto, sumando cantidades entre variantes distintas
+    del mismo producto), con su costo en el tramo actual (atributo_precio).
+    Esto es independiente del descuento del kit: el descuento del kit es
+    lo que el emprendedor AHORRA al comprar el combo; esto es a cuánto
+    podría venderlos luego, uno por uno.
 
-@login_required
-@admin_required
+    Devuelve None si ningún producto del kit tiene precio configurado para
+    este tramo.
+    """
+    por_producto = {}
+    orden_productos = []
+    for item in kit.items.all():
+        pid = item.producto_id
+        if pid not in por_producto:
+            por_producto[pid] = {"producto": item.producto, "cantidad": 0}
+            orden_productos.append(pid)
+        por_producto[pid]["cantidad"] += item.cantidad
+
+    lineas = []
+    total_venta = Decimal("0")
+
+    for pid in orden_productos:
+        producto = por_producto[pid]["producto"]
+        cantidad = por_producto[pid]["cantidad"]
+
+        costo_unit = getattr(producto, atributo_precio)
+        if not costo_unit or costo_unit <= 0:
+            continue
+
+        precio_venta_unit = (costo_unit / divisor).quantize(Decimal("1"))
+        subtotal_venta = (precio_venta_unit * cantidad).quantize(Decimal("1"))
+        total_venta += subtotal_venta
+
+        lineas.append(
+            {
+                "nombre": producto.nombre,
+                "cantidad": cantidad,
+                "precio_venta_unitario": float(precio_venta_unit),
+                "subtotal_venta": float(subtotal_venta),
+            }
+        )
+
+    if not lineas:
+        return None
+
+    return {"lineas": lineas, "total_venta": float(total_venta)}
+
+
+def _sugerir_uso_sobrante(sobrante, productos_activos, atributo_precio):
+    """
+    Qué hacer con lo que sobra del presupuesto (venga de la lista de compra
+    de productos sueltos o de la estimación de kits): si alcanza para sumar
+    una unidad más del producto más barato de la selección, se sugiere eso
+    (así queda TODO el presupuesto invertido en mercancía); si no alcanza
+    para nada, la única opción realista es dejarlo para cubrir el envío.
+    """
+    if sobrante is None or sobrante <= 0:
+        return None
+
+    candidatos = [
+        p for p in productos_activos
+        if getattr(p, atributo_precio) and 0 < getattr(p, atributo_precio) <= sobrante
+    ]
+
+    if not candidatos:
+        return {"monto": float(sobrante), "producto_sugerido": None}
+
+    mas_barato = min(candidatos, key=lambda p: getattr(p, atributo_precio))
+
+    return {
+        "monto": float(sobrante),
+        "producto_sugerido": {
+            "nombre": mas_barato.nombre,
+            "costo": float(getattr(mas_barato, atributo_precio)),
+        },
+    }
+
+
+def _kits_estimados(kits_activos, presupuesto):
+    """
+    Cuántos kits completos alcanza a comprar el presupuesto, usando
+    precio_final (lo que el emprendedor paga por adquirir el kit), y
+    cuánto sobra tras esa compra.
+    Recibe los kits ya filtrados (ver _kits_activos) para no volver a
+    consultar la base.
+    """
+    kits_con_precio = [k for k in kits_activos if k.precio_final and k.precio_final > 0]
+    if not kits_con_precio:
+        return None
+
+    costo_kit_promedio = sum(k.precio_final for k in kits_con_precio) / len(kits_con_precio)
+    if costo_kit_promedio <= 0:
+        return None
+
+    cantidad = int(presupuesto // costo_kit_promedio)
+    sobrante = (presupuesto - (cantidad * costo_kit_promedio)).quantize(Decimal("1"))
+
+    return {"cantidad": cantidad, "sobrante": sobrante}
+
+
+def _mejor_match(candidatas, presupuesto, producto, plataforma):
+    """
+    Elige la regla MÁS ESPECÍFICA (la que coincide en más criterios
+    explícitos) entre las que matchean, en vez de la primera. Si ninguna
+    matchea, devuelve None para que el caller use el fallback genérico.
+    """
+    mejor = None
+    mejor_score = -1
+    for r in candidatas:
+        if not r.coincide_con(presupuesto, producto, plataforma):
+            continue
+        score = 0
+        if r.producto_interes and r.producto_interes == producto:
+            score += 1
+        if r.plataforma and r.plataforma == plataforma:
+            score += 1
+        if score > mejor_score:
+            mejor_score = score
+            mejor = r
+    return mejor
+
+
 @require_POST
-def eliminar_recomendacion(request, recomendacion_id):
-
-    recomendacion = get_object_or_404(
-        RecomendacionEmprendimiento,
-        id=recomendacion_id
-    )
-
-    recomendacion.delete()
-
-    messages.success(
-        request,
-        "Recomendación eliminada correctamente."
-    )
-
-    return redirect(
-        "dashboard_recomendaciones"
-    )
-# =========================
-# RECOMENDACIONES CLIENTE
-# =========================
-
-def recomendaciones_emprendimiento_api(request):
-
-    presupuesto = request.GET.get("presupuesto")
-    producto = request.GET.get("producto")
-    plataforma = request.GET.get("plataforma")
-
-    if not presupuesto or not producto or not plataforma:
-        return JsonResponse(
-            {
-                "ok": False,
-                "mensaje": "Debes completar todas las preguntas."
-            },
-            status=400
-        )
-
+def recomendar_emprendimiento(request):
     try:
-        presupuesto = float(presupuesto)
-    except (ValueError, TypeError):
+        presupuesto = Decimal(str(request.POST.get("presupuesto", "")))
+    except (InvalidOperation, TypeError):
+        return JsonResponse(
+            {"encontrada": False, "mensaje": "Selecciona un presupuesto válido."},
+            status=400,
+        )
+
+    if presupuesto <= 0:
+        return JsonResponse(
+            {"encontrada": False, "mensaje": "Ingresa un presupuesto mayor a $0."},
+            status=400,
+        )
+
+    producto = request.POST.get("producto") or None
+    plataforma = request.POST.get("plataforma") or None
+
+    candidatas = RecomendacionEmprendimiento.objects.filter(
+        activa=True
+    ).prefetch_related("kits__items__producto", "productos")
+
+    recomendacion = _mejor_match(candidatas, presupuesto, producto, plataforma)
+
+    divisor, atributo_precio, tramo_etiqueta = _tramo_margen_por_presupuesto(presupuesto)
+
+    if recomendacion is None:
+        logger.warning(
+            "recomendar_emprendimiento: sin regla específica para "
+            "presupuesto=%s producto=%s plataforma=%s — usando fallback genérico",
+            presupuesto, producto, plataforma,
+        )
+        ganancia_estimada, roi, _ = _ganancia_y_roi_generico(presupuesto, divisor)
+        margen_porcentaje = ((1 - divisor) * 100).quantize(Decimal("0.1"))
 
         return JsonResponse(
             {
-                "ok": False,
-                "mensaje": "El presupuesto no es válido."
-            },
-            status=400
+                "encontrada": True,
+                "generica": True,
+                "nombre": "Recomendación general",
+                "producto_interes_display": "Cualquiera",
+                "plataforma_display": "Cualquiera",
+                "nivel": _nivel_desde_presupuesto(presupuesto),
+                "inversion_estimada": float(presupuesto),
+                "ganancia_estimada": float(ganancia_estimada),
+                "roi": float(roi),
+                "margen_porcentaje": float(margen_porcentaje),
+                "formula_precio_venta": FORMULA_PRECIO_VENTA,
+                "tramo_etiqueta": tramo_etiqueta,
+                "lista_compra": [],
+                "compra_total_costo": None,
+                "compra_total_venta": None,
+                "presupuesto_sobrante": None,
+                "presupuesto_sobrante_sugerencia": None,
+                "kits_estimados": None,
+                "kits_sobrante_sugerencia": None,
+                "recomendacion": (
+                    "Todavía no tenemos una recomendación específica para esta "
+                    "combinación exacta, pero con este presupuesto puedes "
+                    "empezar comprando al por mayor en Lúmina y revendiendo "
+                    "con el margen típico de este tramo."
+                ),
+                "productos": [],
+                "kits": [],
+            }
         )
 
-    # --------------------------------------------------
-    # 1. BUSCAR RECOMENDACIONES QUE COINCIDAN
-    # --------------------------------------------------
+    # Se filtran una sola vez sobre la caché del prefetch_related y se
+    # reutilizan en todo lo que sigue (lista de compra, kits estimados,
+    # productos_data, kits_data) para no volver a consultar la base.
+    productos_activos = _productos_activos(recomendacion)
+    kits_activos = _kits_activos(recomendacion)
 
-    recomendaciones = RecomendacionEmprendimiento.objects.filter(
-        activa=True,
-        producto_interes=producto,
-        plataforma=plataforma,
-        presupuesto_min__lte=presupuesto,
-        presupuesto_max__gte=presupuesto
-    ).prefetch_related(
-        "kits",
-        "productos"
+    lista_compra = _construir_lista_compra(productos_activos, presupuesto, atributo_precio, divisor)
+
+    # El margen mostrado es siempre el del tramo (1 − divisor): es el mismo
+    # margen sugerido para todos los productos de esa recomendación, porque
+    # el precio de venta de cada uno se DERIVA de aplicar ese margen a lo
+    # que le cuesta al emprendedor (ver _construir_lista_compra).
+    margen_porcentaje = ((1 - divisor) * 100).quantize(Decimal("0.1"))
+
+    if lista_compra:
+        total_costo = lista_compra["total_costo"]
+        total_venta = lista_compra["total_venta"]
+        ganancia_estimada = (total_venta - total_costo).quantize(Decimal("1"))
+        roi = (
+            ((total_venta / total_costo - 1) * 100).quantize(Decimal("0.01"))
+            if total_costo > 0 else Decimal("0")
+        )
+
+        lista_compra_json = lista_compra["lineas"]
+        compra_total_costo = float(total_costo)
+        compra_total_venta = float(total_venta)
+        presupuesto_sobrante = float(lista_compra["sobrante"])
+        presupuesto_sobrante_sugerencia = _sugerir_uso_sobrante(
+            lista_compra["sobrante"], productos_activos, atributo_precio
+        )
+    else:
+        logger.warning(
+            "recomendar_emprendimiento: recomendación '%s' sin productos con "
+            "precio configurado para este tramo (%s) — usando fallback "
+            "genérico del tramo",
+            recomendacion.nombre, atributo_precio,
+        )
+        ganancia_estimada, roi, _ = _ganancia_y_roi_generico(presupuesto, divisor)
+        lista_compra_json = []
+        compra_total_costo = None
+        compra_total_venta = None
+        presupuesto_sobrante = None
+        presupuesto_sobrante_sugerencia = None
+
+    kits_estimados_info = _kits_estimados(kits_activos, presupuesto)
+    kits_estimados = kits_estimados_info["cantidad"] if kits_estimados_info else None
+    kits_sobrante_sugerencia = (
+        _sugerir_uso_sobrante(
+            kits_estimados_info["sobrante"], productos_activos, atributo_precio
+        )
+        if kits_estimados_info else None
     )
 
-    # --------------------------------------------------
-    # 2. SI NO HAY UNA EXACTA, BUSCAR UNA PARECIDA
-    # --------------------------------------------------
+    kits_data = [
+        {
+            "id": k.id,
+            "nombre": k.nombre,
+            "precio": float(k.precio_final),
+            "url": reverse("detalle_kit", args=[k.slug]),
+            "composicion": _composicion_kit(k),
+            "reventa_individual": _reventa_individual_kit(k, atributo_precio, divisor),
+        }
+        for k in kits_activos
+    ]
 
-    if not recomendaciones.exists():
+    productos_data = []
+    for p in productos_activos:
+        costo_unit = getattr(p, atributo_precio)
+        if costo_unit and costo_unit > 0:
+            precio_venta_unit = (costo_unit / divisor).quantize(Decimal("1"))
+            margen_unit = float(((1 - divisor) * 100).quantize(Decimal("0.1")))
+        else:
+            precio_venta_unit = None
+            margen_unit = None
 
-        recomendaciones = RecomendacionEmprendimiento.objects.filter(
-            activa=True,
-            producto_interes=producto,
-            plataforma=plataforma
-        ).prefetch_related(
-            "kits",
-            "productos"
-        )
-
-    # --------------------------------------------------
-    # 3. SI TODAVÍA NO HAY, BUSCAR SOLO POR PRODUCTO
-    # --------------------------------------------------
-
-    if not recomendaciones.exists():
-
-        recomendaciones = RecomendacionEmprendimiento.objects.filter(
-            activa=True,
-            producto_interes=producto
-        ).prefetch_related(
-            "kits",
-            "productos"
-        )
-
-    # --------------------------------------------------
-    # 4. SI NO EXISTE NADA
-    # --------------------------------------------------
-
-    if not recomendaciones.exists():
-
-        return JsonResponse(
+        productos_data.append(
             {
-                "ok": False,
-                "mensaje": (
-                    "Todavía no tenemos una recomendación "
-                    "para esta combinación. Prueba con otra opción."
-                )
-            },
-            status=404
+                "id": p.id,
+                "nombre": p.nombre,
+                # Lo que le cuesta al emprendedor comprarle a Lúmina en este
+                # tramo (NO es costo_base, que es el costo interno de Lúmina).
+                "costo": float(costo_unit) if costo_unit else None,
+                "precio_sugerido": float(precio_venta_unit) if precio_venta_unit is not None else None,
+                "precio_catalogo": float(p.precio_base),
+                "margen_porcentaje": margen_unit,
+                "url": reverse("detalle_producto", args=[p.slug]),
+            }
         )
-
-    # Tomamos la primera recomendación encontrada
-    recomendacion = recomendaciones.first()
-
-    # --------------------------------------------------
-    # NIVEL SEGÚN PRESUPUESTO
-    # --------------------------------------------------
-
-    if presupuesto <= 100000:
-        nivel = "🌱 Principiante"
-
-    elif presupuesto <= 300000:
-        nivel = "✨ En crecimiento"
-
-    else:
-        nivel = "💎 Emprendedor avanzado"
-
-    # --------------------------------------------------
-    # PRODUCTOS RELACIONADOS
-    # --------------------------------------------------
-
-    productos = []
-
-    for producto_relacionado in recomendacion.productos.all():
-
-        productos.append({
-            "nombre": producto_relacionado.nombre
-        })
-
-    # --------------------------------------------------
-    # KITS RELACIONADOS
-    # --------------------------------------------------
-
-    kits = []
-
-    for kit in recomendacion.kits.all():
-
-        kits.append({
-            "nombre": str(kit)
-        })
-
-    # --------------------------------------------------
-    # RESPUESTA
-    # --------------------------------------------------
 
     return JsonResponse(
         {
-            "ok": True,
-
-            "recomendacion": {
-                "id": recomendacion.id,
-                "nombre": recomendacion.nombre,
-
-                "producto": dict(
-                    RecomendacionEmprendimiento.PRODUCTOS_INTERES
-                ).get(
-                    recomendacion.producto_interes,
-                    recomendacion.producto_interes
-                ),
-
-                "plataforma": dict(
-                    RecomendacionEmprendimiento.PLATAFORMAS
-                ).get(
-                    recomendacion.plataforma,
-                    recomendacion.plataforma
-                ),
-
-                "presupuesto_min": float(
-                    recomendacion.presupuesto_min
-                ),
-
-                "presupuesto_max": float(
-                    recomendacion.presupuesto_max
-                ),
-
-                "inversion": float(
-                    recomendacion.inversion_estimada
-                ),
-
-                "ganancia": float(
-                    recomendacion.ganancia_estimada
-                ),
-
-                "roi": float(
-                    recomendacion.roi
-                ),
-
-                "nivel": nivel,
-
-                "texto": recomendacion.recomendacion,
-
-                "productos": productos,
-
-                "kits": kits
-            }
+            "encontrada": True,
+            "generica": False,
+            "margen_real": bool(lista_compra),
+            "nombre": recomendacion.nombre,
+            "producto_interes_display": (
+                recomendacion.get_producto_interes_display()
+                if recomendacion.producto_interes
+                else "Cualquiera"
+            ),
+            "plataforma_display": (
+                recomendacion.get_plataforma_display()
+                if recomendacion.plataforma
+                else "Cualquiera"
+            ),
+            "nivel": _nivel_desde_presupuesto(presupuesto),
+            "inversion_estimada": float(presupuesto),
+            "ganancia_estimada": float(ganancia_estimada),
+            "roi": float(roi),
+            "margen_porcentaje": float(margen_porcentaje),
+            "formula_precio_venta": FORMULA_PRECIO_VENTA,
+            "tramo_etiqueta": tramo_etiqueta,
+            "lista_compra": lista_compra_json,
+            "compra_total_costo": compra_total_costo,
+            "compra_total_venta": compra_total_venta,
+            "presupuesto_sobrante": presupuesto_sobrante,
+            "presupuesto_sobrante_sugerencia": presupuesto_sobrante_sugerencia,
+            "kits_estimados": kits_estimados,
+            "kits_sobrante_sugerencia": kits_sobrante_sugerencia,
+            "recomendacion": recomendacion.recomendacion,
+            "productos": productos_data,
+            "kits": kits_data,
         }
     )
+
+
+# =====================================================================
+# REPORTES GUARDADOS (Mi cuenta)
+# =====================================================================
+
+@login_required
+@require_POST
+def guardar_reporte_emprendimiento(request):
+    """
+    Guarda una copia del resultado que ya se le mostró al usuario en el
+    test de /emprender/. Recibe por POST (JSON en el body) el mismo dict
+    que devolvió /api/recomendar-emprendimiento/, más los filtros usados.
+    """
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({"ok": False, "mensaje": "Datos inválidos."}, status=400)
+
+    data = payload.get("data")
+    if not isinstance(data, dict) or not data.get("encontrada"):
+        return JsonResponse(
+            {"ok": False, "mensaje": "No hay un resultado válido para guardar."},
+            status=400,
+        )
+
+    try:
+        presupuesto = Decimal(str(payload.get("presupuesto", "0")))
+    except InvalidOperation:
+        presupuesto = Decimal("0")
+
+    reporte = ReporteEmprendimiento.objects.create(
+        usuario=request.user,
+        nombre_recomendacion=(data.get("nombre") or "")[:200],
+        presupuesto=presupuesto,
+        producto=payload.get("producto") or "",
+        plataforma=payload.get("plataforma") or "",
+        ganancia_estimada=Decimal(str(data.get("ganancia_estimada", 0))),
+        roi=Decimal(str(data.get("roi", 0))),
+        datos=data,
+    )
+
+    return JsonResponse({"ok": True, "id": reporte.id})
+
+
+@login_required
+def reporte_emprendimiento_detalle(request, id):
+    reporte = get_object_or_404(ReporteEmprendimiento, id=id, usuario=request.user)
+    return render(request, "core/reporte_emprendimiento_detalle.html", {"reporte": reporte})
+
+
+@login_required
+def eliminar_reporte_emprendimiento(request, id):
+    reporte = get_object_or_404(ReporteEmprendimiento, id=id, usuario=request.user)
+    reporte.delete()
+    messages.success(request, "Reporte eliminado.")
+    return redirect("mi_cuenta") 

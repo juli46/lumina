@@ -883,10 +883,6 @@ class Etiqueta(models.Model):
 # KITS
 # =========================
 
-# =========================
-# KITS
-# =========================
-
 class Kit(models.Model):
 
     nombre = models.CharField(
@@ -1733,95 +1729,137 @@ class PedidoItemKitSeleccion(models.Model):
             f"{self.pedido_item} - "
             f"{self.producto_nombre}: {self.variante_nombre}"
         )
-# =========================
-# RECOMENDACIONES DE EMPRENDIMIENTO
-# =========================
-
 class RecomendacionEmprendimiento(models.Model):
-
+ 
     PRODUCTOS_INTERES = [
         ("gloss", "Gloss"),
         ("skincare", "Skincare"),
         ("pestanas", "Pestañas"),
         ("kits", "Kits beauty"),
+        ("maquillaje", "Maquillaje"),
+        ("accesorios", "Accesorios"),
     ]
-
+ 
     PLATAFORMAS = [
         ("tiktok", "TikTok"),
         ("instagram", "Instagram"),
         ("whatsapp", "WhatsApp"),
     ]
-
-    nombre = models.CharField(
-        max_length=200
-    )
-
-    presupuesto_min = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
-    )
-
-    presupuesto_max = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
-    )
-
+ 
+    nombre = models.CharField(max_length=200)
+ 
+    presupuesto_min = models.DecimalField(max_digits=12, decimal_places=2)
+    presupuesto_max = models.DecimalField(max_digits=12, decimal_places=2)
+ 
     producto_interes = models.CharField(
         max_length=30,
-        choices=PRODUCTOS_INTERES
+        choices=PRODUCTOS_INTERES,
+        blank=True,
+        null=True,
     )
-
+ 
     plataforma = models.CharField(
         max_length=30,
-        choices=PLATAFORMAS
+        choices=PLATAFORMAS,
+        blank=True,
+        null=True,
     )
-
+ 
     kits = models.ManyToManyField(
-        Kit,
+        "Kit",
         blank=True,
-        related_name="recomendaciones_emprendimiento"
+        related_name="recomendaciones_emprendimiento",
     )
-
+ 
     productos = models.ManyToManyField(
-        Producto,
+        "Producto",
         blank=True,
-        related_name="recomendaciones_emprendimiento"
+        related_name="recomendaciones_emprendimiento",
     )
-
+ 
     inversion_estimada = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
+        max_digits=12, decimal_places=2, default=0
     )
-
+ 
     ganancia_estimada = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
+        max_digits=12, decimal_places=2, default=0
     )
-
-    recomendacion = models.TextField()
-
-    activa = models.BooleanField(
-        default=True
-    )
-
-    fecha_creacion = models.DateTimeField(
-        auto_now_add=True
-    )
-
+ 
+    recomendacion = models.TextField(blank=True)
+ 
+    activa = models.BooleanField(default=True)
+ 
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+ 
+    class Meta:
+        ordering = ["presupuesto_min", "-fecha_creacion"]
+        verbose_name = "Recomendación de emprendimiento"
+        verbose_name_plural = "Recomendaciones de emprendimiento"
+ 
     def __str__(self):
         return self.nombre
-
+ 
     @property
     def roi(self):
-
-        if self.inversion_estimada > 0:
-
+        if self.inversion_estimada and self.inversion_estimada > 0:
             return round(
-                (
-                    self.ganancia_estimada /
-                    self.inversion_estimada
-                ) * 100,
-                2
+                (self.ganancia_estimada / self.inversion_estimada) * 100, 2
             )
+        return Decimal("0")
+ 
+    def coincide_con(self, presupuesto, producto=None, plataforma=None):
+        """
+        Usado por el endpoint del test público (emprender.html) para
+        decidir si esta regla aplica a los filtros elegidos.
+        """
+        if not self.activa:
+            return False
+ 
+        if presupuesto is not None and not (
+            self.presupuesto_min <= presupuesto <= self.presupuesto_max
+        ):
+            return False
+ 
+        if producto and self.producto_interes and self.producto_interes != producto:
+            return False
+ 
+        if plataforma and self.plataforma and self.plataforma != plataforma:
+            return False
+ 
+        return True
+class ReporteEmprendimiento(models.Model):
+    """
+    Copia guardada (snapshot) de un resultado del test de /emprender/ para
+    que el usuario logueado pueda verlo después en 'Mi cuenta'. Se guarda
+    el JSON completo tal como se le mostró en su momento (no se recalcula
+    después), para que el reporte no cambie si los precios cambian luego.
+    """
 
-        return 0
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reportes_emprendimiento",
+    )
+
+    nombre_recomendacion = models.CharField(max_length=200, blank=True, default="")
+
+    presupuesto = models.DecimalField(max_digits=12, decimal_places=2)
+    producto = models.CharField(max_length=30, blank=True, default="")
+    plataforma = models.CharField(max_length=30, blank=True, default="")
+
+    ganancia_estimada = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    roi = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
+    datos = models.JSONField(
+        help_text="Respuesta completa de /api/recomendar-emprendimiento/ en el momento de guardar."
+    )
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-fecha_creacion"]
+        verbose_name = "Reporte de emprendimiento"
+        verbose_name_plural = "Reportes de emprendimiento"
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.nombre_recomendacion}"

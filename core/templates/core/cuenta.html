@@ -190,6 +190,49 @@
         </section>
         <br>
 
+        <!-- REPORTES DE EMPRENDIMIENTO -->
+        <section class="resultados-section">
+            <div class="title">
+                <h2>📊 Mis reportes de emprendimiento</h2>
+            </div>
+            <div class="resultados-grid">
+
+                {% if reportes_emprendimiento %}
+                {% for reporte in reportes_emprendimiento %}
+                <div class="resultado-card">
+                    <div class="resultado-info">
+                        <span class="resultado-test">{{ reporte.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                        <h3>{{ reporte.nombre_recomendacion }}</h3>
+                        <p class="resultado-resumen">
+                            Presupuesto: ${{ reporte.presupuesto|floatformat:0 }} ·
+                            Ganancia estimada: ${{ reporte.ganancia_estimada|floatformat:0 }} ·
+                            ROI: {{ reporte.roi }}%
+                        </p>
+                        <div class="resultado-footer">
+                            <div class="resultado-botones">
+                                <a href="{% url 'reporte_emprendimiento_detalle' reporte.id %}" class="btn-rutina">
+                                    Ver / Descargar PDF
+                                </a>
+                                <a href="{% url 'eliminar_reporte_emprendimiento' reporte.id %}"
+                                    class="btn-eliminar-resultado eliminar-resultado">
+                                    <i class="fa-solid fa-trash"></i>
+                                    Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-publicaciones">
+                    <p>Aún no has guardado reportes del test de emprendimiento.</p>
+                </div>
+                {% endif %}
+
+            </div>
+        </section>
+        <br>
+
         <!-- ESTADÍSTICAS -->
         <section class="stats">
 

@@ -1,0 +1,123 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Reporte de emprendimiento | Lúmina{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/reporte_emprender.css' %}">
+
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #resultado, #resultado * { visibility: visible; }
+    #resultado { position: absolute; top: 0; left: 0; width: 100%; }
+    .lm-resultado-acciones, .top-bar { display: none !important; }
+}
+</style>
+
+<div class="lm-wrap">
+    <div class="lm-section__inner">
+
+        <a href="{% url 'mi_cuenta' %}" class="lm-btn lm-btn--ghost lm-resultado-acciones">← Volver a mi cuenta</a>
+
+        <div class="lm-resultado" id="resultado">
+            <div class="lm-resultado-acciones">
+                <button class="lm-btn lm-btn--dark" onclick="window.print()" type="button">🖨️ Descargar PDF</button>
+            </div>
+
+            <h3>💖 {{ reporte.nombre_recomendacion }}</h3>
+            <p class="lm-resultado-nombre">Guardado el {{ reporte.fecha_creacion|date:"d/m/Y H:i" }}</p>
+
+            <div class="lm-resultado-grid">
+                <div class="lm-resultado-item">
+                    <span>Producto ideal</span>
+                    <p>{{ reporte.datos.producto_interes_display }}</p>
+                </div>
+                <div class="lm-resultado-item">
+                    <span>Inversión inicial</span>
+                    <p class="lm-data">${{ reporte.presupuesto|floatformat:0 }}</p>
+                </div>
+                <div class="lm-resultado-item">
+                    <span>Nivel</span>
+                    <p>{{ reporte.datos.nivel }}</p>
+                </div>
+                <div class="lm-resultado-item">
+                    <span>Plataforma ideal</span>
+                    <p>{{ reporte.datos.plataforma_display }}</p>
+                </div>
+                <div class="lm-resultado-item">
+                    <span>Ganancia estimada</span>
+                    <p class="lm-data">${{ reporte.ganancia_estimada|floatformat:0 }}</p>
+                </div>
+                <div class="lm-resultado-item">
+                    <span>ROI estimado</span>
+                    <p class="lm-data">{{ reporte.roi }}%</p>
+                </div>
+            </div>
+
+            {% if reporte.datos.lista_compra %}
+            <div class="lm-resultado-extra">
+                <strong>🧾 Así se armó la compra</strong>
+                <div class="lm-result-list">
+                    {% for item in reporte.datos.lista_compra %}
+                    <div class="lm-result-item">
+                        <span class="lm-result-item-nombre">{{ item.cantidad }}x {{ item.nombre }}</span>
+                        <span class="lm-result-item-precio">
+                            ${{ item.subtotal_costo|floatformat:0 }} → ${{ item.subtotal_venta|floatformat:0 }}
+                            <small style="display:block;opacity:.7;">
+                                Margen sugerido: {{ item.margen_porcentaje }}% · costo ${{ item.costo_unitario|floatformat:0 }} → venta ${{ item.precio_venta_unitario|floatformat:0 }}
+                            </small>
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if reporte.datos.kits %}
+            <div class="lm-resultado-extra">
+                <strong>📦 Kits recomendados</strong>
+                <div class="lm-result-list">
+                    {% for kit in reporte.datos.kits %}
+                    <div class="lm-result-item">
+                        <span class="lm-result-item-nombre">{{ kit.nombre }}</span>
+                        <span class="lm-result-item-precio">${{ kit.precio|floatformat:0 }}</span>
+                        {% if kit.composicion %}
+                        <small style="display:block;opacity:.7;">
+                            Trae {{ kit.composicion.num_productos_distintos }} producto(s),
+                            {{ kit.composicion.unidades_totales }} unidad(es) en total.
+                            Ahorro: {{ kit.composicion.ahorro_porcentaje }}% (${{ kit.composicion.ahorro|floatformat:0 }})
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if reporte.datos.productos %}
+            <div class="lm-resultado-extra">
+                <strong>💄 Productos recomendados</strong>
+                <div class="lm-result-list">
+                    {% for p in reporte.datos.productos %}
+                    <div class="lm-result-item">
+                        <span class="lm-result-item-nombre">{{ p.nombre }}</span>
+                        <span class="lm-result-item-precio">
+                            Reventa sugerida: ${{ p.precio_sugerido|floatformat:0 }}
+                            <small style="display:block;opacity:.7;">Precio de catálogo: ${{ p.precio_catalogo|floatformat:0 }}</small>
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="lm-resultado-message">
+                <strong>✨ Recomendación de Lúmina</strong>
+                <p>{{ reporte.datos.recomendacion }}</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
