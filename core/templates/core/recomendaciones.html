@@ -14,20 +14,20 @@
             <p>Configura qué productos y kits debe sugerir Lúmina según la inversión y las preferencias del usuario.</p>
         </div>
         <button type="button" class="btn-primary" onclick="abrirFormulario()">
-            <i class="fa-solid fa-plus"></i> Nueva recomendación
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Nueva recomendación
         </button>
     </div>
 
     {% if messages %}
-        <div class="messages-container">
+        <div class="messages-container" role="status" aria-live="polite">
             {% for message in messages %}
                 <div class="alert-message {{ message.tags }}">
                     {% if message.tags == "success" %}
-                        <i class="fa-solid fa-circle-check"></i>
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
                     {% elif message.tags == "error" %}
-                        <i class="fa-solid fa-circle-xmark"></i>
+                        <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
                     {% else %}
-                        <i class="fa-solid fa-circle-info"></i>
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                     {% endif %}
                     <span>{{ message }}</span>
                 </div>
@@ -36,7 +36,7 @@
     {% endif %}
 
     <div class="info-card">
-        <div class="info-icon"><i class="fa-solid fa-lightbulb"></i></div>
+        <div class="info-icon" aria-hidden="true"><i class="fa-solid fa-lightbulb"></i></div>
         <div>
             <h3>¿Cómo funcionan las recomendaciones?</h3>
             <p>Aquí defines las reglas que utilizará Lúmina para recomendar productos y kits en el test de emprendimiento. Puedes establecer un rango de inversión, productos, kits y la plataforma donde venderá el usuario.</p>
@@ -57,7 +57,7 @@
                     <article class="recommendation-card">
 
                         <div class="recommendation-card-header">
-                            <div class="recommendation-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <div class="recommendation-icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                             <div class="recommendation-title">
                                 <h3>{{ recomendacion.nombre }}</h3>
                                 {% if recomendacion.activa %}
@@ -73,7 +73,7 @@
                                 <span>Presupuesto</span>
                                 <strong>${{ recomendacion.presupuesto_min|floatformat:0 }}</strong>
                             </div>
-                            <i class="fa-solid fa-arrow-right"></i>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             <div>
                                 <span>Hasta</span>
                                 <strong>${{ recomendacion.presupuesto_max|floatformat:0 }}</strong>
@@ -82,37 +82,25 @@
 
                         <div class="recommendation-info">
                             <div class="info-row">
-                                <span><i class="fa-solid fa-tag"></i> Producto</span>
+                                <span><i class="fa-solid fa-tag" aria-hidden="true"></i> Producto</span>
                                 <strong>{% if recomendacion.producto_interes %}{{ recomendacion.get_producto_interes_display }}{% else %}Cualquiera{% endif %}</strong>
                             </div>
                             <div class="info-row">
-                                <span><i class="fa-solid fa-mobile-screen"></i> Plataforma</span>
+                                <span><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Plataforma</span>
                                 <strong>{% if recomendacion.plataforma %}{{ recomendacion.get_plataforma_display }}{% else %}Cualquiera{% endif %}</strong>
-                            </div>
-                            <div class="info-row">
-                                <span><i class="fa-solid fa-money-bill-wave"></i> Inversión</span>
-                                <strong>${{ recomendacion.inversion_estimada|floatformat:0 }}</strong>
-                            </div>
-                            <div class="info-row">
-                                <span><i class="fa-solid fa-chart-line"></i> Ganancia estimada</span>
-                                <strong>${{ recomendacion.ganancia_estimada|floatformat:0 }}</strong>
-                            </div>
-                            <div class="info-row">
-                                <span><i class="fa-solid fa-percent"></i> ROI</span>
-                                <strong>{{ recomendacion.roi|default:0 }}%</strong>
                             </div>
                         </div>
 
                         <div class="related-section">
                             <div class="related-title">
-                                <span><i class="fa-solid fa-box-open"></i> Kits recomendados</span>
+                                <span><i class="fa-solid fa-box-open" aria-hidden="true"></i> Kits recomendados</span>
                                 <small>{{ recomendacion.kits.count }}</small>
                             </div>
                             {% if recomendacion.kits.count %}
                                 <div class="chips">
                                     {% for kit in recomendacion.kits.all %}
                                         <a href="{% url 'dashboard_kits' %}" class="chip chip-kit" title="Ir a Kits">
-                                            <i class="fa-solid fa-box"></i> {{ kit.nombre }}
+                                            <i class="fa-solid fa-box" aria-hidden="true"></i> {{ kit.nombre }}
                                         </a>
                                     {% endfor %}
                                 </div>
@@ -123,14 +111,14 @@
 
                         <div class="related-section">
                             <div class="related-title">
-                                <span><i class="fa-solid fa-bag-shopping"></i> Productos recomendados</span>
+                                <span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Productos recomendados</span>
                                 <small>{{ recomendacion.productos.count }}</small>
                             </div>
                             {% if recomendacion.productos.count %}
                                 <div class="chips">
                                     {% for producto in recomendacion.productos.all %}
                                         <a href="{% url 'editar_producto' producto.id %}" class="chip chip-product" title="Editar producto">
-                                            <i class="fa-solid fa-sparkles"></i> {{ producto.nombre }}
+                                            <i class="fa-solid fa-sparkles" aria-hidden="true"></i> {{ producto.nombre }}
                                         </a>
                                     {% endfor %}
                                 </div>
@@ -141,7 +129,7 @@
 
                         {% if recomendacion.recomendacion %}
                             <div class="recommendation-text">
-                                <div class="recommendation-text-title"><i class="fa-solid fa-comment-dots"></i> Mensaje para el usuario</div>
+                                <div class="recommendation-text-title"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i> Mensaje para el usuario</div>
                                 <p>{{ recomendacion.recomendacion }}</p>
                             </div>
                         {% endif %}
@@ -162,14 +150,15 @@
                                     [{% for kit in recomendacion.kits.all %}{{ kit.id }}{% if not forloop.last %},{% endif %}{% endfor %}],
                                     [{% for producto in recomendacion.productos.all %}{{ producto.id }}{% if not forloop.last %},{% endif %}{% endfor %}]
                                 )"
+                                aria-label="Editar recomendación {{ recomendacion.nombre }}"
                             >
-                                <i class="fa-solid fa-pen"></i> Editar
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i> Editar
                             </button>
 
                             <form method="POST" action="{% url 'eliminar_recomendacion' recomendacion.id %}" class="delete-form" onsubmit="return confirmarEliminacion(event);">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-action btn-delete">
-                                    <i class="fa-solid fa-trash"></i> Eliminar
+                                <button type="submit" class="btn-action btn-delete" aria-label="Eliminar recomendación {{ recomendacion.nombre }}">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar
                                 </button>
                             </form>
                         </div>
@@ -179,42 +168,42 @@
             </div>
         {% else %}
             <div class="empty-state">
-                <div class="empty-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div class="empty-icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                 <h3>Todavía no tienes recomendaciones</h3>
                 <p>Crea la primera regla para que Lúmina pueda recomendar productos y kits automáticamente.</p>
                 <button type="button" class="btn-primary" onclick="abrirFormulario()">
-                    <i class="fa-solid fa-plus"></i> Crear primera recomendación
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Crear primera recomendación
                 </button>
             </div>
         {% endif %}
     </section>
 
     <div class="rec-overlay" id="recomendacionModal" aria-hidden="true">
-        <div class="rec-modal">
+        <div class="rec-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
 
             <div class="rec-modal-header">
                 <div>
                     <span class="page-eyebrow" id="modalEyebrow">✨ CONFIGURACIÓN</span>
                     <h2 id="modalTitulo">Nueva recomendación</h2>
                 </div>
-                <button type="button" class="rec-modal-close" onclick="cerrarFormulario()" aria-label="Cerrar">
-                    <i class="fa-solid fa-xmark"></i>
+                <button type="button" class="rec-modal-close" onclick="cerrarFormulario()" aria-label="Cerrar formulario">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <form method="POST" action="{% url 'dashboard_recomendaciones' %}" class="recommendation-form" id="recomendacionForm">
+            <form method="POST" action="{% url 'dashboard_recomendaciones' %}" class="recommendation-form" id="recomendacionForm" novalidate>
                 {% csrf_token %}
                 <input type="hidden" name="recomendacion_id" id="recomendacion_id" value="">
 
                 <div class="form-group">
                     <label for="nombre">Nombre de la recomendación</label>
-                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Empezar con $100.000 - Gloss" required>
+                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Empezar con $100.000 - Gloss" maxlength="150" required>
                     <small>Nombre interno para identificar esta recomendación.</small>
                 </div>
 
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="fa-solid fa-wallet"></i>
+                        <i class="fa-solid fa-wallet" aria-hidden="true"></i>
                         <div>
                             <h3>Rango de inversión</h3>
                             <p>Define cuándo debe aparecer esta recomendación.</p>
@@ -224,23 +213,26 @@
                         <div class="form-group">
                             <label for="presupuesto_min">Presupuesto mínimo</label>
                             <div class="input-money">
-                                <span>$</span>
-                                <input type="number" id="presupuesto_min" name="presupuesto_min" min="0" step="1000" required>
+                                <span aria-hidden="true">$</span>
+                                <input type="number" id="presupuesto_min" name="presupuesto_min" min="0" step="1000" inputmode="numeric" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="presupuesto_max">Presupuesto máximo</label>
                             <div class="input-money">
-                                <span>$</span>
-                                <input type="number" id="presupuesto_max" name="presupuesto_max" min="0" step="1000" required>
+                                <span aria-hidden="true">$</span>
+                                <input type="number" id="presupuesto_max" name="presupuesto_max" min="0" step="1000" inputmode="numeric" required>
                             </div>
                         </div>
                     </div>
+                    <p class="field-error" id="presupuesto-error" role="alert" hidden>
+                        El presupuesto máximo debe ser mayor o igual al mínimo.
+                    </p>
                 </div>
 
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="fa-solid fa-sliders"></i>
+                        <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                         <div>
                             <h3>Preferencias</h3>
                             <p>Determina qué busca el emprendedor.</p>
@@ -251,12 +243,13 @@
                         <label for="producto_interes">Producto de interés</label>
                         <select id="producto_interes" name="producto_interes">
                             <option value="">Cualquier producto</option>
-                            <option value="gloss">Gloss</option>
-                            <option value="skincare">Skincare</option>
-                            <option value="pestanas">Pestañas</option>
-                            <option value="kits">Kits beauty</option>
-                            <option value="maquillaje">Maquillaje</option>
                             <option value="accesorios">Accesorios</option>
+                            <option value="skincare">Skincare</option>
+                            <option value="facial">Facial</option>
+                            <option value="ojos">Ojos</option>
+                            <option value="general">General</option>
+                            <option value="kits">Kits beauty</option>
+                            <option value="otro">Otro</option>
                         </select>
                     </div>
 
@@ -273,7 +266,7 @@
 
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="fa-solid fa-box-open"></i>
+                        <i class="fa-solid fa-box-open" aria-hidden="true"></i>
                         <div>
                             <h3>Kits recomendados</h3>
                             <p>Selecciona los kits que quieres sugerir.</p>
@@ -285,7 +278,7 @@
                             {% for kit in kits %}
                                 <label class="selection-item">
                                     <input type="checkbox" name="kits" value="{{ kit.id }}" class="kit-checkbox">
-                                    <span class="selection-check"><i class="fa-solid fa-check"></i></span>
+                                    <span class="selection-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                                     <span class="selection-content">
                                         <strong>{{ kit.nombre }}</strong>
                                         <small>{% if kit.precio_final %}${{ kit.precio_final|floatformat:0 }}{% else %}Precio no disponible{% endif %}</small>
@@ -295,7 +288,7 @@
                         </div>
                     {% else %}
                         <div class="empty-selection">
-                            <i class="fa-solid fa-box-open"></i>
+                            <i class="fa-solid fa-box-open" aria-hidden="true"></i>
                             <p>No hay kits activos disponibles.</p>
                         </div>
                     {% endif %}
@@ -303,7 +296,7 @@
 
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="fa-solid fa-bag-shopping"></i>
+                        <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
                         <div>
                             <h3>Productos recomendados</h3>
                             <p>Selecciona los productos que quieres sugerir.</p>
@@ -315,7 +308,7 @@
                             {% for producto in productos %}
                                 <label class="selection-item">
                                     <input type="checkbox" name="productos" value="{{ producto.id }}" class="producto-checkbox">
-                                    <span class="selection-check"><i class="fa-solid fa-check"></i></span>
+                                    <span class="selection-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                                     <span class="selection-content">
                                         <strong>{{ producto.nombre }}</strong>
                                         <small>${{ producto.precio_base|floatformat:0 }}</small>
@@ -325,7 +318,7 @@
                         </div>
                     {% else %}
                         <div class="empty-selection">
-                            <i class="fa-solid fa-bag-shopping"></i>
+                            <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
                             <p>No hay productos activos disponibles.</p>
                         </div>
                     {% endif %}
@@ -333,7 +326,7 @@
 
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="fa-solid fa-comment-dots"></i>
+                        <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
                         <div>
                             <h3>Mensaje para el emprendedor</h3>
                             <p>Este texto podrá mostrarse como recomendación.</p>
@@ -341,14 +334,15 @@
                     </div>
                     <div class="form-group">
                         <label for="recomendacion">Recomendación</label>
-                        <textarea id="recomendacion" name="recomendacion" rows="5" placeholder="Ej: Con esta inversión puedes comenzar con productos de alta rotación..."></textarea>
+                        <textarea id="recomendacion" name="recomendacion" rows="5" maxlength="500" placeholder="Ej: Con esta inversión puedes comenzar con productos de alta rotación..."></textarea>
+                        <small><span id="recomendacionCount">0</span>/500 caracteres</small>
                     </div>
                 </div>
 
                 <div class="active-toggle">
                     <label>
                         <input type="checkbox" name="activa" id="activa" checked>
-                        <span class="toggle-ui"></span>
+                        <span class="toggle-ui" aria-hidden="true"></span>
                         <span>
                             <strong>Recomendación activa</strong>
                             <small>Si está activa podrá utilizarse en el test.</small>
@@ -359,7 +353,7 @@
                 <div class="rec-modal-actions">
                     <button type="button" class="btn-secondary" onclick="cerrarFormulario()">Cancelar</button>
                     <button type="submit" class="btn-primary" id="btnGuardarRecomendacion">
-                        <i class="fa-solid fa-floppy-disk"></i>
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
                         <span id="textoGuardar">Guardar recomendación</span>
                     </button>
                 </div>

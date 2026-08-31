@@ -1,3 +1,4 @@
+
 {% extends 'core/base.html' %}
 {% load static %}
 
@@ -7,60 +8,184 @@
 Tips | Lúmina
 {% endblock %}
 
+
 {% block content %}
+
 <link rel="stylesheet" href="{% static 'css/tips.css' %}">
 
-<!-- HERO -->
-<section class="hero" id="hero" style="background: url('/static/img/pagina/banner2.png');">
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section
+    class="hero"
+    id="hero"
+    style="background-image: url('{% static 'img/pagina/banner2.png' %}');">
+
+    <div class="hero-overlay"></div>
 
     <div class="hero-content">
-        <span class="hero-badge">✨ Lúmina Beauty</span>
 
-        <h1>Tips, Tests & Beauty News</h1>
+        <span class="hero-badge">
+            <i class="fa-solid fa-sparkles"></i>
+            Lúmina Beauty
+        </span>
 
-        <p>Descubre qué maquillaje, colores y rutinas realmente van contigo.</p>
+        <h1>
+            Tips, Tests
+            <span>&</span>
+            Beauty News
+        </h1>
+
+        <p>
+            Descubre qué maquillaje, colores y rutinas
+            realmente van contigo.
+        </p>
+
+        <button
+            class="hero-button"
+            type="button"
+            onclick="scrollSection('test')">
+
+            Descubrir mi Beauty Style
+
+            <i class="fa-solid fa-arrow-down"></i>
+
+        </button>
+
     </div>
 
 </section>
 
-<!-- MENU -->
-<div class="menu" id="menu">
 
-    <button onclick="scrollSection('tests')" class="active">
-        🧪 Tests
+
+<!-- =====================================================
+     NAVEGACIÓN
+===================================================== -->
+
+<nav class="menu" id="menu">
+
+    <button
+        type="button"
+        onclick="scrollSection('test')"
+        class="active">
+
+        <i class="fa-solid fa-flask"></i>
+
+        <span>
+            Tests
+        </span>
+
     </button>
 
-    <button onclick="scrollSection('blog')">
-        📰 Blog
+
+    <button
+        type="button"
+        onclick="scrollSection('blog')">
+
+        <i class="fa-solid fa-newspaper"></i>
+
+        <span>
+            Blog
+        </span>
+
     </button>
 
-    <button onclick="scrollSection('galeria')">
-        🖼 Galería
+
+    <button
+        type="button"
+        onclick="scrollSection('galeria')">
+
+        <i class="fa-solid fa-images"></i>
+
+        <span>
+            Galería
+        </span>
+
     </button>
 
-</div>
+</nav>
 
-<!-- TESTS -->
-<section id="test">
+
+
+<!-- =====================================================
+     TESTS
+===================================================== -->
+
+<section
+    id="test"
+    class="tips-section tests-section">
+
+
+    <!-- ENCABEZADO -->
 
     <div class="title searchable-item">
-        <span>TESTS INTERACTIVOS</span>
-        <h2>Descubre Tu Beauty Style</h2>
+
+        <span class="section-label">
+            BEAUTY TESTS
+        </span>
+
+        <h2>
+            Descubre Tu Beauty Style
+        </h2>
+
+        <p>
+            Responde unas preguntas y descubre
+            qué estilo de belleza encaja mejor contigo.
+        </p>
+
     </div>
 
-    <div class="tests-grid searchable-item">
+
+
+    <!-- GRID DE TESTS -->
+
+    <div class="tests-grid">
 
         {% for test in tests %}
 
-        <div class="card searchable-item">
+        <article class="card searchable-item">
 
-            <img src="{{ test.imagen.url }}">
 
-            <div class="card-content searchable-item">
+            <!-- IMAGEN -->
 
-                <small>
+            <div class="card-image">
+
+                {% if test.imagen %}
+
+                <img
+                    src="{{ test.imagen.url }}"
+                    alt="{{ test.titulo }}">
+
+                {% else %}
+
+                <div class="card-image-placeholder">
+
+                    <i class="fa-solid fa-sparkles"></i>
+
+                </div>
+
+                {% endif %}
+
+
+                <span class="card-category">
+
                     {{ test.categoria }}
-                </small>
+
+                </span>
+
+            </div>
+
+
+
+            <!-- CONTENIDO -->
+
+            <div class="card-content">
+
+                <span class="card-eyebrow">
+                    BEAUTY TEST
+                </span>
 
                 <h3>
                     {{ test.titulo }}
@@ -70,121 +195,42 @@ Tips | Lúmina
                     {{ test.descripcion }}
                 </p>
 
-                <button onclick="abrirTest('{{ test.id }}')">
-                    Hacer Test
+
+                <button
+                    type="button"
+                    class="card-button"
+                    onclick="abrirTest('{{ test.id }}')">
+
+                    <span>
+                        Hacer Test
+                    </span>
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
                 </button>
 
             </div>
 
-        </div>
+        </article>
 
-        {% endfor %}
-
-    </div>
-
-
-    </div>
-
-</section>
-
-<!-- BLOG -->
-<section id="blog">
-
-    <div class="title searchable-item">
-        <span>BLOG & TIPS</span>
-        <h2>Beauty News</h2>
-    </div>
-
-    <div class="blog-grid">
-
-        {% for blog in blogs %}
-
-        <div class="blog-card searchable-item">
-
-            {% if blog.portada %}
-            <img src="{{ blog.portada.url }}" alt="{{ blog.titulo }}">
-            {% endif %}
-
-            <div class="blog-content">
-
-                <small>
-                    {{ blog.fecha_creacion|date:"d/m/Y" }}
-                </small>
-
-                <h3>{{ blog.titulo }}</h3>
-
-                <p>
-                    {{ blog.resumen }}
-                </p>
-
-                <button onclick="abrirBlog('{{ blog.id }}')">
-                    Leer más
-                </button>
-
-            </div>
-
-        </div>
-
-        {% empty %}
-        <div class="empty-publicaciones">
-            <p> No hay publicaciones disponibles</p>
-        </div>
-        {% endfor %}
-
-    </div>
-
-</section>
-
-<div id="blogModal" class="blog-modal">
-
-    <div class="blog-modal-content">
-
-        <span class="close-modal" onclick="cerrarBlog()">
-            &times;
-        </span>
-
-        <div id="blogContenido"></div>
-
-    </div>
-
-</div>
-<!-- GALERÍA -->
-<section id="galeria" class="gallery-section">
-
-    <div class="gallery-header searchable-item">
-        <span class="badge">GALERÍA</span>
-        <h2>Inspiración Beauty</h2>
-        <p>Looks para inspirarte ✨</p>
-    </div>
-
-    <div class="gallery-grid">
-
-        {% for item in galeria %}
-
-        <div class="gallery-card searchable-item" data-tags="{{ item.tags }}" onclick="openGallery('{{ item.id }}')">
-
-            <img src="{{ item.imagen.url }}" alt="{{ item.titulo }}">
-
-            <div class="overlay">
-
-                <span class="tag">
-                    {{ item.categoria }}
-                </span>
-
-                <h3>
-                    {{ item.titulo }}
-                </h3>
-
-            </div>
-
-        </div>
 
         {% empty %}
 
-        <div class="empty-gallery">
+        <div class="empty-state">
+
+            <div class="empty-icon">
+
+                <i class="fa-regular fa-face-smile"></i>
+
+            </div>
+
+            <h3>
+                Próximamente
+            </h3>
 
             <p>
-                No hay imágenes disponibles.
+                Estamos preparando nuevos beauty tests
+                para ti.
             </p>
 
         </div>
@@ -195,20 +241,319 @@ Tips | Lúmina
 
 </section>
 
-<!-- MODAL -->
-<div class="modal" id="modal">
-    <div class="modal-box">
-        <div id="modalContent"></div>
+
+
+<!-- =====================================================
+     BLOG
+===================================================== -->
+
+<section
+    id="blog"
+    class="tips-section blog-section">
+
+
+    <!-- ENCABEZADO -->
+
+    <div class="title searchable-item">
+
+        <span class="section-label">
+            BLOG & TIPS
+        </span>
+
+        <h2>
+            Beauty News
+        </h2>
+
+        <p>
+            Consejos, tendencias e inspiración
+            para llevar tu belleza a otro nivel.
+        </p>
+
     </div>
+
+
+
+    <!-- GRID -->
+
+    <div class="blog-grid">
+
+        {% for blog in blogs %}
+
+        <article class="blog-card searchable-item">
+
+
+            <!-- PORTADA -->
+
+            <div class="blog-image">
+
+                {% if blog.portada %}
+
+                <img
+                    src="{{ blog.portada.url }}"
+                    alt="{{ blog.titulo }}">
+
+                {% else %}
+
+                <div class="blog-image-placeholder">
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                </div>
+
+                {% endif %}
+
+                <span class="blog-date">
+
+                    {{ blog.fecha_creacion|date:"d/m/Y" }}
+
+                </span>
+
+            </div>
+
+
+
+            <!-- CONTENIDO -->
+
+            <div class="blog-content">
+
+                <span class="blog-label">
+                    LÚMINA JOURNAL
+                </span>
+
+                <h3>
+                    {{ blog.titulo }}
+                </h3>
+
+                <p>
+                    {{ blog.resumen }}
+                </p>
+
+
+                <button
+                    type="button"
+                    class="blog-button"
+                    onclick="abrirBlog('{{ blog.id }}')">
+
+                    <span>
+                        Leer artículo
+                    </span>
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                </button>
+
+            </div>
+
+        </article>
+
+
+        {% empty %}
+
+        <div class="empty-state empty-publicaciones">
+
+            <div class="empty-icon">
+
+                <i class="fa-regular fa-newspaper"></i>
+
+            </div>
+
+            <h3>
+                Aún no hay publicaciones
+            </h3>
+
+            <p>
+                Muy pronto encontrarás nuevos
+                consejos y artículos de belleza.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     GALERÍA
+===================================================== -->
+
+<section
+    id="galeria"
+    class="tips-section gallery-section">
+
+
+    <!-- ENCABEZADO -->
+
+    <div class="gallery-header searchable-item">
+
+        <span class="section-label">
+            INSPIRACIÓN
+        </span>
+
+        <h2>
+            Galería Beauty
+        </h2>
+
+        <p>
+            Looks, colores e ideas para inspirarte.
+        </p>
+
+    </div>
+
+
+
+    <!-- GALERÍA -->
+
+    <div class="gallery-grid">
+
+        {% for item in galeria %}
+
+        <article
+            class="gallery-card searchable-item"
+            data-tags="{{ item.tags }}"
+            onclick="openGallery('{{ item.id }}')">
+
+
+            <img
+                src="{{ item.imagen.url }}"
+                alt="{{ item.titulo }}">
+
+
+            <div class="gallery-overlay">
+
+                <div class="gallery-overlay-content">
+
+                    <span class="gallery-category">
+                        {{ item.categoria }}
+                    </span>
+
+                    <h3>
+                        {{ item.titulo }}
+                    </h3>
+
+                    <span class="gallery-open">
+
+                        Ver inspiración
+
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </article>
+
+
+        {% empty %}
+
+        <div class="empty-state empty-gallery">
+
+            <div class="empty-icon">
+
+                <i class="fa-regular fa-images"></i>
+
+            </div>
+
+            <h3>
+                Galería vacía
+            </h3>
+
+            <p>
+                Pronto encontrarás nuevos looks
+                para inspirarte.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     MODALES
+===================================================== -->
+
+
+<!-- =====================================================
+     MODAL GALERÍA
+===================================================== -->
+
+<div
+    id="modal"
+    class="lumina-modal"
+    aria-hidden="true">
+
+    <div
+        class="modal-box gallery-modal-box"
+        role="dialog"
+        aria-modal="true">
+
+        <div id="modalContent"></div>
+
+    </div>
+
 </div>
 
-<div id="testModal" class="modal">
 
-    <div class="modal-box test-modal-box">
 
-        <button class="close-test" onclick="cerrarTest()">
-            &times;
+<!-- =====================================================
+     MODAL BLOG
+===================================================== -->
+
+<div
+    id="blogModal"
+    class="lumina-modal"
+    aria-hidden="true">
+
+    <div
+        class="modal-box blog-modal-box"
+        role="dialog"
+        aria-modal="true">
+
+
+        <button
+            class="modal-close"
+            type="button"
+            onclick="cerrarBlog()"
+            aria-label="Cerrar">
+
+            <i class="fa-solid fa-xmark"></i>
+
         </button>
+
+
+        <div id="blogContenido"></div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     MODAL TEST
+===================================================== -->
+
+<div
+    id="testModal"
+    class="lumina-modal"
+    aria-hidden="true">
+
+    <div
+        class="modal-box test-modal-box"
+        role="dialog"
+        aria-modal="true">
 
         <div id="testContent"></div>
 
@@ -216,9 +561,13 @@ Tips | Lúmina
 
 </div>
 
+
 {% endblock %}
 
+
+
 {% block extra_js %}
+
 <script src="{% static 'js/tips.js' %}"></script>
 
 {% endblock %}

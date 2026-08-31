@@ -45,10 +45,20 @@ Catálogo | Lúmina
 
             <i class="fa-solid fa-magnifying-glass"></i>
 
-            <input type="search" id="buscarCatalogo" placeholder="Buscar productos..." autocomplete="off">
+            <input
+                type="search"
+                id="buscarCatalogo"
+                placeholder="Buscar productos..."
+                autocomplete="off"
+            >
 
-            <button type="button" id="limpiarBusqueda" class="btn-limpiar-busqueda" aria-label="Limpiar búsqueda"
-                hidden>
+            <button
+                type="button"
+                id="limpiarBusqueda"
+                class="btn-limpiar-busqueda"
+                aria-label="Limpiar búsqueda"
+                hidden
+            >
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -77,7 +87,11 @@ Catálogo | Lúmina
 
             </div>
 
-            <button type="button" id="limpiarFiltros" class="btn-limpiar-filtros">
+            <button
+                type="button"
+                id="limpiarFiltros"
+                class="btn-limpiar-filtros"
+            >
                 <i class="fa-solid fa-rotate-left"></i>
                 Limpiar filtros
             </button>
@@ -88,7 +102,9 @@ Catálogo | Lúmina
         <div class="filtros-grid">
 
 
-            <!-- TIPO -->
+            <!-- ======================================
+                 TIPO
+            ======================================= -->
 
             <div class="filtro-campo">
 
@@ -116,7 +132,9 @@ Catálogo | Lúmina
             </div>
 
 
-            <!-- CATEGORÍA -->
+            <!-- ======================================
+                 CATEGORÍA
+            ======================================= -->
 
             <div class="filtro-campo">
 
@@ -144,7 +162,9 @@ Catálogo | Lúmina
             </div>
 
 
-            <!-- MARCA -->
+            <!-- ======================================
+                 MARCA
+            ======================================= -->
 
             <div class="filtro-campo">
 
@@ -172,7 +192,9 @@ Catálogo | Lúmina
             </div>
 
 
-            <!-- COLECCIÓN -->
+            <!-- ======================================
+                 COLECCIÓN
+            ======================================= -->
 
             <div class="filtro-campo">
 
@@ -200,7 +222,9 @@ Catálogo | Lúmina
             </div>
 
 
-            <!-- ETIQUETAS -->
+            <!-- ======================================
+                 ETIQUETAS
+            ======================================= -->
 
             <div class="filtro-campo filtro-etiquetas">
 
@@ -211,12 +235,24 @@ Catálogo | Lúmina
 
                 <div class="etiquetas-dropdown">
 
-                    <button type="button" id="filtroEtiquetaToggle" class="etiquetas-dropdown-btn">
-                        <span id="filtroEtiquetaTexto">Todas las etiquetas</span>
+                    <button
+                        type="button"
+                        id="filtroEtiquetaToggle"
+                        class="etiquetas-dropdown-btn"
+                    >
+                        <span id="filtroEtiquetaTexto">
+                            Todas las etiquetas
+                        </span>
+
                         <i class="fa-solid fa-chevron-down"></i>
+
                     </button>
 
-                    <div class="etiquetas-dropdown-panel" id="etiquetasPanel" hidden>
+                    <div
+                        class="etiquetas-dropdown-panel"
+                        id="etiquetasPanel"
+                        hidden
+                    >
                         <!-- Los checkboxes se generan por JS -->
                     </div>
 
@@ -225,7 +261,9 @@ Catálogo | Lúmina
             </div>
 
 
-            <!-- ORDEN -->
+            <!-- ======================================
+                 ORDEN
+            ======================================= -->
 
             <div class="filtro-campo">
 
@@ -284,7 +322,10 @@ Catálogo | Lúmina
         </div>
 
 
-        <div class="filtros-activos" id="filtrosActivos"></div>
+        <div
+            class="filtros-activos"
+            id="filtrosActivos"
+        ></div>
 
     </div>
 
@@ -293,29 +334,44 @@ Catálogo | Lúmina
          PRODUCTOS Y KITS
     =========================================== -->
 
-    <div class="catalogo-grid" id="catalogoProductos">
+    <div
+        class="catalogo-grid"
+        id="catalogoProductos"
+    >
 
         {% for producto in productos %}
 
-        <article class="producto-card" data-tipo="producto" data-nombre="{{ producto.nombre|lower }}"
+        <article
+            class="producto-card"
+            data-tipo="producto"
+            data-nombre="{{ producto.nombre|lower }}"
             data-marca="{% if producto.marca %}{{ producto.marca.nombre|lower }}{% endif %}"
             data-categoria="{% if producto.categoria %}{{ producto.categoria.nombre|lower }}{% endif %}"
             data-coleccion="{% if producto.coleccion %}{{ producto.coleccion.nombre|lower }}{% endif %}"
             data-etiquetas="{% for etiqueta in producto.etiquetas.all %}{{ etiqueta.nombre|lower }} {% endfor %}"
-            data-precio="{{ producto.precio_base }}" data-fecha="{{ producto.fecha_creacion|date:'U' }}">
+            data-precio="{{ producto.precio_base }}"
+            data-fecha="{{ producto.fecha_creacion|date:'U' }}"
+        >
 
 
             <!-- ==================================
-                     IMAGEN
-                =================================== -->
+                 IMAGEN
+            =================================== -->
 
-            <a href="{% url 'detalle_producto' producto.slug %}" class="producto-imagen">
+            <a
+                href="{% url 'detalle_producto' producto.slug %}"
+                class="producto-imagen"
+            >
 
                 {% with imagen_principal=producto.imagenes.all|first %}
 
                 {% if imagen_principal %}
 
-                <img src="{{ imagen_principal.imagen.url }}" alt="{{ producto.nombre }}" loading="lazy">
+                <img
+                    src="{{ imagen_principal.imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    loading="lazy"
+                >
 
                 {% else %}
 
@@ -339,9 +395,7 @@ Catálogo | Lúmina
                 {% if producto.coleccion %}
 
                 <span class="producto-coleccion">
-
                     {{ producto.coleccion.nombre }}
-
                 </span>
 
                 {% endif %}
@@ -350,8 +404,8 @@ Catálogo | Lúmina
 
 
             <!-- ==================================
-                     INFORMACIÓN
-                =================================== -->
+                 INFORMACIÓN
+            =================================== -->
 
             <div class="producto-info">
 
@@ -362,19 +416,19 @@ Catálogo | Lúmina
 
                 {% if producto.variantes.all %}
 
-                {% if producto.tiene_stock %}
+                    {% if producto.tiene_stock %}
 
-                <strong class="producto-precio">
-                    ${{ producto.precio_base|floatformat:0 }}
-                </strong>
+                    <strong class="producto-precio">
+                        ${{ producto.precio_base|floatformat:0 }}
+                    </strong>
 
-                {% else %}
+                    {% else %}
 
-                <strong class="producto-agotado">
-                    Agotado
-                </strong>
+                    <strong class="producto-agotado">
+                        Agotado
+                    </strong>
 
-                {% endif %}
+                    {% endif %}
 
                 {% else %}
 
@@ -392,22 +446,35 @@ Catálogo | Lúmina
 
 
         <!-- ==================================
-                 KITS
-            =================================== -->
+             KITS
+        =================================== -->
 
         {% for kit in kits %}
 
-        <article class="producto-card" data-tipo="kit" data-nombre="{{ kit.nombre|lower }}"
-            data-marca="" data-coleccion=""
+        <article
+            class="producto-card"
+            data-tipo="kit"
+            data-nombre="{{ kit.nombre|lower }}"
+            data-marca=""
+            data-coleccion=""
             data-categoria="{% if kit.categoria %}{{ kit.categoria.nombre|lower }}{% endif %}"
-            data-etiquetas="" data-precio="{{ kit.precio_final }}"
-            data-fecha="{{ kit.fecha_creacion|date:'U' }}">
+            data-etiquetas=""
+            data-precio="{{ kit.precio_final }}"
+            data-fecha="{{ kit.fecha_creacion|date:'U' }}"
+        >
 
-            <a href="{% url 'detalle_kit' kit.slug %}" class="producto-imagen">
+            <a
+                href="{% url 'detalle_kit' kit.slug %}"
+                class="producto-imagen"
+            >
 
                 {% if kit.imagen %}
 
-                <img src="{{ kit.imagen.url }}" alt="{{ kit.nombre }}" loading="lazy">
+                <img
+                    src="{{ kit.imagen.url }}"
+                    alt="{{ kit.nombre }}"
+                    loading="lazy"
+                >
 
                 {% else %}
 
@@ -423,9 +490,12 @@ Catálogo | Lúmina
 
                 {% endif %}
 
+
                 <span class="producto-coleccion kit-badge">
-                    <i class="fa-solid fa-gift"></i> Kit
+                    <i class="fa-solid fa-gift"></i>
+                    Kit
                 </span>
+
 
                 {% if kit.ahorro_porcentaje > 0 %}
 
@@ -436,6 +506,7 @@ Catálogo | Lúmina
                 {% endif %}
 
             </a>
+
 
             <div class="producto-info">
 
@@ -455,6 +526,7 @@ Catálogo | Lúmina
 
                 </div>
 
+
                 {% if kit.stock > 0 %}
 
                 <strong class="producto-precio">
@@ -471,12 +543,14 @@ Catálogo | Lúmina
 
             </div>
 
+        </article>
+
         {% endfor %}
 
 
         <!-- ==================================
-                 SIN PRODUCTOS NI KITS
-            =================================== -->
+             SIN PRODUCTOS NI KITS
+        =================================== -->
 
         {% if not productos and not kits %}
 
@@ -504,7 +578,11 @@ Catálogo | Lúmina
          SIN RESULTADOS
     =========================================== -->
 
-    <div id="sinResultadosCatalogo" class="catalogo-sin-resultados" hidden>
+    <div
+        id="sinResultadosCatalogo"
+        class="catalogo-sin-resultados"
+        hidden
+    >
 
         <i class="fa-solid fa-magnifying-glass"></i>
 
@@ -517,7 +595,11 @@ Catálogo | Lúmina
             buscando con otro nombre.
         </p>
 
-        <button type="button" id="btnLimpiarSinResultados" class="btn-limpiar-filtros">
+        <button
+            type="button"
+            id="btnLimpiarSinResultados"
+            class="btn-limpiar-filtros"
+        >
 
             <i class="fa-solid fa-rotate-left"></i>
 
@@ -536,671 +618,680 @@ Catálogo | Lúmina
 
 <script>
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
 
-            /* =========================================
-               ELEMENTOS
-            ========================================= */
+        /* =========================================
+           ELEMENTOS
+        ========================================= */
 
-            const buscador =
-                document.getElementById(
-                    "buscarCatalogo"
-                );
+        const buscador =
+            document.getElementById(
+                "buscarCatalogo"
+            );
 
-            const limpiarBusqueda =
-                document.getElementById(
-                    "limpiarBusqueda"
-                );
+        const limpiarBusqueda =
+            document.getElementById(
+                "limpiarBusqueda"
+            );
 
-            const filtroTipo =
-                document.getElementById(
-                    "filtroTipo"
-                );
+        const filtroTipo =
+            document.getElementById(
+                "filtroTipo"
+            );
 
-            const filtroCategoria =
-                document.getElementById(
-                    "filtroCategoria"
-                );
+        const filtroCategoria =
+            document.getElementById(
+                "filtroCategoria"
+            );
 
-            const filtroMarca =
-                document.getElementById(
-                    "filtroMarca"
-                );
+        const filtroMarca =
+            document.getElementById(
+                "filtroMarca"
+            );
 
-            const filtroColeccion =
-                document.getElementById(
-                    "filtroColeccion"
-                );
+        const filtroColeccion =
+            document.getElementById(
+                "filtroColeccion"
+            );
 
-            const ordenCatalogo =
-                document.getElementById(
-                    "ordenCatalogo"
-                );
+        const ordenCatalogo =
+            document.getElementById(
+                "ordenCatalogo"
+            );
 
-            const limpiarFiltros =
-                document.getElementById(
-                    "limpiarFiltros"
-                );
+        const limpiarFiltros =
+            document.getElementById(
+                "limpiarFiltros"
+            );
 
-            const btnLimpiarSinResultados =
-                document.getElementById(
-                    "btnLimpiarSinResultados"
-                );
+        const btnLimpiarSinResultados =
+            document.getElementById(
+                "btnLimpiarSinResultados"
+            );
 
-            const productosContainer =
-                document.getElementById(
-                    "catalogoProductos"
-                );
+        const productosContainer =
+            document.getElementById(
+                "catalogoProductos"
+            );
 
-            const sinResultados =
-                document.getElementById(
-                    "sinResultadosCatalogo"
-                );
+        const sinResultados =
+            document.getElementById(
+                "sinResultadosCatalogo"
+            );
 
-            const cantidadProductos =
-                document.getElementById(
-                    "cantidadProductos"
-                );
+        const cantidadProductos =
+            document.getElementById(
+                "cantidadProductos"
+            );
 
-            const filtrosActivos =
-                document.getElementById(
-                    "filtrosActivos"
-                );
+        const filtrosActivos =
+            document.getElementById(
+                "filtrosActivos"
+            );
 
-            const etiquetaToggle =
-                document.getElementById(
-                    "filtroEtiquetaToggle"
-                );
+        const etiquetaToggle =
+            document.getElementById(
+                "filtroEtiquetaToggle"
+            );
 
-            const etiquetaTexto =
-                document.getElementById(
-                    "filtroEtiquetaTexto"
-                );
+        const etiquetaTexto =
+            document.getElementById(
+                "filtroEtiquetaTexto"
+            );
 
-            const etiquetasPanel =
-                document.getElementById(
-                    "etiquetasPanel"
-                );
+        const etiquetasPanel =
+            document.getElementById(
+                "etiquetasPanel"
+            );
 
 
-            if (!productosContainer) {
+        if (!productosContainer) {
+            return;
+        }
+
+
+        /* =========================================
+           PRODUCTOS
+        ========================================= */
+
+        let productos =
+            Array.from(
+                productosContainer.querySelectorAll(
+                    ".producto-card"
+                )
+            );
+
+
+        let etiquetasSeleccionadas =
+            new Set();
+
+
+        /* =========================================
+           CONSTRUIR FILTRO DE ETIQUETAS
+        ========================================= */
+
+        function construirFiltroEtiquetas() {
+
+            if (!etiquetasPanel) {
+                return;
+            }
+
+            const todas = new Set();
+
+            productos.forEach(
+                function (producto) {
+
+                    const lista =
+                        (producto.dataset.etiquetas || "")
+                            .trim()
+                            .split(/\s+/)
+                            .filter(Boolean);
+
+                    lista.forEach(
+                        function (tag) {
+                            todas.add(tag);
+                        }
+                    );
+
+                }
+            );
+
+            const ordenadas =
+                Array.from(todas).sort();
+
+            etiquetasPanel.innerHTML = "";
+
+            ordenadas.forEach(
+                function (tag) {
+
+                    const item =
+                        document.createElement("label");
+
+                    item.className =
+                        "etiqueta-item";
+
+                    item.innerHTML = `
+                        <input type="checkbox" value="${tag}">
+                        <span>${tag}</span>
+                    `;
+
+                    item.querySelector("input")
+                        .addEventListener(
+                            "change",
+                            function (e) {
+
+                                if (e.target.checked) {
+
+                                    etiquetasSeleccionadas.add(
+                                        tag
+                                    );
+
+                                } else {
+
+                                    etiquetasSeleccionadas.delete(
+                                        tag
+                                    );
+
+                                }
+
+                                actualizarTextoEtiquetas();
+                                aplicarCatalogo();
+
+                            }
+                        );
+
+                    etiquetasPanel.appendChild(item);
+
+                }
+            );
+
+        }
+
+
+        /* =========================================
+           TEXTO DEL BOTÓN DE ETIQUETAS
+        ========================================= */
+
+        function actualizarTextoEtiquetas() {
+
+            if (!etiquetaTexto) {
+                return;
+            }
+
+            const cantidad =
+                etiquetasSeleccionadas.size;
+
+            etiquetaTexto.textContent =
+                cantidad === 0
+                    ? "Todas las etiquetas"
+                    : `${cantidad} etiqueta${cantidad > 1 ? "s" : ""} seleccionada${cantidad > 1 ? "s" : ""}`;
+
+        }
+
+
+        /* =========================================
+           ABRIR / CERRAR DROPDOWN
+        ========================================= */
+
+        if (etiquetaToggle) {
+
+            etiquetaToggle.addEventListener(
+                "click",
+                function (e) {
+
+                    e.stopPropagation();
+
+                    etiquetasPanel.hidden =
+                        !etiquetasPanel.hidden;
+
+                }
+            );
+
+            document.addEventListener(
+                "click",
+                function (e) {
+
+                    if (
+                        !etiquetasPanel.hidden &&
+                        !etiquetasPanel.contains(e.target) &&
+                        e.target !== etiquetaToggle
+                    ) {
+
+                        etiquetasPanel.hidden = true;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =========================================
+           APLICAR FILTROS
+        ========================================= */
+
+        function aplicarCatalogo() {
+
+
+            const texto =
+                buscador
+                    ? buscador.value
+                        .toLowerCase()
+                        .trim()
+                    : "";
+
+
+            const tipo =
+                filtroTipo
+                    ? filtroTipo.value
+                    : "";
+
+
+            const categoria =
+                filtroCategoria
+                    ? filtroCategoria.value
+                    : "";
+
+
+            const marca =
+                filtroMarca
+                    ? filtroMarca.value
+                    : "";
+
+
+            const coleccion =
+                filtroColeccion
+                    ? filtroColeccion.value
+                    : "";
+
+
+            let visibles = [];
+
+
+            productos.forEach(
+                function (producto) {
+
+
+                    const nombre =
+                        producto.dataset.nombre || "";
+
+
+                    const productoTipo =
+                        producto.dataset.tipo || "producto";
+
+
+                    const productoMarca =
+                        producto.dataset.marca || "";
+
+
+                    const productoCategoria =
+                        producto.dataset.categoria || "";
+
+
+                    const productoColeccion =
+                        producto.dataset.coleccion || "";
+
+
+                    const etiquetas =
+                        producto.dataset.etiquetas || "";
+
+
+                    const coincideTexto =
+                        !texto ||
+
+                        nombre.includes(texto) ||
+
+                        productoMarca.includes(texto) ||
+
+                        productoCategoria.includes(texto) ||
+
+                        productoColeccion.includes(texto) ||
+
+                        etiquetas.includes(texto);
+
+
+                    const coincideTipo =
+                        !tipo ||
+
+                        productoTipo === tipo;
+
+
+                    const coincideCategoria =
+                        !categoria ||
+
+                        productoCategoria === categoria;
+
+
+                    const coincideMarca =
+                        !marca ||
+
+                        productoMarca === marca;
+
+
+                    const coincideColeccion =
+                        !coleccion ||
+
+                        productoColeccion === coleccion;
+
+
+                    const coincideEtiquetas =
+                        etiquetasSeleccionadas.size === 0 ||
+
+                        Array.from(
+                            etiquetasSeleccionadas
+                        ).some(
+                            function (tag) {
+
+                                return etiquetas.includes(
+                                    tag
+                                );
+
+                            }
+                        );
+
+
+                    const mostrar =
+                        coincideTexto &&
+                        coincideTipo &&
+                        coincideCategoria &&
+                        coincideMarca &&
+                        coincideColeccion &&
+                        coincideEtiquetas;
+
+
+                    producto.hidden =
+                        !mostrar;
+
+
+                    if (mostrar) {
+                        visibles.push(producto);
+                    }
+
+                }
+            );
+
+
+            /* =====================================
+               ORDENAMIENTO
+            ===================================== */
+
+            ordenarProductos();
+
+
+            /* =====================================
+               CONTADOR
+            ===================================== */
+
+            if (cantidadProductos) {
+
+                cantidadProductos.textContent =
+                    visibles.length;
+
+            }
+
+
+            /* =====================================
+               SIN RESULTADOS
+            ===================================== */
+
+            if (sinResultados) {
+
+                sinResultados.hidden =
+                    visibles.length !== 0;
+
+            }
+
+
+            /* =====================================
+               BUSCADOR
+            ===================================== */
+
+            if (limpiarBusqueda) {
+
+                limpiarBusqueda.hidden =
+                    texto === "";
+
+            }
+
+
+            /* =====================================
+               FILTROS ACTIVOS
+            ===================================== */
+
+            mostrarFiltrosActivos();
+
+        }
+
+
+        /* =========================================
+           ORDENAR
+        ========================================= */
+
+        function ordenarProductos() {
+
+            const orden =
+                ordenCatalogo
+                    ? ordenCatalogo.value
+                    : "recientes";
+
+
+            const ordenados =
+                [...productos];
+
+
+            ordenados.sort(
+                function (a, b) {
+
+
+                    const nombreA =
+                        a.dataset.nombre || "";
+
+
+                    const nombreB =
+                        b.dataset.nombre || "";
+
+
+                    const precioA =
+                        parseFloat(
+                            a.dataset.precio || 0
+                        );
+
+
+                    const precioB =
+                        parseFloat(
+                            b.dataset.precio || 0
+                        );
+
+
+                    const fechaA =
+                        parseInt(
+                            a.dataset.fecha || 0
+                        );
+
+
+                    const fechaB =
+                        parseInt(
+                            b.dataset.fecha || 0
+                        );
+
+
+                    switch (orden) {
+
+
+                        case "nombre-az":
+
+                            return nombreA.localeCompare(
+                                nombreB
+                            );
+
+
+                        case "nombre-za":
+
+                            return nombreB.localeCompare(
+                                nombreA
+                            );
+
+
+                        case "precio-menor":
+
+                            return precioA - precioB;
+
+
+                        case "precio-mayor":
+
+                            return precioB - precioA;
+
+
+                        case "recientes":
+
+                        default:
+
+                            return fechaB - fechaA;
+
+                    }
+
+                }
+            );
+
+
+            ordenados.forEach(
+                function (producto) {
+
+                    productosContainer.appendChild(
+                        producto
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* =========================================
+           MOSTRAR FILTROS ACTIVOS
+        ========================================= */
+
+        function mostrarFiltrosActivos() {
+
+
+            if (!filtrosActivos) {
                 return;
             }
 
 
-            /* =========================================
-               PRODUCTOS
-            ========================================= */
-
-            let productos =
-                Array.from(
-                    productosContainer.querySelectorAll(
-                        ".producto-card"
-                    )
-                );
+            filtrosActivos.innerHTML = "";
 
 
-            let etiquetasSeleccionadas =
-                new Set();
+            const filtros = [];
 
 
-            /* =========================================
-               CONSTRUIR FILTRO DE ETIQUETAS
-            ========================================= */
+            if (
+                filtroTipo &&
+                filtroTipo.value
+            ) {
 
-            function construirFiltroEtiquetas() {
+                filtros.push({
+                    texto:
+                        filtroTipo
+                            .options[
+                            filtroTipo.selectedIndex
+                        ]
+                            .text,
 
-                if (!etiquetasPanel) {
-                    return;
+                    tipo: "tipoProducto"
+                });
+
+            }
+
+
+            if (
+                filtroCategoria &&
+                filtroCategoria.value
+            ) {
+
+                filtros.push({
+                    texto:
+                        filtroCategoria
+                            .options[
+                            filtroCategoria.selectedIndex
+                        ]
+                            .text,
+
+                    tipo: "categoria"
+                });
+
+            }
+
+
+            if (
+                filtroMarca &&
+                filtroMarca.value
+            ) {
+
+                filtros.push({
+                    texto:
+                        filtroMarca
+                            .options[
+                            filtroMarca.selectedIndex
+                        ]
+                            .text,
+
+                    tipo: "marca"
+                });
+
+            }
+
+
+            if (
+                filtroColeccion &&
+                filtroColeccion.value
+            ) {
+
+                filtros.push({
+                    texto:
+                        filtroColeccion
+                            .options[
+                            filtroColeccion.selectedIndex
+                        ]
+                            .text,
+
+                    tipo: "coleccion"
+                });
+
+            }
+
+
+            etiquetasSeleccionadas.forEach(
+                function (tag) {
+
+                    filtros.push({
+                        texto: tag,
+                        tipo: "etiqueta"
+                    });
+
                 }
+            );
 
-                const todas = new Set();
 
-                productos.forEach(
-                    function (producto) {
+            filtros.forEach(
+                function (filtro) {
 
-                        const lista =
-                            (producto.dataset.etiquetas || "")
-                                .trim()
-                                .split(/\s+/)
-                                .filter(Boolean);
 
-                        lista.forEach(
-                            function (tag) {
-                                todas.add(tag);
-                            }
+                    const etiqueta =
+                        document.createElement(
+                            "span"
                         );
 
-                    }
-                );
 
-                const ordenadas =
-                    Array.from(todas).sort();
+                    etiqueta.className =
+                        "filtro-activo";
 
-                etiquetasPanel.innerHTML = "";
 
-                ordenadas.forEach(
-                    function (tag) {
-
-                        const item =
-                            document.createElement("label");
-
-                        item.className =
-                            "etiqueta-item";
-
-                        item.innerHTML = `
-                            <input type="checkbox" value="${tag}">
-                            <span>${tag}</span>
-                        `;
-
-                        item.querySelector("input")
-                            .addEventListener(
-                                "change",
-                                function (e) {
-
-                                    if (e.target.checked) {
-                                        etiquetasSeleccionadas.add(tag);
-                                    } else {
-                                        etiquetasSeleccionadas.delete(tag);
-                                    }
-
-                                    actualizarTextoEtiquetas();
-                                    aplicarCatalogo();
-
-                                }
-                            );
-
-                        etiquetasPanel.appendChild(item);
-
-                    }
-                );
-
-            }
-
-
-            /* =========================================
-               TEXTO DEL BOTÓN DE ETIQUETAS
-            ========================================= */
-
-            function actualizarTextoEtiquetas() {
-
-                if (!etiquetaTexto) {
-                    return;
-                }
-
-                const cantidad =
-                    etiquetasSeleccionadas.size;
-
-                etiquetaTexto.textContent =
-                    cantidad === 0
-                        ? "Todas las etiquetas"
-                        : `${cantidad} etiqueta${cantidad > 1 ? "s" : ""} seleccionada${cantidad > 1 ? "s" : ""}`;
-
-            }
-
-
-            /* =========================================
-               ABRIR / CERRAR DROPDOWN DE ETIQUETAS
-            ========================================= */
-
-            if (etiquetaToggle) {
-
-                etiquetaToggle.addEventListener(
-                    "click",
-                    function (e) {
-
-                        e.stopPropagation();
-
-                        etiquetasPanel.hidden =
-                            !etiquetasPanel.hidden;
-
-                    }
-                );
-
-                document.addEventListener(
-                    "click",
-                    function (e) {
-
-                        if (
-                            !etiquetasPanel.hidden &&
-                            !etiquetasPanel.contains(e.target) &&
-                            e.target !== etiquetaToggle
-                        ) {
-
-                            etiquetasPanel.hidden = true;
-
-                        }
-
-                    }
-                );
-
-            }
-
-
-            /* =========================================
-               APLICAR FILTROS
-            ========================================= */
-
-            function aplicarCatalogo() {
-
-
-                const texto =
-                    buscador
-                        ? buscador.value
-                            .toLowerCase()
-                            .trim()
-                        : "";
-
-
-                const tipo =
-                    filtroTipo
-                        ? filtroTipo.value
-                        : "";
-
-
-                const categoria =
-                    filtroCategoria
-                        ? filtroCategoria.value
-                        : "";
-
-
-                const marca =
-                    filtroMarca
-                        ? filtroMarca.value
-                        : "";
-
-
-                const coleccion =
-                    filtroColeccion
-                        ? filtroColeccion.value
-                        : "";
-
-
-                let visibles = [];
-
-
-                productos.forEach(
-                    function (producto) {
-
-
-                        const nombre =
-                            producto.dataset.nombre || "";
-
-
-                        const productoTipo =
-                            producto.dataset.tipo || "producto";
-
-
-                        const productoMarca =
-                            producto.dataset.marca || "";
-
-
-                        const productoCategoria =
-                            producto.dataset.categoria || "";
-
-
-                        const productoColeccion =
-                            producto.dataset.coleccion || "";
-
-
-                        const etiquetas =
-                            producto.dataset.etiquetas || "";
-
-
-                        const coincideTexto =
-                            !texto ||
-
-                            nombre.includes(texto) ||
-
-                            productoMarca.includes(texto) ||
-
-                            productoCategoria.includes(texto) ||
-
-                            productoColeccion.includes(texto) ||
-
-                            etiquetas.includes(texto);
-
-
-                        const coincideTipo =
-                            !tipo ||
-
-                            productoTipo === tipo;
-
-
-                        const coincideCategoria =
-                            !categoria ||
-
-                            productoCategoria === categoria;
-
-
-                        const coincideMarca =
-                            !marca ||
-
-                            productoMarca === marca;
-
-
-                        const coincideColeccion =
-                            !coleccion ||
-
-                            productoColeccion === coleccion;
-
-
-                        const coincideEtiquetas =
-                            etiquetasSeleccionadas.size === 0 ||
-
-                            Array.from(etiquetasSeleccionadas).some(
-                                function (tag) {
-                                    return etiquetas.includes(tag);
-                                }
-                            );
-
-
-                        const mostrar =
-                            coincideTexto &&
-                            coincideTipo &&
-                            coincideCategoria &&
-                            coincideMarca &&
-                            coincideColeccion &&
-                            coincideEtiquetas;
-
-
-                        producto.hidden =
-                            !mostrar;
-
-
-                        if (mostrar) {
-                            visibles.push(producto);
-                        }
-
-                    }
-                );
-
-
-                /* =====================================
-                   ORDENAMIENTO
-                ===================================== */
-
-                ordenarProductos();
-
-
-                /* =====================================
-                   CONTADOR
-                ===================================== */
-
-                if (cantidadProductos) {
-
-                    cantidadProductos.textContent =
-                        visibles.length;
-
-                }
-
-
-                /* =====================================
-                   SIN RESULTADOS
-                ===================================== */
-
-                if (sinResultados) {
-
-                    sinResultados.hidden =
-                        visibles.length !== 0;
-
-                }
-
-
-                /* =====================================
-                   BUSCADOR
-                ===================================== */
-
-                if (limpiarBusqueda) {
-
-                    limpiarBusqueda.hidden =
-                        texto === "";
-
-                }
-
-
-                /* =====================================
-                   FILTROS ACTIVOS
-                ===================================== */
-
-                mostrarFiltrosActivos();
-
-            }
-
-
-            /* =========================================
-               ORDENAR
-            ========================================= */
-
-            function ordenarProductos() {
-
-
-                const orden =
-                    ordenCatalogo
-                        ? ordenCatalogo.value
-                        : "recientes";
-
-
-                const ordenados =
-                    [...productos];
-
-
-                ordenados.sort(
-                    function (a, b) {
-
-
-                        const nombreA =
-                            a.dataset.nombre || "";
-
-
-                        const nombreB =
-                            b.dataset.nombre || "";
-
-
-                        const precioA =
-                            parseFloat(
-                                a.dataset.precio || 0
-                            );
-
-
-                        const precioB =
-                            parseFloat(
-                                b.dataset.precio || 0
-                            );
-
-
-                        const fechaA =
-                            parseInt(
-                                a.dataset.fecha || 0
-                            );
-
-
-                        const fechaB =
-                            parseInt(
-                                b.dataset.fecha || 0
-                            );
-
-
-                        switch (orden) {
-
-
-                            case "nombre-az":
-
-                                return nombreA.localeCompare(
-                                    nombreB
-                                );
-
-
-                            case "nombre-za":
-
-                                return nombreB.localeCompare(
-                                    nombreA
-                                );
-
-
-                            case "precio-menor":
-
-                                return precioA - precioB;
-
-
-                            case "precio-mayor":
-
-                                return precioB - precioA;
-
-
-                            case "recientes":
-
-                            default:
-
-                                return fechaB - fechaA;
-
-                        }
-
-                    }
-                );
-
-
-                ordenados.forEach(
-                    function (producto) {
-
-                        productosContainer.appendChild(
-                            producto
-                        );
-
-                    }
-                );
-
-            }
-
-
-            /* =========================================
-               MOSTRAR FILTROS ACTIVOS
-            ========================================= */
-
-            function mostrarFiltrosActivos() {
-
-
-                if (!filtrosActivos) {
-                    return;
-                }
-
-
-                filtrosActivos.innerHTML = "";
-
-
-                const filtros = [];
-
-
-                if (
-                    filtroTipo &&
-                    filtroTipo.value
-                ) {
-
-                    filtros.push({
-                        texto:
-                            filtroTipo
-                                .options[
-                                filtroTipo
-                                    .selectedIndex
-                            ]
-                                .text,
-
-                        tipo: "tipoProducto"
-                    });
-
-                }
-
-
-                if (
-                    filtroCategoria &&
-                    filtroCategoria.value
-                ) {
-
-                    filtros.push({
-                        texto:
-                            filtroCategoria
-                                .options[
-                                filtroCategoria
-                                    .selectedIndex
-                            ]
-                                .text,
-
-                        tipo: "categoria"
-                    });
-
-                }
-
-
-                if (
-                    filtroMarca &&
-                    filtroMarca.value
-                ) {
-
-                    filtros.push({
-                        texto:
-                            filtroMarca
-                                .options[
-                                filtroMarca
-                                    .selectedIndex
-                            ]
-                                .text,
-
-                        tipo: "marca"
-                    });
-
-                }
-
-
-                if (
-                    filtroColeccion &&
-                    filtroColeccion.value
-                ) {
-
-                    filtros.push({
-                        texto:
-                            filtroColeccion
-                                .options[
-                                filtroColeccion
-                                    .selectedIndex
-                            ]
-                                .text,
-
-                        tipo: "coleccion"
-                    });
-
-                }
-
-
-                etiquetasSeleccionadas.forEach(
-                    function (tag) {
-
-                        filtros.push({
-                            texto: tag,
-                            tipo: "etiqueta"
-                        });
-
-                    }
-                );
-
-
-                filtros.forEach(
-                    function (filtro) {
-
-
-                        const etiqueta =
-                            document.createElement(
-                                "span"
-                            );
-
-
-                        etiqueta.className =
-                            "filtro-activo";
-
-
-                        etiqueta.innerHTML = `
+                    etiqueta.innerHTML = `
 
                         ${filtro.texto}
 
@@ -1217,267 +1308,336 @@ Catálogo | Lúmina
                     `;
 
 
-                        etiqueta
-                            .querySelector("button")
-                            .addEventListener(
-                                "click",
-                                function () {
-
-                                    if (
-                                        filtro.tipo ===
-                                        "tipoProducto"
-                                    ) {
-
-                                        filtroTipo.value =
-                                            "";
-
-                                    }
-
-                                    if (
-                                        filtro.tipo ===
-                                        "categoria"
-                                    ) {
-
-                                        filtroCategoria.value =
-                                            "";
-
-                                    }
-
-                                    if (
-                                        filtro.tipo ===
-                                        "marca"
-                                    ) {
-
-                                        filtroMarca.value =
-                                            "";
-
-                                    }
-
-                                    if (
-                                        filtro.tipo ===
-                                        "coleccion"
-                                    ) {
-
-                                        filtroColeccion.value =
-                                            "";
-
-                                    }
-
-                                    if (
-                                        filtro.tipo ===
-                                        "etiqueta"
-                                    ) {
-
-                                        etiquetasSeleccionadas.delete(
-                                            filtro.texto
-                                        );
-
-                                        const checkbox =
-                                            etiquetasPanel.querySelector(
-                                                `input[value="${filtro.texto}"]`
-                                            );
-
-                                        if (checkbox) {
-                                            checkbox.checked = false;
-                                        }
-
-                                        actualizarTextoEtiquetas();
-
-                                    }
+                    etiqueta
+                        .querySelector("button")
+                        .addEventListener(
+                            "click",
+                            function () {
 
 
-                                    aplicarCatalogo();
+                                if (
+                                    filtro.tipo ===
+                                    "tipoProducto"
+                                ) {
+
+                                    filtroTipo.value =
+                                        "";
 
                                 }
-                            );
 
 
-                        filtrosActivos.appendChild(
-                            etiqueta
-                        );
+                                if (
+                                    filtro.tipo ===
+                                    "categoria"
+                                ) {
 
-                    }
-                );
+                                    filtroCategoria.value =
+                                        "";
 
-            }
-
-
-            /* =========================================
-               LIMPIAR TODO
-            ========================================= */
-
-            function limpiarTodo() {
+                                }
 
 
-                if (buscador) {
-                    buscador.value = "";
-                }
+                                if (
+                                    filtro.tipo ===
+                                    "marca"
+                                ) {
+
+                                    filtroMarca.value =
+                                        "";
+
+                                }
 
 
-                if (filtroTipo) {
-                    filtroTipo.value = "";
-                }
+                                if (
+                                    filtro.tipo ===
+                                    "coleccion"
+                                ) {
+
+                                    filtroColeccion.value =
+                                        "";
+
+                                }
 
 
-                if (filtroCategoria) {
-                    filtroCategoria.value = "";
-                }
+                                if (
+                                    filtro.tipo ===
+                                    "etiqueta"
+                                ) {
+
+                                    etiquetasSeleccionadas.delete(
+                                        filtro.texto
+                                    );
 
 
-                if (filtroMarca) {
-                    filtroMarca.value = "";
-                }
+                                    const checkbox =
+                                        etiquetasPanel.querySelector(
+                                            `input[value="${filtro.texto}"]`
+                                        );
 
 
-                if (filtroColeccion) {
-                    filtroColeccion.value = "";
-                }
+                                    if (checkbox) {
+                                        checkbox.checked = false;
+                                    }
 
 
-                if (ordenCatalogo) {
-                    ordenCatalogo.value =
-                        "recientes";
-                }
+                                    actualizarTextoEtiquetas();
+
+                                }
 
 
-                etiquetasSeleccionadas.clear();
+                                aplicarCatalogo();
 
-                if (etiquetasPanel) {
-
-                    etiquetasPanel.querySelectorAll("input")
-                        .forEach(
-                            function (cb) {
-                                cb.checked = false;
                             }
                         );
 
+
+                    filtrosActivos.appendChild(
+                        etiqueta
+                    );
+
                 }
+            );
 
-                actualizarTextoEtiquetas();
-
-
-                aplicarCatalogo();
-
-            }
+        }
 
 
-            /* =========================================
-               EVENTOS
-            ========================================= */
+        /* =========================================
+           LIMPIAR TODO
+        ========================================= */
+
+        function limpiarTodo() {
+
 
             if (buscador) {
-
-                buscador.addEventListener(
-                    "input",
-                    aplicarCatalogo
-                );
-
+                buscador.value = "";
             }
 
 
             if (filtroTipo) {
-
-                filtroTipo.addEventListener(
-                    "change",
-                    aplicarCatalogo
-                );
-
+                filtroTipo.value = "";
             }
 
 
             if (filtroCategoria) {
-
-                filtroCategoria.addEventListener(
-                    "change",
-                    aplicarCatalogo
-                );
-
+                filtroCategoria.value = "";
             }
 
 
             if (filtroMarca) {
-
-                filtroMarca.addEventListener(
-                    "change",
-                    aplicarCatalogo
-                );
-
+                filtroMarca.value = "";
             }
 
 
             if (filtroColeccion) {
-
-                filtroColeccion.addEventListener(
-                    "change",
-                    aplicarCatalogo
-                );
-
+                filtroColeccion.value = "";
             }
 
 
             if (ordenCatalogo) {
-
-                ordenCatalogo.addEventListener(
-                    "change",
-                    aplicarCatalogo
-                );
-
+                ordenCatalogo.value =
+                    "recientes";
             }
 
 
-            if (limpiarBusqueda) {
+            etiquetasSeleccionadas.clear();
 
-                limpiarBusqueda.addEventListener(
-                    "click",
-                    function () {
 
-                        if (buscador) {
-                            buscador.value = "";
+            if (etiquetasPanel) {
+
+                etiquetasPanel.querySelectorAll("input")
+                    .forEach(
+                        function (cb) {
+                            cb.checked = false;
                         }
-
-                        aplicarCatalogo();
-
-                        if (buscador) {
-                            buscador.focus();
-                        }
-
-                    }
-                );
+                    );
 
             }
 
 
-            if (limpiarFiltros) {
+            actualizarTextoEtiquetas();
 
-                limpiarFiltros.addEventListener(
-                    "click",
-                    limpiarTodo
-                );
-
-            }
-
-
-            if (btnLimpiarSinResultados) {
-
-                btnLimpiarSinResultados.addEventListener(
-                    "click",
-                    limpiarTodo
-                );
-
-            }
-
-
-            /* =========================================
-               INICIALIZAR
-            ========================================= */
-
-            construirFiltroEtiquetas();
 
             aplicarCatalogo();
 
         }
 
-    );
+
+        /* =========================================
+           EVENTOS
+        ========================================= */
+
+        if (buscador) {
+
+            buscador.addEventListener(
+                "input",
+                aplicarCatalogo
+            );
+
+        }
+
+
+        if (filtroTipo) {
+
+            filtroTipo.addEventListener(
+                "change",
+                aplicarCatalogo
+            );
+
+        }
+
+
+        if (filtroCategoria) {
+
+            filtroCategoria.addEventListener(
+                "change",
+                aplicarCatalogo
+            );
+
+        }
+
+
+        if (filtroMarca) {
+
+            filtroMarca.addEventListener(
+                "change",
+                aplicarCatalogo
+            );
+
+        }
+
+
+        if (filtroColeccion) {
+
+            filtroColeccion.addEventListener(
+                "change",
+                aplicarCatalogo
+            );
+
+        }
+
+
+        if (ordenCatalogo) {
+
+            ordenCatalogo.addEventListener(
+                "change",
+                aplicarCatalogo
+            );
+
+        }
+
+
+        if (limpiarBusqueda) {
+
+            limpiarBusqueda.addEventListener(
+                "click",
+                function () {
+
+                    if (buscador) {
+                        buscador.value = "";
+                    }
+
+                    aplicarCatalogo();
+
+                    if (buscador) {
+                        buscador.focus();
+                    }
+
+                }
+            );
+
+        }
+
+
+        if (limpiarFiltros) {
+
+            limpiarFiltros.addEventListener(
+                "click",
+                limpiarTodo
+            );
+
+        }
+
+
+        if (btnLimpiarSinResultados) {
+
+            btnLimpiarSinResultados.addEventListener(
+                "click",
+                limpiarTodo
+            );
+
+        }
+
+
+        /* =========================================
+           INICIALIZAR
+        ========================================= */
+
+        construirFiltroEtiquetas();
+
+
+        /* =========================================
+           CATEGORÍA RECIBIDA DESDE INICIO
+        ========================================= */
+
+        const parametrosURL =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const categoriaURL =
+            parametrosURL.get("categoria");
+
+
+        if (
+            categoriaURL &&
+            filtroCategoria
+        ) {
+
+            const categoriaNormalizada =
+                categoriaURL
+                    .toLowerCase()
+                    .trim();
+
+
+            /*
+             * Buscar la opción que coincida
+             * con la categoría recibida.
+             */
+
+            const opcionCategoria =
+                Array.from(
+                    filtroCategoria.options
+                ).find(
+                    function (opcion) {
+
+                        return opcion.value
+                            .toLowerCase()
+                            .trim() ===
+                            categoriaNormalizada;
+
+                    }
+                );
+
+
+            if (opcionCategoria) {
+
+                filtroCategoria.value =
+                    opcionCategoria.value;
+
+            }
+
+        }
+
+
+        /* =========================================
+           APLICAR FILTROS INICIALES
+        ========================================= */
+
+        aplicarCatalogo();
+
+    }
+
+);
 
 </script>
 

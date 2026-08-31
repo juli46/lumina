@@ -1732,18 +1732,19 @@ class PedidoItemKitSeleccion(models.Model):
 class RecomendacionEmprendimiento(models.Model):
  
     PRODUCTOS_INTERES = [
-        ("gloss", "Gloss"),
-        ("skincare", "Skincare"),
-        ("pestanas", "Pestañas"),
-        ("kits", "Kits beauty"),
-        ("maquillaje", "Maquillaje"),
         ("accesorios", "Accesorios"),
+        ("skincare", "Skincare"),
+        ("facial", "Facial"),
+        ("ojos", "Ojos"),
+        ("general", "General"),
+        ("kits", "Kits"),
     ]
  
     PLATAFORMAS = [
         ("tiktok", "TikTok"),
         ("instagram", "Instagram"),
         ("whatsapp", "WhatsApp"),
+        ("otro", "Otro"),
     ]
  
     nombre = models.CharField(max_length=200)

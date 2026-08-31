@@ -6,284 +6,471 @@ Inicio | Lúmina
 {% endblock %}
 
 {% block content %}
+
 <link rel="stylesheet" href="{% static 'css/inicio.css' %}">
-<section class="hero-section">
 
-    <div class="hero-box">
+<!-- ==========================================
+     HERO - NUEVO DISEÑO MÁS BONITO
+=========================================== -->
 
-        <div id="heroCarousel" class="carousel" data-bs-ride="carousel">
+<section class="hero-split-section">
 
-            <div class="carousel-inner">
+    <div class="hero-container">
 
-                <div class="carousel-item active">
-                    <img src="{% static 'img/pagina/banner1.png' %}" class="hero-img">
-                </div>
+        <!-- Lado Izquierdo: Texto y Botón -->
+        <div class="hero-content">
 
-                <div class="carousel-item">
-                    <img src="{% static 'img/pagina/banner2.png' %}" class="hero-img">
-                </div>
+            <div class="hero-text-wrapper">
+                <span class="hero-tagline">Belleza, Estilo y Confianza</span>
 
-                <div class="carousel-item">
-                    <img src="{% static 'img/pagina/banner3.png' %}" class="hero-img">
-                </div>
+                <h1 class="hero-title">
+                    <span class="title-light">TU ESPACIO DE</span> <br>
+                    <span class="title-bold">BELLEZA</span> <br>
+                    <span class="title-underline">ONLINE</span>
+                </h1>
 
+                <p class="hero-description">
+                    Descubre una selección exclusiva de productos pensados para realzar tu luz natural. Compra, aprende y emprende en el mundo de la belleza.
+                </p>
+
+                <a href="{% url 'catalogo' %}" class="btn-luminoso">
+                    Explorar Catálogo
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
 
         </div>
 
-        <div class="hero-overlay">
 
-            <h1>
-                COMPRA <span>APRENDE</span>,
-                Y <span>EMPRENDE</span>
-            </h1>
-
-            <a href="#" class="btn-main">
-                Explorar ahora
-                <i class="fa-solid fa-arrow-right"></i>
-            </a>
-
+        <!-- Lado Derecho: Imagen Principal (Banner Estático) -->
+        <div class="hero-image-container">
+            <img
+                src="{% static 'img/pagina/banner1.png' %}"
+                class="hero-main-img"
+                alt="Lúmina Beauty Shop - Catálogo de Belleza"
+            >
+            <div class="img-overlay-gradient"></div>
         </div>
 
     </div>
 
 </section>
 
-<!-- CARTAS -->
+<!-- ==========================================
+     CARTAS PRINCIPALES
+=========================================== -->
+
 <section class="cards-section">
 
     <div class="container">
 
         <div class="cards-box">
 
+
+            <!-- COMPRA -->
+
             <div class="card-item searchable-item">
 
                 <div class="icon-circle">
+
                     <i class="fa-solid fa-bag-shopping"></i>
+
                 </div>
 
-                <h4>COMPRA</h4>
+                <h4>
+                    COMPRA
+                </h4>
 
                 <p>
                     Productos de maquillaje de las mejores marcas.
                 </p>
 
-                <a href="#">Ver productos →</a>
+                <a href="{% url 'catalogo' %}">
+                    Ver productos →
+                </a>
 
             </div>
+
+
+            <!-- TIPS -->
 
             <div class="card-item searchable-item">
 
                 <div class="icon-circle">
+
                     <i class="fa-solid fa-lightbulb"></i>
+
                 </div>
 
-                <h4>TIPS Y CONSEJOS</h4>
+                <h4>
+                    TIPS Y CONSEJOS
+                </h4>
 
                 <p>
-                    Tips, consejos y rutinas para realizar tu belleza.
+                    Tips, consejos y rutinas para realzar tu belleza.
                 </p>
 
-                <a href="{% url 'tips' %}">Ver tips →</a>
+                <a href="{% url 'tips' %}">
+                    Ver tips →
+                </a>
 
             </div>
+
+
+            <!-- EMPRENDE -->
 
             <div class="card-item searchable-item">
 
                 <div class="icon-circle">
+
                     <i class="fa-solid fa-rocket"></i>
+
                 </div>
 
-                <h4>EMPRENDE</h4>
+                <h4>
+                    EMPRENDE
+                </h4>
 
                 <p>
                     Consejos y recursos para emprender en belleza.
                 </p>
 
-                <a href="{% url 'emprender' %}">Ver más →</a>
+                <a href="{% url 'emprender' %}">
+                    Ver más →
+                </a>
 
             </div>
 
+
         </div>
 
     </div>
 
 </section>
 
-<!-- CATEGORÍAS -->
-<section class="categories">
+<!-- ==========================================
+     CATEGORÍAS
+=========================================== -->
+
+<section class="categories-section">
 
     <div class="container">
 
-        <div class="section-header">
+        <div class="categories-grid">
 
-            <h3>Categorías de maquillaje</h3>
 
-            <a href="#">Ver todas</a>
+            <!-- ACCESORIOS -->
+
+            <a
+                href="{% url 'catalogo' %}?categoria=accesorios"
+                class="category"
+                aria-label="Ver productos de accesorios"
+            >
+
+                <img
+                    src="{% static 'img/logos/accesorioslogo.jpg' %}"
+                    alt="Accesorios"
+                    loading="lazy"
+                >
+
+                <div class="category-overlay">
+
+                    <span>
+                        Accesorios
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- FACIAL -->
+
+            <a
+                href="{% url 'catalogo' %}?categoria=facial"
+                class="category"
+                aria-label="Ver productos faciales"
+            >
+
+                <img
+                    src="{% static 'img/logos/faciallogo.jpg' %}"
+                    alt="Facial"
+                    loading="lazy"
+                >
+
+                <div class="category-overlay">
+
+                    <span>
+                        Facial
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- OJOS -->
+
+            <a
+                href="{% url 'catalogo' %}?categoria=ojos"
+                class="category"
+                aria-label="Ver productos para ojos"
+            >
+
+                <img
+                    src="{% static 'img/logos/ojoslogo.jpg' %}"
+                    alt="Ojos"
+                    loading="lazy"
+                >
+
+                <div class="category-overlay">
+
+                    <span>
+                        Ojos
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- KITS -->
+
+            <a
+                href="{% url 'catalogo' %}?categoria=kits"
+                class="category"
+                aria-label="Ver kits de belleza"
+            >
+
+                <img
+                    src="{% static 'img/logos/kitlogo.png' %}"
+                    alt="Kits"
+                    loading="lazy"
+                >
+
+                <div class="category-overlay">
+
+                    <span>
+                        Kits
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- SKINCARE -->
+
+            <a
+                href="{% url 'catalogo' %}?categoria=skincare"
+                class="category"
+                aria-label="Ver productos de skincare"
+            >
+
+                <img
+                    src="{% static 'img/logos/skincarelogo.jpg' %}"
+                    alt="Skincare"
+                    loading="lazy"
+                >
+
+                <div class="category-overlay">
+
+                    <span>
+                        Skincare
+                    </span>
+
+                </div>
+
+            </a>
+
 
         </div>
-
-       <div class="categories-grid">
-
-    <div class="category searchable-item">
-
-        <img src="{% static 'img/logos/accesorioslogo.avif' %}" alt="accesorios">
-
-        <div class="category-overlay">
-            <span>Accesorios</span>
-        </div>
-
-    </div>
-
-    <div class="category searchable-item">
-
-        <img src="{% static 'img/logos/faciallogo.avif' %}" alt="Facial">
-
-        <div class="category-overlay">
-            <span>Facial</span>
-        </div>
-
-    </div>
-
-    <div class="category searchable-item">
-
-        <img src="{% static 'img/logos/ojoslogo.avif' %}" alt="Ojos">
-
-        <div class="category-overlay">
-            <span>Ojos</span>
-        </div>
-
-    </div>
-
-    <div class="category searchable-item">
-
-        <img src="{% static 'img/logos/brochaslogo.avif' %}" alt="Brochas">
-
-        <div class="category-overlay">
-            <span>Brochas</span>
-        </div>
-
-    </div>
-
-    <div class="category searchable-item">
-
-        <img src="{% static 'img/logos/kitlogo.png' %}" alt="Kits">
-
-        <div class="category-overlay">
-            <span>Kits</span>
-        </div>
-
-    </div>
-
-    <div class="category searchable-item">
-
-        <img src="{% static 'img/logos/skincarelogo.jpg' %}" alt="Skin care">
-
-        <div class="category-overlay">
-            <span>Skin care</span>
-        </div>
-
-    </div>
-
-</div>
 
     </div>
 
 </section>
-<!-- SECCIÓN GENERAL DE TIPS -->
+
+<!-- ==========================================
+     BEAUTY EXPERIENCE
+=========================================== -->
+
 <section class="tips-section">
 
     <div class="container">
 
         <div class="tips-box">
 
-            <!-- TEXT -->
+
+            <!-- ==================================
+             TEXTO
+        =================================== -->
+
             <div class="tips-text">
 
                 <span class="tips-badge">
+
                     <i class="fa-solid fa-sparkles"></i>
+
                     Beauty Experience
+
                 </span>
 
-                <h3>Descubre tu estilo beauty paso a paso</h3>
+
+                <h3>
+                    Descubre tu estilo beauty paso a paso
+                </h3>
+
 
                 <p>
-                    Explora un espacio creado para principiantes y amantes del maquillaje.
-                    Realiza tests para encontrar los colores y productos ideales para ti,
-                    inspírate con nuestra galería beauty y aprende nuevos tips para mejorar
-                    tu rutina de maquillaje y skincare.
+                    Explora un espacio creado para principiantes
+                    y amantes del maquillaje. Realiza tests para
+                    encontrar los colores y productos ideales
+                    para ti, inspírate con nuestra galería beauty
+                    y aprende nuevos tips para mejorar tu rutina
+                    de maquillaje y skincare.
                 </p>
 
-                <!-- FEATURES -->
+
+                <!-- ==================================
+                 FEATURES
+            =================================== -->
+
                 <div class="tips-features">
 
+
+                    <!-- TESTS -->
+
                     <div class="feature-item">
 
                         <div class="feature-icon">
+
                             <i class="fa-solid fa-palette"></i>
+
                         </div>
 
                         <div>
-                            <h5>Tests interactivos</h5>
+
+                            <h5>
+                                Tests interactivos
+                            </h5>
+
                             <p>
-                                Descubre tonos, estilos y productos que combinan contigo.
+                                Descubre tonos, estilos y productos
+                                que combinan contigo.
                             </p>
+
                         </div>
 
                     </div>
 
+
+                    <!-- GALERÍA -->
+
                     <div class="feature-item">
 
                         <div class="feature-icon">
+
                             <i class="fa-solid fa-camera-retro"></i>
+
                         </div>
 
                         <div>
-                            <h5>Galería de inspiración</h5>
+
+                            <h5>
+                                Galería de inspiración
+                            </h5>
+
                             <p>
-                                Encuentra ideas de maquillaje, looks y tendencias beauty.
+                                Encuentra ideas de maquillaje,
+                                looks y tendencias beauty.
                             </p>
+
                         </div>
 
                     </div>
+
+
+                    <!-- TIPS -->
 
                     <div class="feature-item">
 
                         <div class="feature-icon">
+
                             <i class="fa-solid fa-wand-magic-sparkles"></i>
+
                         </div>
 
                         <div>
-                            <h5>Tips y guías</h5>
+
+                            <h5>
+                                Tips y guías
+                            </h5>
+
                             <p>
-                                Aprende maquillaje y skincare con consejos fáciles y prácticos.
+                                Aprende maquillaje y skincare
+                                con consejos fáciles y prácticos.
                             </p>
+
                         </div>
 
                     </div>
+
 
                 </div>
 
-                <a href="{% url 'tips' %}" class="tips-btn">
+
+                <!-- BOTÓN -->
+
+                <a
+                    href="{% url 'tips' %}"
+                    class="tips-btn"
+                >
+
                     Explorar ahora
+
                     <i class="fa-solid fa-arrow-right"></i>
+
                 </a>
 
+
             </div>
 
-            <!-- IMAGE -->
+
+            <!-- ==================================
+             IMAGEN
+        =================================== -->
+
             <div class="tips-image">
 
-                <div class="image-decoration image-decoration-1"></div>
-                <div class="image-decoration image-decoration-2"></div>
+                <div
+                    class="image-decoration image-decoration-1"
+                    aria-hidden="true"
+                ></div>
 
-                <img src="{% static 'img/pagina/tips.jpeg' %}" alt="Beauty Tips">
+                <div
+                    class="image-decoration image-decoration-2"
+                    aria-hidden="true"
+                ></div>
+
+                <img
+                    src="{% static 'img/pagina/tips.jpeg' %}"
+                    alt="Beauty Tips Lúmina"
+                    loading="lazy"
+                >
 
             </div>
+
 
         </div>
 
     </div>
 
 </section>
+
+<!-- ==========================================
+     JAVASCRIPT
+=========================================== -->
+
+<script src="{% static 'js/inicio.js' %}"></script>
+
 {% endblock %}

@@ -1,45 +1,287 @@
-from datetime import datetime
-import uuid
+"""
+views.py — reorganizado por secciones.
+
+Cambios respecto del original (solo de organización, no de lógica):
+- Se unificaron todos los imports en un único bloque al inicio (antes estaban
+  repetidos en 3 puntos distintos del archivo).
+- Se eliminó la definición duplicada de `obtener_margen_por_monto` (había dos
+  versiones; la primera tenía un bug de orden y nunca llegaba a ejecutarse
+  porque la segunda la pisaba — se conservó la segunda, que es la que
+  realmente corría).
+- Se eliminó la definición duplicada de `UMBRAL_STOCK_BAJO` (mismo valor en
+  ambos casos, sin efecto funcional).
+- Se eliminó la definición duplicada de `dashboard_pedido_estado`. OJO: las
+  dos versiones hacían cosas distintas (una validaba `request.user.rol ==
+  "admin"` y tocaba `pedido.estado`; la otra toca `estado_envio` y NO valida
+  admin). Como en Python la última definición es la que queda activa, se
+  conservó la segunda (la de envío) porque es la que realmente se ejecutaba
+  en producción — pero esa versión no tiene el chequeo de admin. Vale la
+  pena revisar si eso fue intencional.
+- Las funciones y bloques de código en sí no fueron modificados, solo
+  reordenados en secciones temáticas.
+"""
+
+from datetime import date, datetime, timedelta
 import hashlib
+import json
+import logging
+import uuid
+
 import requests
-from django.urls import reverse
+from decimal import Decimal, InvalidOperation, ROUND_CEILING
+
 from django.conf import settings
-from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import EmptyPage, PageNotAnInteger
-from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db import transaction
+from django.db.models import Avg, Count, Exists, OuterRef, Q, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from .gmail import enviar_correo
-from django.db.models import Count, Sum
-from datetime import timedelta
-from openpyxl import Workbook
-from decimal import Decimal, InvalidOperation, ROUND_CEILING
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
-from django.db.models import Q, Exists, OuterRef
-import json
-from datetime import date
+from django.views.decorators.http import require_POST
 
-from .gmail import (
-    enviar_correo,
-    obtener_hilo,
-    obtener_encabezado,
-    obtener_texto
-)
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+
 from .decorators import admin_required
 from .forms import CambiarPasswordForm, DireccionForm, EditarPerfilForm, RegistroForm
+from .gmail import enviar_correo, obtener_encabezado, obtener_hilo, obtener_texto
 from .models import (
-    BlogPost, BlogSeccion, Direccion, Galeria, Pedido, Usuario, Test, Resultado,
-    Pregunta, Opcion, ResultadoUsuario, NotaAdmin, Recordatorio, PedidoItem, Etiqueta,
-    Producto, Categoria, Marca, Coleccion, ProductoImagen, ProductoVideo, Kit,
-    KitProducto, Carrito, CarritoItem, Variante, Contacto, EventoCalendario,ReporteEmprendimiento,
-    IdeaContenido, PostIt, Pago, Pedido, CarritoItemKitSeleccion, PedidoItemKitSeleccion, RecomendacionEmprendimiento,
+    BlogPost, BlogSeccion, Carrito, CarritoItem, CarritoItemKitSeleccion,
+    Categoria, Coleccion, Contacto, Direccion, Etiqueta, EventoCalendario,
+    Galeria, IdeaContenido, Kit, KitProducto, Marca, NotaAdmin, Opcion, Pago,
+    Pedido, PedidoItem, PedidoItemKitSeleccion, PostIt, Pregunta, Producto,
+    ProductoImagen, ProductoVideo, Recordatorio, RecomendacionEmprendimiento,
+    ReporteEmprendimiento, Resultado, ResultadoUsuario, Test, Usuario, Variante,
 )
-from django.db import transaction
+
+logger = logging.getLogger(__name__)
+
+
+# =========================================================================
+# HELPERS Y CONSTANTES DE PRECIOS / MÁRGENES / ENVÍO / STOCK
+# (usados por productos, checkout, kits, estadísticas y recomendaciones)
+# =========================================================================
+
+MARGENES_RENTABILIDAD = (
+    {
+        "desde": Decimal("0"),
+        "margen": Decimal("0.30"),
+        "etiqueta": "Al detalle",
+    },
+    {
+        "desde": Decimal("1200000"),
+        "margen": Decimal("0.10"),
+        "etiqueta": "Más de $1.200.000",
+    },
+    {
+        "desde": Decimal("500000"),
+        "margen": Decimal("0.15"),
+        "etiqueta": "Más de $500.000",
+    },
+    {
+        "desde": Decimal("100000"),
+        "margen": Decimal("0.20"),
+        "etiqueta": "Más de $100.000",
+    },
+)
+
+UMBRAL_STOCK_BAJO = 5
+
+
+def normalizar_precio(valor):
+    """Convierte '150.500' o '150500,25' (formato colombiano) a Decimal
+    de forma segura. Devuelve None si el valor está vacío o no es válido."""
+
+    valor = (valor or "").strip()
+
+    if not valor:
+        return None
+
+    # Si tiene coma, se asume que la coma es el separador decimal
+    # y el punto (si existe) es separador de miles.
+    if "," in valor:
+        valor = valor.replace(".", "").replace(",", ".")
+
+    try:
+        return Decimal(valor)
+    except InvalidOperation:
+        return None
+
+
+def calcular_precio_con_margen(costo):
+
+    precio = costo / (Decimal("1") - Decimal("0.30"))
+
+    return aproximar_precio(precio), Decimal("0.30")
+
+
+def aproximar_precio(precio):
+
+    return (precio / Decimal("100")).to_integral_value(
+        rounding=ROUND_CEILING
+    ) * Decimal("100")
+
+
+def calcular_precios_por_margen(costo):
+
+    return [
+        {
+            "etiqueta": regla["etiqueta"],
+            "margen": regla["margen"] * Decimal("100"),
+            "precio": aproximar_precio(
+                costo / (Decimal("1") - regla["margen"])
+            ),
+        }
+        for regla in sorted(
+            MARGENES_RENTABILIDAD,
+            key=lambda item: item["margen"],
+            reverse=True
+        )
+    ]
+
+
+def obtener_margen_por_monto(total):
+    """
+    Determina el margen de rentabilidad según
+    el valor total de la compra al detal.
+    """
+
+    reglas = sorted(
+        MARGENES_RENTABILIDAD,
+        key=lambda x: x["desde"],
+        reverse=True
+    )
+
+    for regla in reglas:
+
+        if total >= regla["desde"]:
+            return regla
+
+    return reglas[-1]
+
+
+def calcular_precio_segun_monto(producto, monto):
+    """
+    Calcula el precio de venta del producto según
+    el monto total de la compra.
+    """
+
+    regla = obtener_margen_por_monto(monto)
+
+    margen = regla["margen"]
+
+    precio = producto.costo_base / (
+        Decimal("1") - margen
+    )
+
+    return aproximar_precio(precio)
+
+
+def calcular_carrito_con_margen(items):
+
+    subtotal_detalle = Decimal("0")
+
+    # ==========================================
+    # PRIMERO: calcular subtotal al detal
+    # ==========================================
+
+    for item in items:
+
+        precio_detalle = (
+            item.variante.producto.precio_base
+        )
+
+        subtotal_detalle += (
+            precio_detalle * item.cantidad
+        )
+
+    # ==========================================
+    # DETERMINAR MARGEN
+    # ==========================================
+
+    regla = obtener_margen_por_monto(
+        subtotal_detalle
+    )
+
+    margen = regla["margen"]
+
+    # ==========================================
+    # CALCULAR CADA PRODUCTO
+    # ==========================================
+
+    subtotal_final = Decimal("0")
+    descuento_total = Decimal("0")
+
+    productos = []
+
+    for item in items:
+
+        producto = item.variante.producto
+
+        precio_detalle = producto.precio_base
+
+        # Precio según margen
+        precio_mayorista = (
+            producto.costo_base /
+            (Decimal("1") - margen)
+        )
+
+        # Redondear a centenas
+        precio_mayorista = aproximar_precio(
+            precio_mayorista
+        )
+
+        # Descuento de ESTE producto
+        descuento_unitario = (
+            precio_detalle -
+            precio_mayorista
+        )
+
+        subtotal_producto = (
+            precio_mayorista *
+            item.cantidad
+        )
+
+        descuento_producto = (
+            descuento_unitario *
+            item.cantidad
+        )
+
+        subtotal_final += subtotal_producto
+
+        descuento_total += descuento_producto
+
+        productos.append({
+            "item": item,
+            "precio_detalle": precio_detalle,
+            "precio_mayorista": precio_mayorista,
+            "descuento_unitario": descuento_unitario,
+            "subtotal": subtotal_producto,
+            "descuento": descuento_producto,
+        })
+
+    return {
+        "subtotal_detalle": subtotal_detalle,
+        "subtotal_final": subtotal_final,
+        "descuento_total": descuento_total,
+        "margen": margen,
+        "etiqueta": regla["etiqueta"],
+        "productos": productos,
+    }
+
+
+def calcular_costo_envio(direccion):
+    ciudad = direccion.ciudad.strip().lower()
+
+    if ciudad in ("medellín", "medellin"):
+        return Decimal("10000")
+
+    return Decimal("12000")
 
 
 # =========================
@@ -105,10 +347,6 @@ Equipo Lúmina
     )
 
 
-from django.shortcuts import render
-from .models import RecomendacionEmprendimiento
-
-
 def emprender(request):
 
     recomendaciones = (
@@ -125,6 +363,7 @@ def emprender(request):
             "recomendaciones": recomendaciones,
         }
     )
+
 
 def tips(request):
     blogs = BlogPost.objects.filter(publicado=True).order_by("-fecha_creacion")
@@ -161,6 +400,8 @@ def mi_cuenta(request):
         "resultados_usuario": resultados_usuario,
         "reportes_emprendimiento": reportes_emprendimiento,
     })
+
+
 # =========================
 # REGISTRO
 # =========================
@@ -1032,224 +1273,8 @@ def eliminar_resultado_usuario(request, resultado_id):
 
 
 # =========================
-# PRODUCTOS - MÁRGENES DE PRECIO
+# PRODUCTOS
 # =========================
-
-MARGENES_RENTABILIDAD = (
-    {
-        "desde": Decimal("0"),
-        "margen": Decimal("0.30"),
-        "etiqueta": "Al detalle",
-    },
-    {
-        "desde": Decimal("1200000"),
-        "margen": Decimal("0.10"),
-        "etiqueta": "Más de $1.200.000",
-    },
-    {
-        "desde": Decimal("500000"),
-        "margen": Decimal("0.15"),
-        "etiqueta": "Más de $500.000",
-    },
-    {
-        "desde": Decimal("100000"),
-        "margen": Decimal("0.20"),
-        "etiqueta": "Más de $100.000",
-    },
-)
-
-
-def normalizar_precio(valor):
-    """Convierte '150.500' o '150500,25' (formato colombiano) a Decimal
-    de forma segura. Devuelve None si el valor está vacío o no es válido."""
-
-    valor = (valor or "").strip()
-
-    if not valor:
-        return None
-
-    # Si tiene coma, se asume que la coma es el separador decimal
-    # y el punto (si existe) es separador de miles.
-    if "," in valor:
-        valor = valor.replace(".", "").replace(",", ".")
-
-    try:
-        return Decimal(valor)
-    except InvalidOperation:
-        return None
-
-
-def calcular_precio_con_margen(costo):
-
-    precio = costo / (Decimal("1") - Decimal("0.30"))
-
-    return aproximar_precio(precio), Decimal("0.30")
-
-
-def aproximar_precio(precio):
-
-    return (precio / Decimal("100")).to_integral_value(
-        rounding=ROUND_CEILING
-    ) * Decimal("100")
-
-
-def calcular_precios_por_margen(costo):
-
-    return [
-        {
-            "etiqueta": regla["etiqueta"],
-            "margen": regla["margen"] * Decimal("100"),
-            "precio": aproximar_precio(
-                costo / (Decimal("1") - regla["margen"])
-            ),
-        }
-        for regla in sorted(
-            MARGENES_RENTABILIDAD,
-            key=lambda item: item["margen"],
-            reverse=True
-        )
-    ]
-def obtener_margen_por_monto(monto):
-    """
-    Determina el margen de rentabilidad según el valor
-    total de la compra.
-    """
-
-    monto = Decimal(monto or 0)
-
-    regla_aplicable = MARGENES_RENTABILIDAD[0]
-
-    for regla in MARGENES_RENTABILIDAD:
-        if monto >= regla["desde"]:
-            regla_aplicable = regla
-
-    return regla_aplicable
-def calcular_precio_segun_monto(producto, monto):
-    """
-    Calcula el precio de venta del producto según
-    el monto total de la compra.
-    """
-
-    regla = obtener_margen_por_monto(monto)
-
-    margen = regla["margen"]
-
-    precio = producto.costo_base / (
-        Decimal("1") - margen
-    )
-
-    return aproximar_precio(precio)
-def obtener_margen_por_monto(total):
-    """
-    Determina el margen de rentabilidad según
-    el valor total de la compra al detal.
-    """
-
-    reglas = sorted(
-        MARGENES_RENTABILIDAD,
-        key=lambda x: x["desde"],
-        reverse=True
-    )
-
-    for regla in reglas:
-
-        if total >= regla["desde"]:
-            return regla
-
-    return reglas[-1]
-def calcular_carrito_con_margen(items):
-
-    subtotal_detalle = Decimal("0")
-
-    # ==========================================
-    # PRIMERO: calcular subtotal al detal
-    # ==========================================
-
-    for item in items:
-
-        precio_detalle = (
-            item.variante.producto.precio_base
-        )
-
-        subtotal_detalle += (
-            precio_detalle * item.cantidad
-        )
-
-    # ==========================================
-    # DETERMINAR MARGEN
-    # ==========================================
-
-    regla = obtener_margen_por_monto(
-        subtotal_detalle
-    )
-
-    margen = regla["margen"]
-
-    # ==========================================
-    # CALCULAR CADA PRODUCTO
-    # ==========================================
-
-    subtotal_final = Decimal("0")
-    descuento_total = Decimal("0")
-
-    productos = []
-
-    for item in items:
-
-        producto = item.variante.producto
-
-        precio_detalle = producto.precio_base
-
-        # Precio según margen
-        precio_mayorista = (
-            producto.costo_base /
-            (Decimal("1") - margen)
-        )
-
-        # Redondear a centenas
-        precio_mayorista = aproximar_precio(
-            precio_mayorista
-        )
-
-        # Descuento de ESTE producto
-        descuento_unitario = (
-            precio_detalle -
-            precio_mayorista
-        )
-
-        subtotal_producto = (
-            precio_mayorista *
-            item.cantidad
-        )
-
-        descuento_producto = (
-            descuento_unitario *
-            item.cantidad
-        )
-
-        subtotal_final += subtotal_producto
-
-        descuento_total += descuento_producto
-
-        productos.append({
-            "item": item,
-            "precio_detalle": precio_detalle,
-            "precio_mayorista": precio_mayorista,
-            "descuento_unitario": descuento_unitario,
-            "subtotal": subtotal_producto,
-            "descuento": descuento_producto,
-        })
-
-    return {
-        "subtotal_detalle": subtotal_detalle,
-        "subtotal_final": subtotal_final,
-        "descuento_total": descuento_total,
-        "margen": margen,
-        "etiqueta": regla["etiqueta"],
-        "productos": productos,
-    }
-UMBRAL_STOCK_BAJO = 5
-
 
 @login_required
 @admin_required
@@ -1645,6 +1670,7 @@ def dashboard_productos(request):
         contexto
 
     )
+
 
 @login_required
 @admin_required
@@ -2867,12 +2893,6 @@ def editar_recordatorio(request, id):
 # =========================
 # ESTADÍSTICAS
 # =========================
-from django.db.models import Sum, Count, Avg
-from datetime import timedelta
-import json
-
-UMBRAL_STOCK_BAJO = 5  # si ya la definiste en dashboard_productos, no la repitas — solo va una vez en el módulo
-
 
 @login_required
 @admin_required
@@ -3126,9 +3146,6 @@ def estadisticas(request):
     return render(request, "core/estadisticas.html", context)
 
 
-# =========================
-# KITS
-# =========================
 # =========================
 # KITS
 # =========================
@@ -3491,6 +3508,8 @@ def dashboard_kits(request):
         "core/kits.html",
         contexto
     )
+
+
 @login_required
 @admin_required
 @require_POST
@@ -3938,9 +3957,6 @@ def agregar_al_carrito(request, variante_id):
 # ==========================================================
 # AUMENTAR CANTIDAD
 # ==========================================================
-# ==========================================================
-# AUMENTAR CANTIDAD
-# ==========================================================
 @login_required
 @require_POST
 def aumentar_carrito(request, item_id):
@@ -3985,9 +4001,7 @@ def aumentar_carrito(request, item_id):
         "stock": item.stock_disponible,
     })
 
-# ==========================================================
-# DISMINUIR CANTIDAD
-# ==========================================================
+
 # ==========================================================
 # DISMINUIR CANTIDAD
 # ==========================================================
@@ -4031,6 +4045,7 @@ def disminuir_carrito(request, item_id):
         "cantidad_carrito": carrito.cantidad_total,
     })
 
+
 # ==========================================================
 # ELIMINAR DEL CARRITO
 # ==========================================================
@@ -4054,6 +4069,147 @@ def eliminar_carrito(request, item_id):
         "mensaje": "Producto eliminado del carrito.",
         "cantidad_carrito": carrito.cantidad_total,
     })
+
+
+@login_required
+@require_POST
+def agregar_kit_al_carrito(request, kit_id):
+
+    kit = get_object_or_404(Kit, id=kit_id)
+
+    # ==========================================
+    # KIT ACTIVO / STOCK
+    # ==========================================
+
+    if not kit.activo:
+        return JsonResponse({
+            "ok": False,
+            "mensaje": "Este kit no está disponible."
+        }, status=400)
+
+    if kit.stock <= 0:
+        return JsonResponse({
+            "ok": False,
+            "mensaje": "Este kit está agotado."
+        }, status=400)
+
+    # ==========================================
+    # CANTIDAD
+    # ==========================================
+
+    try:
+        cantidad = int(request.POST.get("cantidad", 1))
+    except (TypeError, ValueError):
+        return JsonResponse({
+            "ok": False,
+            "mensaje": "La cantidad no es válida."
+        }, status=400)
+
+    if cantidad < 1:
+        return JsonResponse({
+            "ok": False,
+            "mensaje": "La cantidad no es válida."
+        }, status=400)
+
+    if cantidad > kit.stock:
+        return JsonResponse({
+            "ok": False,
+            "mensaje": f"Solo hay {kit.stock} unidades disponibles."
+        }, status=400)
+
+    # ==========================================
+    # TONOS ELEGIDOS POR EL CLIENTE
+    # ==========================================
+    # Para cada producto del kit que NO tenga un tono fijo asignado
+    # por el admin (item.variante is null) y que tenga variantes,
+    # el cliente debe elegir un tono desde el formulario.
+
+    selecciones_variante = {}
+
+    for item in kit.items.select_related("producto").all():
+
+        if item.variante_id:
+            # El admin ya fijó el tono para este producto del kit.
+            continue
+
+        if not item.producto.variantes.exists():
+            # El producto no maneja tonos/variantes.
+            continue
+
+        variante_id = request.POST.get(f"tono_{item.id}")
+
+        if not variante_id:
+            return JsonResponse({
+                "ok": False,
+                "mensaje": f'Debes elegir un tono para "{item.producto.nombre}".'
+            }, status=400)
+
+        variante = Variante.objects.filter(
+            id=variante_id,
+            producto_id=item.producto_id
+        ).first()
+
+        if not variante:
+            return JsonResponse({
+                "ok": False,
+                "mensaje": f'El tono elegido para "{item.producto.nombre}" no es válido.'
+            }, status=400)
+
+        stock_necesario = item.cantidad * cantidad
+
+        if variante.stock < stock_necesario:
+            return JsonResponse({
+                "ok": False,
+                "mensaje": (
+                    f'No hay stock suficiente del tono "{variante.nombre_tono}" '
+                    f'para "{item.producto.nombre}".'
+                )
+            }, status=400)
+
+        selecciones_variante[item.id] = variante
+
+    # ==========================================
+    # CARRITO
+    # ==========================================
+
+    carrito, _ = Carrito.objects.get_or_create(usuario=request.user)
+
+    item_carrito, creado = CarritoItem.objects.get_or_create(
+        carrito=carrito,
+        kit=kit,
+        defaults={"cantidad": cantidad}
+    )
+
+    if not creado:
+
+        nueva_cantidad = item_carrito.cantidad + cantidad
+
+        if nueva_cantidad > kit.stock:
+            return JsonResponse({
+                "ok": False,
+                "mensaje": f"No puedes agregar más de {kit.stock} unidades."
+            }, status=400)
+
+        item_carrito.cantidad = nueva_cantidad
+        item_carrito.save()
+
+    # Guardamos (o actualizamos, si ya existían) los tonos elegidos.
+    for kit_producto_id, variante in selecciones_variante.items():
+        CarritoItemKitSeleccion.objects.update_or_create(
+            carrito_item=item_carrito,
+            kit_producto_id=kit_producto_id,
+            defaults={"variante": variante}
+        )
+
+    return JsonResponse({
+        "ok": True,
+        "mensaje": "Kit agregado al carrito.",
+        "cantidad_item": item_carrito.cantidad,
+        "cantidad_carrito": carrito.cantidad_total,
+        "subtotal_item": str(item_carrito.subtotal),
+    })
+
+
 # ==========================================================
 # CHECKOUT
 # ==========================================================
@@ -4198,9 +4354,8 @@ def checkout(request):
     }
 
     return render(request, "core/checkout.html", contexto)
-# ==========================================================
-# INICIAR PAGO CON WOMPI
-# ==========================================================
+
+
 # ==========================================================
 # INICIAR PAGO CON WOMPI
 # ==========================================================
@@ -4371,9 +4526,8 @@ def pago_checkout(request):
         "nivel_precio": nivel_precio,
         "direccion_id": direccion.id,
     })
-# ==========================================================
-# CONFIRMAR PEDIDO DESPUÉS DEL PAGO
-# ==========================================================
+
+
 # ==========================================================
 # CONFIRMAR PEDIDO DESPUÉS DEL PAGO
 # ==========================================================
@@ -4679,6 +4833,8 @@ def confirmar_pedido(request):
         "margen": str(margen * Decimal("100")),
         "nivel": etiqueta,
     })
+
+
 # ==========================================================
 # CALCULAR CHECKOUT
 # ==========================================================
@@ -4846,6 +5002,12 @@ def calcular_checkout(request):
         "total": float(total),
 
     })
+
+
+# =========================
+# PEDIDOS
+# =========================
+
 @login_required
 def factura_pedido(request, pedido_id):
 
@@ -4871,6 +5033,7 @@ def factura_pedido(request, pedido_id):
         "core/factura.html",
         contexto
     )
+
 
 @login_required
 def dashboard_pedidos(request):
@@ -4925,6 +5088,8 @@ def dashboard_pedidos(request):
             "orden_actual": orden,
         }
     )
+
+
 @login_required
 def dashboard_pedido_detalle(request, pedido_id):
 
@@ -4948,53 +5113,16 @@ def dashboard_pedido_detalle(request, pedido_id):
             "pedido": pedido,
         }
     )
-@login_required
-def dashboard_pedido_estado(request, pedido_id):
 
-    if request.user.rol != "admin":
-        return redirect("home")
 
-    pedido = get_object_or_404(
-        Pedido,
-        id=pedido_id
-    )
-
-    if request.method == "POST":
-
-        nuevo_estado = request.POST.get("estado")
-
-        estados_validos = [
-            estado[0]
-            for estado in Pedido.ESTADOS
-        ]
-
-        if nuevo_estado in estados_validos:
-
-            pedido.estado = nuevo_estado
-            pedido.save(
-                update_fields=[
-                    "estado",
-                    "actualizado"
-                ]
-            )
-
-        return redirect(
-            "dashboard_pedido_detalle",
-            pedido_id=pedido.id
-        )
-
-    return redirect(
-        "dashboard_pedido_detalle",
-        pedido_id=pedido.id
-    )
-def calcular_costo_envio(direccion):
-    ciudad = direccion.ciudad.strip().lower()
-
-    if ciudad in ("medellín", "medellin"):
-        return Decimal("10000")
-
-    return Decimal("12000")
-
+# NOTA: en el original esta vista estaba definida DOS VECES con lógica
+# distinta. La primera versión validaba `request.user.rol != "admin"` y
+# actualizaba `pedido.estado` (estado de pago) a partir de "estado" en el
+# POST. Como la segunda definición pisa a la primera en Python, esa primera
+# versión era código muerto: nunca se ejecutaba. Se conserva únicamente la
+# versión que realmente corre (más abajo), que actualiza el estado de
+# ENVÍO y NO valida que el usuario sea admin — vale la pena revisar si eso
+# fue intencional.
 def dashboard_pedido_estado(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
 
@@ -5030,245 +5158,11 @@ def dashboard_pedido_estado(request, pedido_id):
 
     return redirect('dashboard_pedidos')
 
-@login_required
-@require_POST
-def agregar_kit_al_carrito(request, kit_id):
 
-    kit = get_object_or_404(Kit, id=kit_id)
+# =========================================================================
+# RECOMENDACIONES DE EMPRENDIMIENTO
+# =========================================================================
 
-    # ==========================================
-    # KIT ACTIVO / STOCK
-    # ==========================================
-
-    if not kit.activo:
-        return JsonResponse({
-            "ok": False,
-            "mensaje": "Este kit no está disponible."
-        }, status=400)
-
-    if kit.stock <= 0:
-        return JsonResponse({
-            "ok": False,
-            "mensaje": "Este kit está agotado."
-        }, status=400)
-
-    # ==========================================
-    # CANTIDAD
-    # ==========================================
-
-    try:
-        cantidad = int(request.POST.get("cantidad", 1))
-    except (TypeError, ValueError):
-        return JsonResponse({
-            "ok": False,
-            "mensaje": "La cantidad no es válida."
-        }, status=400)
-
-    if cantidad < 1:
-        return JsonResponse({
-            "ok": False,
-            "mensaje": "La cantidad no es válida."
-        }, status=400)
-
-    if cantidad > kit.stock:
-        return JsonResponse({
-            "ok": False,
-            "mensaje": f"Solo hay {kit.stock} unidades disponibles."
-        }, status=400)
-
-    # ==========================================
-    # TONOS ELEGIDOS POR EL CLIENTE
-    # ==========================================
-    # Para cada producto del kit que NO tenga un tono fijo asignado
-    # por el admin (item.variante is null) y que tenga variantes,
-    # el cliente debe elegir un tono desde el formulario.
-
-    selecciones_variante = {}
-
-    for item in kit.items.select_related("producto").all():
-
-        if item.variante_id:
-            # El admin ya fijó el tono para este producto del kit.
-            continue
-
-        if not item.producto.variantes.exists():
-            # El producto no maneja tonos/variantes.
-            continue
-
-        variante_id = request.POST.get(f"tono_{item.id}")
-
-        if not variante_id:
-            return JsonResponse({
-                "ok": False,
-                "mensaje": f'Debes elegir un tono para "{item.producto.nombre}".'
-            }, status=400)
-
-        variante = Variante.objects.filter(
-            id=variante_id,
-            producto_id=item.producto_id
-        ).first()
-
-        if not variante:
-            return JsonResponse({
-                "ok": False,
-                "mensaje": f'El tono elegido para "{item.producto.nombre}" no es válido.'
-            }, status=400)
-
-        stock_necesario = item.cantidad * cantidad
-
-        if variante.stock < stock_necesario:
-            return JsonResponse({
-                "ok": False,
-                "mensaje": (
-                    f'No hay stock suficiente del tono "{variante.nombre_tono}" '
-                    f'para "{item.producto.nombre}".'
-                )
-            }, status=400)
-
-        selecciones_variante[item.id] = variante
-
-    # ==========================================
-    # CARRITO
-    # ==========================================
-
-    carrito, _ = Carrito.objects.get_or_create(usuario=request.user)
-
-    item_carrito, creado = CarritoItem.objects.get_or_create(
-        carrito=carrito,
-        kit=kit,
-        defaults={"cantidad": cantidad}
-    )
-
-    if not creado:
-
-        nueva_cantidad = item_carrito.cantidad + cantidad
-
-        if nueva_cantidad > kit.stock:
-            return JsonResponse({
-                "ok": False,
-                "mensaje": f"No puedes agregar más de {kit.stock} unidades."
-            }, status=400)
-
-        item_carrito.cantidad = nueva_cantidad
-        item_carrito.save()
-
-    # Guardamos (o actualizamos, si ya existían) los tonos elegidos.
-    for kit_producto_id, variante in selecciones_variante.items():
-        CarritoItemKitSeleccion.objects.update_or_create(
-            carrito_item=item_carrito,
-            kit_producto_id=kit_producto_id,
-            defaults={"variante": variante}
-        )
-
-    return JsonResponse({
-        "ok": True,
-        "mensaje": "Kit agregado al carrito.",
-        "cantidad_item": item_carrito.cantidad,
-        "cantidad_carrito": carrito.cantidad_total,
-        "subtotal_item": str(item_carrito.subtotal),
-    })
-import logging
-from decimal import Decimal, InvalidOperation
-
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
-from django.views.decorators.http import require_POST
-
-from .models import RecomendacionEmprendimiento, Kit, Producto
-
-logger = logging.getLogger(__name__)
-
-
-# =========================
-# RECOMENDACIONES
-# =========================
-@login_required
-def dashboard_recomendaciones(request):
-    if request.method == "POST":
-        recomendacion_id = request.POST.get("recomendacion_id")
-
-        nombre = request.POST.get("nombre", "").strip()
-        producto_interes = request.POST.get("producto_interes") or None
-        plataforma = request.POST.get("plataforma") or None
-        recomendacion_texto = request.POST.get("recomendacion", "").strip()
-        activa = request.POST.get("activa") == "on"
-        kits_ids = request.POST.getlist("kits")
-        productos_ids = request.POST.getlist("productos")
-
-        if not nombre:
-            messages.error(request, "El nombre de la recomendación es obligatorio.")
-            return redirect("dashboard_recomendaciones")
-
-        try:
-            presupuesto_min = Decimal(str(request.POST.get("presupuesto_min", "0")))
-            presupuesto_max = Decimal(str(request.POST.get("presupuesto_max", "0")))
-        except InvalidOperation:
-            messages.error(request, "El rango de inversión no es válido.")
-            return redirect("dashboard_recomendaciones")
-
-        if presupuesto_max < presupuesto_min:
-            messages.error(
-                request,
-                "El presupuesto máximo no puede ser menor que el presupuesto mínimo.",
-            )
-            return redirect("dashboard_recomendaciones")
-
-        if recomendacion_id:
-            recomendacion = get_object_or_404(
-                RecomendacionEmprendimiento, id=recomendacion_id
-            )
-            accion = "actualizada"
-        else:
-            recomendacion = RecomendacionEmprendimiento()
-            accion = "creada"
-
-        recomendacion.nombre = nombre
-        recomendacion.presupuesto_min = presupuesto_min
-        recomendacion.presupuesto_max = presupuesto_max
-        recomendacion.producto_interes = producto_interes
-        recomendacion.plataforma = plataforma
-        recomendacion.recomendacion = recomendacion_texto
-        recomendacion.activa = activa
-        recomendacion.save()
-
-        recomendacion.kits.set(kits_ids)
-        recomendacion.productos.set(productos_ids)
-
-        messages.success(request, f"Recomendación «{nombre}» {accion} correctamente.")
-        return redirect("dashboard_recomendaciones")
-
-    recomendaciones = RecomendacionEmprendimiento.objects.prefetch_related(
-        "kits", "productos"
-    ).all()
-    kits = Kit.objects.filter(activo=True)
-    productos = Producto.objects.filter(activo=True)
-
-    return render(
-        request,
-        "core/recomendaciones.html",
-        {
-            "recomendaciones": recomendaciones,
-            "kits": kits,
-            "productos": productos,
-        },
-    )
-
-
-@login_required
-def eliminar_recomendacion(request, id):
-    recomendacion = get_object_or_404(RecomendacionEmprendimiento, id=id)
-    nombre = recomendacion.nombre
-    recomendacion.delete()
-    messages.success(request, f"Recomendación «{nombre}» eliminada.")
-    return redirect("dashboard_recomendaciones")
-
-
-# =====================================================================
-# API PÚBLICA: usada por el test de /emprender/ (emprender.js)
-# =====================================================================
 def _nivel_desde_presupuesto(presupuesto):
     if presupuesto <= 100000:
         return "Principiante"
@@ -5303,6 +5197,8 @@ TRAMOS_MARGEN = [
 # (atributo_precio del tramo), margen = el margen sugerido de ese tramo.
 FORMULA_PRECIO_VENTA = "precio_venta = costo ÷ (1 − margen)"
 
+MAX_UNIDADES_POR_PRODUCTO = 3  # evita recomendar "8x lo mismo" cuando hay poca variedad
+
 
 def _tramo_margen_por_presupuesto(presupuesto):
     for limite, divisor, atributo_precio, etiqueta in TRAMOS_MARGEN:
@@ -5322,9 +5218,6 @@ def _ganancia_y_roi_generico(presupuesto, divisor):
     ganancia = (presupuesto * factor).quantize(Decimal("1"))
     roi = (factor * 100).quantize(Decimal("0.01"))
     return ganancia, roi, factor
-
-
-MAX_UNIDADES_POR_PRODUCTO = 3  # evita recomendar "8x lo mismo" cuando hay poca variedad
 
 
 def _productos_activos(recomendacion):
@@ -5798,6 +5691,87 @@ def recomendar_emprendimiento(request):
     )
 
 
+@login_required
+def dashboard_recomendaciones(request):
+    if request.method == "POST":
+        recomendacion_id = request.POST.get("recomendacion_id")
+
+        nombre = request.POST.get("nombre", "").strip()
+        producto_interes = request.POST.get("producto_interes") or None
+        plataforma = request.POST.get("plataforma") or None
+        recomendacion_texto = request.POST.get("recomendacion", "").strip()
+        activa = request.POST.get("activa") == "on"
+        kits_ids = request.POST.getlist("kits")
+        productos_ids = request.POST.getlist("productos")
+
+        if not nombre:
+            messages.error(request, "El nombre de la recomendación es obligatorio.")
+            return redirect("dashboard_recomendaciones")
+
+        try:
+            presupuesto_min = Decimal(str(request.POST.get("presupuesto_min", "0")))
+            presupuesto_max = Decimal(str(request.POST.get("presupuesto_max", "0")))
+        except InvalidOperation:
+            messages.error(request, "El rango de inversión no es válido.")
+            return redirect("dashboard_recomendaciones")
+
+        if presupuesto_max < presupuesto_min:
+            messages.error(
+                request,
+                "El presupuesto máximo no puede ser menor que el presupuesto mínimo.",
+            )
+            return redirect("dashboard_recomendaciones")
+
+        if recomendacion_id:
+            recomendacion = get_object_or_404(
+                RecomendacionEmprendimiento, id=recomendacion_id
+            )
+            accion = "actualizada"
+        else:
+            recomendacion = RecomendacionEmprendimiento()
+            accion = "creada"
+
+        recomendacion.nombre = nombre
+        recomendacion.presupuesto_min = presupuesto_min
+        recomendacion.presupuesto_max = presupuesto_max
+        recomendacion.producto_interes = producto_interes
+        recomendacion.plataforma = plataforma
+        recomendacion.recomendacion = recomendacion_texto
+        recomendacion.activa = activa
+        recomendacion.save()
+
+        recomendacion.kits.set(kits_ids)
+        recomendacion.productos.set(productos_ids)
+
+        messages.success(request, f"Recomendación «{nombre}» {accion} correctamente.")
+        return redirect("dashboard_recomendaciones")
+
+    recomendaciones = RecomendacionEmprendimiento.objects.prefetch_related(
+        "kits", "productos"
+    ).all()
+    kits = Kit.objects.filter(activo=True)
+    productos = Producto.objects.filter(activo=True)
+
+    return render(
+        request,
+        "core/recomendaciones.html",
+        {
+            "recomendaciones": recomendaciones,
+            "kits": kits,
+            "productos": productos,
+        },
+    )
+
+
+@login_required
+def eliminar_recomendacion(request, id):
+    recomendacion = get_object_or_404(RecomendacionEmprendimiento, id=id)
+    nombre = recomendacion.nombre
+    recomendacion.delete()
+    messages.success(request, f"Recomendación «{nombre}» eliminada.")
+    return redirect("dashboard_recomendaciones")
+
+
 # =====================================================================
 # REPORTES GUARDADOS (Mi cuenta)
 # =====================================================================
@@ -5852,4 +5826,4 @@ def eliminar_reporte_emprendimiento(request, id):
     reporte = get_object_or_404(ReporteEmprendimiento, id=id, usuario=request.user)
     reporte.delete()
     messages.success(request, "Reporte eliminado.")
-    return redirect("mi_cuenta") 
+    return redirect("mi_cuenta")
