@@ -372,3 +372,84 @@ button:hover{
     color: #d63031;
     border: 1px solid #ffb3b3;
 }
+/* =========================================
+   GOOGLE LOGIN
+========================================= */
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    margin: 22px 0;
+
+    color: #9a8f9d;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background: #eadfea;
+}
+
+
+.google-login {
+    width: 100%;
+    min-height: 50px;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    border: 1px solid #ded7e2;
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    color: #4d4652;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease,
+        background .2s ease;
+}
+
+
+.google-login:hover {
+    transform: translateY(-2px);
+
+    background: #fffafd;
+
+    border-color: #cdb4ff;
+
+    box-shadow:
+        0 10px 25px rgba(120, 90, 150, .12);
+}
+
+
+.google-login:active {
+    transform: translateY(0);
+}
+
+
+.google-login i {
+    font-size: 18px;
+}

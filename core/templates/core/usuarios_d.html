@@ -12,11 +12,7 @@
     <div class="top-bar">
 
         <div class="search-box">
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Buscar usuario..."
-                autocomplete="off">
+            <input type="text" id="searchInput" placeholder="Buscar usuario..." autocomplete="off">
         </div>
 
         <a href="{% url 'exportar_usuarios_excel' %}" class="excel-btn">
@@ -50,10 +46,7 @@
                 <td class="user-cell">
 
                     {% if u.foto %}
-                    <img
-                        src="{{ u.foto.url }}"
-                        alt="{{ u.username }}"
-                        class="avatar">
+                    <img src="{{ u.foto.url }}" alt="{{ u.username }}" class="avatar">
                     {% else %}
                     <div class="avatar-fallback">
                         {{ u.username|first|upper }}
@@ -72,11 +65,11 @@
 
                 <td data-label="Teléfono">
                     {% if u.telefono %}
-                        {{ u.telefono }}
+                    {{ u.telefono }}
                     {% else %}
-                        <span class="empty-value">
-                            No registrado
-                        </span>
+                    <span class="empty-value">
+                        No registrado
+                    </span>
                     {% endif %}
                 </td>
 
@@ -89,13 +82,13 @@
                 <td data-label="Estado">
 
                     {% if u.is_active %}
-                        <span class="estado activo">
-                            🟢 Activo
-                        </span>
+                    <span class="estado activo">
+                        🟢 Activo
+                    </span>
                     {% else %}
-                        <span class="estado inactivo">
-                            🔴 Inactivo
-                        </span>
+                    <span class="estado inactivo">
+                        🔴 Inactivo
+                    </span>
                     {% endif %}
 
                 </td>
@@ -104,25 +97,30 @@
 
                     <div class="actions">
 
-                        <a
-                            href="{% url 'editar_usuario' u.id %}"
-                            class="edit-btn">
+                        <a href="{% url 'editar_usuario' u.id %}" class="edit-btn">
 
-                            ✏️ Editar
-
-                        </a>
-
-                        <a
-                            href="{% url 'eliminar_usuario' u.id %}"
-                            class="delete-btn">
-
-                            🗑️ Eliminar
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            Editar
 
                         </a>
+
+                        <form method="POST" action="{% url 'eliminar_usuario' u.id %}" class="delete-form">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="delete-btn">
+
+                                <i class="fa-solid fa-trash"></i>
+                                Eliminar
+
+                            </button>
+
+                        </form>
 
                     </div>
 
                 </td>
+
 
             </tr>
             {% endfor %}
@@ -142,9 +140,9 @@
 <div class="pagination">
 
     {% if usuarios.has_previous %}
-        <a href="?page={{ usuarios.previous_page_number }}">
-            ⬅ Anterior
-        </a>
+    <a href="?page={{ usuarios.previous_page_number }}">
+        ⬅ Anterior
+    </a>
     {% endif %}
 
     <span class="page-info">
@@ -154,9 +152,9 @@
     </span>
 
     {% if usuarios.has_next %}
-        <a href="?page={{ usuarios.next_page_number }}">
-            Siguiente ➡
-        </a>
+    <a href="?page={{ usuarios.next_page_number }}">
+        Siguiente ➡
+    </a>
     {% endif %}
 
 </div>

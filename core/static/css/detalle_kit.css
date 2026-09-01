@@ -1,10 +1,3 @@
-/* ==========================================================================
-   LÚMINA — Detalle de kit
-   Extiende detalle_producto.css. Reutiliza las variables --lumina-* y las
-   clases producto-* que ya trae ese archivo; acá solo van las clases que
-   son propias del kit (badges, precio tachado, ahorro, stock, CTA y las
-   tarjetas de "productos que incluye").
-   ========================================================================== */
 
 /* ==========================================================================
    BADGES SOBRE LA IMAGEN
