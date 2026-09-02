@@ -2931,7 +2931,6 @@ def editar_recordatorio(request, id):
 # =========================
 # ESTADÍSTICAS
 # =========================
-
 @login_required
 @admin_required
 def estadisticas(request):
@@ -2947,6 +2946,10 @@ def estadisticas(request):
     total_categorias = Categoria.objects.count()
     total_marcas = Marca.objects.count()
 
+    # PROVEEDORES
+    total_proveedores = Proveedor.objects.count()
+    proveedores_activos = Proveedor.objects.filter(activo=True).count()
+
     total_pedidos = Pedido.objects.count()
     total_blogs = BlogPost.objects.count()
     total_galeria = Galeria.objects.count()
@@ -2959,30 +2962,48 @@ def estadisticas(request):
     # KITS
     # =====================================
 
-    kits_qs = Kit.objects.select_related("categoria").prefetch_related(
+    kits_qs = Kit.objects.select_related(
+        "categoria"
+    ).prefetch_related(
         "items__producto"
     )
 
     total_kits = kits_qs.count()
     kits_activos = kits_qs.filter(activo=True).count()
     kits_destacados = kits_qs.filter(destacado=True).count()
-    stock_kits = kits_qs.aggregate(total=Sum("stock"))["total"] or 0
+
+    stock_kits = kits_qs.aggregate(
+        total=Sum("stock")
+    )["total"] or 0
 
     kits_list = list(kits_qs)
 
     if kits_list:
-        ahorro_promedio = sum(k.ahorro for k in kits_list) / len(kits_list)
+        ahorro_promedio = (
+            sum(k.ahorro for k in kits_list) / len(kits_list)
+        )
     else:
         ahorro_promedio = 0
 
     top_kits_ahorro = sorted(
-        kits_list, key=lambda k: k.ahorro, reverse=True
+        kits_list,
+        key=lambda k: k.ahorro,
+        reverse=True
     )[:5]
 
-    kits_labels = [k.nombre for k in top_kits_ahorro]
-    kits_data = [float(k.ahorro) for k in top_kits_ahorro]
+    kits_labels = [
+        k.nombre
+        for k in top_kits_ahorro
+    ]
 
-    kits_recientes = kits_qs.order_by("-fecha_creacion")[:6]
+    kits_data = [
+        float(k.ahorro)
+        for k in top_kits_ahorro
+    ]
+
+    kits_recientes = kits_qs.order_by(
+        "-fecha_creacion"
+    )[:6]
 
     # =====================================
     # ALERTAS DE STOCK BAJO
@@ -2990,16 +3011,35 @@ def estadisticas(request):
 
     variantes_stock_bajo_qs = Variante.objects.filter(
         stock__lte=UMBRAL_STOCK_BAJO
-    ).select_related("producto").order_by("stock")
+    ).select_related(
+        "producto"
+    ).order_by(
+        "stock"
+    )
 
-    productos_stock_bajo_count = variantes_stock_bajo_qs.values("producto").distinct().count()
+    productos_stock_bajo_count = (
+        variantes_stock_bajo_qs
+        .values("producto")
+        .distinct()
+        .count()
+    )
+
     variantes_stock_bajo = variantes_stock_bajo_qs[:8]
 
-    kits_stock_bajo_qs = kits_qs.filter(stock__lte=UMBRAL_STOCK_BAJO).order_by("stock")
+    kits_stock_bajo_qs = kits_qs.filter(
+        stock__lte=UMBRAL_STOCK_BAJO
+    ).order_by(
+        "stock"
+    )
+
     kits_stock_bajo_count = kits_stock_bajo_qs.count()
+
     kits_stock_bajo = kits_stock_bajo_qs[:8]
 
-    alertas_stock_total = productos_stock_bajo_count + kits_stock_bajo_count
+    alertas_stock_total = (
+        productos_stock_bajo_count
+        + kits_stock_bajo_count
+    )
 
     # =====================================
     # VENTAS
@@ -3015,7 +3055,9 @@ def estadisticas(request):
     # PEDIDOS POR ESTADO
     # =====================================
 
-    pedidos_estado = Pedido.objects.values("estado").annotate(
+    pedidos_estado = Pedido.objects.values(
+        "estado"
+    ).annotate(
         cantidad=Count("id")
     )
 
@@ -3023,11 +3065,22 @@ def estadisticas(request):
     estados_data = []
 
     for estado in pedidos_estado:
-        estados_labels.append(estado["estado"].capitalize())
-        estados_data.append(estado["cantidad"])
 
-    pedidos_pagados = Pedido.objects.filter(estado="PAGADO").count()
-    pedidos_pendientes = Pedido.objects.filter(estado="PENDIENTE").count()
+        estados_labels.append(
+            estado["estado"].capitalize()
+        )
+
+        estados_data.append(
+            estado["cantidad"]
+        )
+
+    pedidos_pagados = Pedido.objects.filter(
+        estado="PAGADO"
+    ).count()
+
+    pedidos_pendientes = Pedido.objects.filter(
+        estado="PENDIENTE"
+    ).count()
 
     # =====================================
     # PRODUCTOS POR CATEGORIA
@@ -3041,8 +3094,14 @@ def estadisticas(request):
     categorias_data = []
 
     for categoria in categorias:
-        categorias_labels.append(categoria.nombre)
-        categorias_data.append(categoria.cantidad)
+
+        categorias_labels.append(
+            categoria.nombre
+        )
+
+        categorias_data.append(
+            categoria.cantidad
+        )
 
     # =====================================
     # USUARIOS POR MES
@@ -3052,21 +3111,40 @@ def estadisticas(request):
     usuarios_mes = []
 
     for i in range(5, -1, -1):
-        fecha = timezone.now() - timedelta(days=30 * i)
-        inicio = fecha.replace(day=1)
+
+        fecha = timezone.now() - timedelta(
+            days=30 * i
+        )
+
+        inicio = fecha.replace(
+            day=1
+        )
 
         if inicio.month == 12:
-            fin = inicio.replace(year=inicio.year + 1, month=1)
+
+            fin = inicio.replace(
+                year=inicio.year + 1,
+                month=1
+            )
+
         else:
-            fin = inicio.replace(month=inicio.month + 1)
+
+            fin = inicio.replace(
+                month=inicio.month + 1
+            )
 
         cantidad = Usuario.objects.filter(
             date_joined__gte=inicio,
             date_joined__lt=fin
         ).count()
 
-        meses.append(inicio.strftime("%b"))
-        usuarios_mes.append(cantidad)
+        meses.append(
+            inicio.strftime("%b")
+        )
+
+        usuarios_mes.append(
+            cantidad
+        )
 
     # =====================================
     # TESTS MÁS REALIZADOS
@@ -3076,17 +3154,31 @@ def estadisticas(request):
         "test__titulo"
     ).annotate(
         total=Count("id")
-    ).order_by("-total")[:5]
+    ).order_by(
+        "-total"
+    )[:5]
 
-    tests_labels = [t["test__titulo"] for t in top_tests]
-    tests_data = [t["total"] for t in top_tests]
+    tests_labels = [
+        t["test__titulo"]
+        for t in top_tests
+    ]
+
+    tests_data = [
+        t["total"]
+        for t in top_tests
+    ]
 
     # =====================================
     # CONTACTOS
     # =====================================
 
-    contactos_respondidos = Contacto.objects.filter(respondido=True).count()
-    contactos_pendientes = Contacto.objects.filter(respondido=False).count()
+    contactos_respondidos = Contacto.objects.filter(
+        respondido=True
+    ).count()
+
+    contactos_pendientes = Contacto.objects.filter(
+        respondido=False
+    ).count()
 
     # =====================================
     # PRODUCTOS MÁS VENDIDOS
@@ -3096,16 +3188,27 @@ def estadisticas(request):
         "producto_nombre"
     ).annotate(
         vendidos=Sum("cantidad")
-    ).order_by("-vendidos")[:5]
+    ).order_by(
+        "-vendidos"
+    )[:5]
 
-    productos_labels = [p["producto_nombre"] for p in top_productos]
-    productos_data = [p["vendidos"] or 0 for p in top_productos]
+    productos_labels = [
+        p["producto_nombre"]
+        for p in top_productos
+    ]
+
+    productos_data = [
+        p["vendidos"] or 0
+        for p in top_productos
+    ]
 
     # =====================================
     # USUARIOS RECIENTES
     # =====================================
 
-    usuarios_recientes = Usuario.objects.order_by("-date_joined")[:10]
+    usuarios_recientes = Usuario.objects.order_by(
+        "-date_joined"
+    )[:10]
 
     # =====================================
     # CONTEXTO
@@ -3113,12 +3216,31 @@ def estadisticas(request):
 
     context = {
 
+        # ---------------------------------
+        # USUARIOS
+        # ---------------------------------
+
         "total_usuarios": total_usuarios,
         "usuarios_activos": usuarios_activos,
+
+        # ---------------------------------
+        # PRODUCTOS
+        # ---------------------------------
 
         "total_productos": total_productos,
         "total_categorias": total_categorias,
         "total_marcas": total_marcas,
+
+        # ---------------------------------
+        # PROVEEDORES
+        # ---------------------------------
+
+        "total_proveedores": total_proveedores,
+        "proveedores_activos": proveedores_activos,
+
+        # ---------------------------------
+        # CONTENIDO
+        # ---------------------------------
 
         "total_pedidos": total_pedidos,
         "total_blogs": total_blogs,
@@ -3129,60 +3251,140 @@ def estadisticas(request):
 
         "total_contactos": total_contactos,
 
+        # ---------------------------------
+        # VENTAS
+        # ---------------------------------
+
         "ventas": ventas,
 
-        # Kits (catálogo)
+        # ---------------------------------
+        # KITS
+        # ---------------------------------
+
         "total_kits": total_kits,
         "kits_activos": kits_activos,
         "kits_destacados": kits_destacados,
         "stock_kits": stock_kits,
-        "ahorro_promedio": round(ahorro_promedio, 0),
+        "ahorro_promedio": round(
+            ahorro_promedio,
+            0
+        ),
+
         "kits_recientes": kits_recientes,
-        "kits_labels": json.dumps(kits_labels),
-        "kits_data": json.dumps(kits_data),
 
-        # Alertas de stock bajo
-        "productos_stock_bajo_count": productos_stock_bajo_count,
-        "variantes_stock_bajo": variantes_stock_bajo,
-        "kits_stock_bajo_count": kits_stock_bajo_count,
-        "kits_stock_bajo": kits_stock_bajo,
-        "alertas_stock_total": alertas_stock_total,
-        "umbral_stock_bajo": UMBRAL_STOCK_BAJO,
+        "kits_labels": json.dumps(
+            kits_labels
+        ),
 
-        # Pedidos por estado
-        "pedidos_pagados": pedidos_pagados,
-        "pedidos_pendientes": pedidos_pendientes,
+        "kits_data": json.dumps(
+            kits_data
+        ),
 
-        # Usuarios recientes
-        "usuarios_recientes": usuarios_recientes,
+        # ---------------------------------
+        # STOCK
+        # ---------------------------------
 
-        # Usuarios por mes
-        "meses": json.dumps(meses),
-        "usuarios_mes": json.dumps(usuarios_mes),
+        "productos_stock_bajo_count":
+            productos_stock_bajo_count,
 
-        # Categorías
-        "categorias_labels": json.dumps(categorias_labels),
-        "categorias_data": json.dumps(categorias_data),
+        "variantes_stock_bajo":
+            variantes_stock_bajo,
 
-        # Pedidos estado
-        "estados_labels": json.dumps(estados_labels),
-        "estados_data": json.dumps(estados_data),
+        "kits_stock_bajo_count":
+            kits_stock_bajo_count,
 
-        # Tests
-        "tests_labels": json.dumps(tests_labels),
-        "tests_data": json.dumps(tests_data),
+        "kits_stock_bajo":
+            kits_stock_bajo,
 
-        # Productos vendidos
-        "productos_labels": json.dumps(productos_labels),
-        "productos_data": json.dumps(productos_data),
+        "alertas_stock_total":
+            alertas_stock_total,
 
-        # Contactos
-        "contactos_respondidos": contactos_respondidos,
-        "contactos_pendientes": contactos_pendientes,
+        "umbral_stock_bajo":
+            UMBRAL_STOCK_BAJO,
+
+        # ---------------------------------
+        # PEDIDOS
+        # ---------------------------------
+
+        "pedidos_pagados":
+            pedidos_pagados,
+
+        "pedidos_pendientes":
+            pedidos_pendientes,
+
+        # ---------------------------------
+        # USUARIOS RECIENTES
+        # ---------------------------------
+
+        "usuarios_recientes":
+            usuarios_recientes,
+
+        # ---------------------------------
+        # USUARIOS POR MES
+        # ---------------------------------
+
+        "meses":
+            json.dumps(meses),
+
+        "usuarios_mes":
+            json.dumps(usuarios_mes),
+
+        # ---------------------------------
+        # CATEGORÍAS
+        # ---------------------------------
+
+        "categorias_labels":
+            json.dumps(categorias_labels),
+
+        "categorias_data":
+            json.dumps(categorias_data),
+
+        # ---------------------------------
+        # PEDIDOS POR ESTADO
+        # ---------------------------------
+
+        "estados_labels":
+            json.dumps(estados_labels),
+
+        "estados_data":
+            json.dumps(estados_data),
+
+        # ---------------------------------
+        # TESTS
+        # ---------------------------------
+
+        "tests_labels":
+            json.dumps(tests_labels),
+
+        "tests_data":
+            json.dumps(tests_data),
+
+        # ---------------------------------
+        # PRODUCTOS VENDIDOS
+        # ---------------------------------
+
+        "productos_labels":
+            json.dumps(productos_labels),
+
+        "productos_data":
+            json.dumps(productos_data),
+
+        # ---------------------------------
+        # CONTACTOS
+        # ---------------------------------
+
+        "contactos_respondidos":
+            contactos_respondidos,
+
+        "contactos_pendientes":
+            contactos_pendientes,
     }
 
-    return render(request, "core/estadisticas.html", context)
-
+    return render(
+        request,
+        "core/estadisticas.html",
+        context
+    )
 
 # =========================
 # KITS

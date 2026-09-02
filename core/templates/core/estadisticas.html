@@ -1,3 +1,4 @@
+```html
 {% extends "core/dashboard.html" %}
 {% load static %}
 
@@ -7,11 +8,14 @@
 
 <div class="stats-page">
 
-    <!-- HERO -->
+    <!-- ==========================================
+         HERO
+    =========================================== -->
 
     <section class="stats-hero">
 
         <div>
+
             <h1>
                 <i class="fa-solid fa-chart-line"></i>
                 Centro de Estadísticas
@@ -19,213 +23,575 @@
 
             <p>
                 Analiza el crecimiento de Lúmina, monitorea usuarios,
-                pedidos, kits, ventas y rendimiento general de la plataforma.
+                proveedores, pedidos, kits, ventas y rendimiento general
+                de la plataforma.
             </p>
+
         </div>
 
+
         {% if alertas_stock_total > 0 %}
+
         <a href="#alertas-stock" class="alerta-stock-hero">
+
             <i class="fa-solid fa-triangle-exclamation"></i>
-            {{ alertas_stock_total }} alerta{{ alertas_stock_total|pluralize }} de stock bajo
+
+            {{ alertas_stock_total }}
+            alerta{{ alertas_stock_total|pluralize }}
+            de stock bajo
+
         </a>
+
         {% endif %}
 
     </section>
 
-    <!-- KPIS PRINCIPALES -->
+
+    <!-- ==========================================
+         KPIS PRINCIPALES
+    =========================================== -->
 
     <section class="kpi-grid">
 
+
+        <!-- USUARIOS -->
+
         <article class="kpi-card users">
+
             <div class="icon">
+
                 <i class="fa-solid fa-users"></i>
+
             </div>
+
             <div class="info">
-                <h3>{{ total_usuarios }}</h3>
-                <span>Usuarios registrados</span>
+
+                <h3>
+                    {{ total_usuarios }}
+                </h3>
+
+                <span>
+                    Usuarios registrados
+                </span>
+
             </div>
+
         </article>
+
+
+        <!-- USUARIOS ACTIVOS -->
 
         <article class="kpi-card active">
+
             <div class="icon">
+
                 <i class="fa-solid fa-user-check"></i>
+
             </div>
+
             <div class="info">
-                <h3>{{ usuarios_activos }}</h3>
-                <span>Usuarios activos</span>
+
+                <h3>
+                    {{ usuarios_activos }}
+                </h3>
+
+                <span>
+                    Usuarios activos
+                </span>
+
             </div>
+
         </article>
+
+
+        <!-- PRODUCTOS -->
 
         <article class="kpi-card products">
+
             <div class="icon">
+
                 <i class="fa-solid fa-box-open"></i>
+
             </div>
+
             <div class="info">
-                <h3>{{ total_productos }}</h3>
-                <span>Productos</span>
+
+                <h3>
+                    {{ total_productos }}
+                </h3>
+
+                <span>
+                    Productos
+                </span>
+
             </div>
+
         </article>
+
+
+        <!-- PROVEEDORES -->
+
+        <article class="kpi-card suppliers">
+
+            <div class="icon">
+
+                <i class="fa-solid fa-truck-field"></i>
+
+            </div>
+
+            <div class="info">
+
+                <h3>
+                    {{ total_proveedores }}
+                </h3>
+
+                <span>
+                    Proveedores
+                </span>
+
+            </div>
+
+        </article>
+
+
+        <!-- PEDIDOS -->
 
         <article class="kpi-card orders">
+
             <div class="icon">
+
                 <i class="fa-solid fa-cart-shopping"></i>
+
             </div>
+
             <div class="info">
-                <h3>{{ total_pedidos }}</h3>
-                <span>Pedidos</span>
+
+                <h3>
+                    {{ total_pedidos }}
+                </h3>
+
+                <span>
+                    Pedidos
+                </span>
+
             </div>
+
         </article>
+
+
+        <!-- KITS -->
 
         <article class="kpi-card kits">
+
             <div class="icon">
+
                 <i class="fa-solid fa-gifts"></i>
+
             </div>
+
             <div class="info">
-                <h3>{{ total_kits }}</h3>
-                <span>Kits en catálogo</span>
+
+                <h3>
+                    {{ total_kits }}
+                </h3>
+
+                <span>
+                    Kits en catálogo
+                </span>
+
             </div>
+
         </article>
+
+
+        <!-- VENTAS -->
 
         <article class="kpi-card sales">
+
             <div class="icon">
+
                 <i class="fa-solid fa-money-bill-wave"></i>
+
             </div>
+
             <div class="info">
-                <h3>${{ ventas }}</h3>
-                <span>Ventas totales</span>
+
+                <h3>
+                    ${{ ventas|floatformat:0 }}
+                </h3>
+
+                <span>
+                    Ventas totales
+                </span>
+
             </div>
+
         </article>
+
+
+        <!-- CONTACTOS -->
 
         <article class="kpi-card contact">
+
             <div class="icon">
+
                 <i class="fa-solid fa-envelope"></i>
+
             </div>
+
             <div class="info">
-                <h3>{{ total_contactos }}</h3>
-                <span>Mensajes</span>
+
+                <h3>
+                    {{ total_contactos }}
+                </h3>
+
+                <span>
+                    Mensajes
+                </span>
+
             </div>
+
         </article>
 
+
+        <!-- ALERTAS STOCK -->
+
         {% if alertas_stock_total > 0 %}
+
         <article class="kpi-card alerta-stock">
+
             <div class="icon">
+
                 <i class="fa-solid fa-triangle-exclamation"></i>
+
             </div>
+
             <div class="info">
-                <h3>{{ alertas_stock_total }}</h3>
-                <span>Alertas de stock bajo</span>
+
+                <h3>
+                    {{ alertas_stock_total }}
+                </h3>
+
+                <span>
+                    Alertas de stock bajo
+                </span>
+
             </div>
+
         </article>
+
         {% endif %}
+
 
     </section>
 
-    <!-- SEGUNDA FILA -->
+
+    <!-- ==========================================
+         SEGUNDA FILA
+    =========================================== -->
 
     <section class="mini-grid">
 
-        <div class="mini-card">
-            <h4>Categorías</h4>
-            <strong>{{ total_categorias }}</strong>
-        </div>
+
+        <!-- CATEGORÍAS -->
 
         <div class="mini-card">
-            <h4>Marcas</h4>
-            <strong>{{ total_marcas }}</strong>
+
+            <h4>
+                Categorías
+            </h4>
+
+            <strong>
+                {{ total_categorias }}
+            </strong>
+
         </div>
 
-        <div class="mini-card">
-            <h4>Blogs</h4>
-            <strong>{{ total_blogs }}</strong>
-        </div>
+
+        <!-- MARCAS -->
 
         <div class="mini-card">
-            <h4>Galería</h4>
-            <strong>{{ total_galeria }}</strong>
+
+            <h4>
+                Marcas
+            </h4>
+
+            <strong>
+                {{ total_marcas }}
+            </strong>
+
         </div>
 
-        <div class="mini-card">
-            <h4>Tests</h4>
-            <strong>{{ total_tests }}</strong>
-        </div>
+
+        <!-- PROVEEDORES -->
 
         <div class="mini-card">
-            <h4>Resultados</h4>
-            <strong>{{ resultados_tests }}</strong>
+
+            <h4>
+                Proveedores
+            </h4>
+
+            <strong>
+                {{ total_proveedores }}
+            </strong>
+
         </div>
+
+
+        <!-- PROVEEDORES ACTIVOS -->
 
         <div class="mini-card highlight">
-            <h4>Kits activos</h4>
-            <strong>{{ kits_activos }}</strong>
+
+            <h4>
+                Proveedores activos
+            </h4>
+
+            <strong>
+                {{ proveedores_activos }}
+            </strong>
+
         </div>
 
-        <div class="mini-card highlight">
-            <h4>Kits destacados</h4>
-            <strong>{{ kits_destacados }}</strong>
+
+        <!-- BLOGS -->
+
+        <div class="mini-card">
+
+            <h4>
+                Blogs
+            </h4>
+
+            <strong>
+                {{ total_blogs }}
+            </strong>
+
         </div>
+
+
+        <!-- GALERÍA -->
+
+        <div class="mini-card">
+
+            <h4>
+                Galería
+            </h4>
+
+            <strong>
+                {{ total_galeria }}
+            </strong>
+
+        </div>
+
+
+        <!-- TESTS -->
+
+        <div class="mini-card">
+
+            <h4>
+                Tests
+            </h4>
+
+            <strong>
+                {{ total_tests }}
+            </strong>
+
+        </div>
+
+
+        <!-- RESULTADOS -->
+
+        <div class="mini-card">
+
+            <h4>
+                Resultados
+            </h4>
+
+            <strong>
+                {{ resultados_tests }}
+            </strong>
+
+        </div>
+
+
+        <!-- KITS ACTIVOS -->
+
+        <div class="mini-card highlight">
+
+            <h4>
+                Kits activos
+            </h4>
+
+            <strong>
+                {{ kits_activos }}
+            </strong>
+
+        </div>
+
+
+        <!-- KITS DESTACADOS -->
+
+        <div class="mini-card highlight">
+
+            <h4>
+                Kits destacados
+            </h4>
+
+            <strong>
+                {{ kits_destacados }}
+            </strong>
+
+        </div>
+
 
     </section>
 
-    <!-- ================================
-         ALERTAS DE STOCK BAJO
-    ================================= -->
 
-    <section class="panel {% if alertas_stock_total > 0 %}panel-alerta{% endif %}" id="alertas-stock">
+    <!-- ==========================================
+         ALERTAS DE STOCK BAJO
+    =========================================== -->
+
+    <section
+        class="panel {% if alertas_stock_total > 0 %}panel-alerta{% endif %}"
+        id="alertas-stock"
+    >
 
         <div class="panel-header">
+
             <h3>
+
                 <i class="fa-solid fa-triangle-exclamation"></i>
+
                 Alertas de Stock Bajo
+
             </h3>
-            <span class="badge-alerta">{{ alertas_stock_total }}</span>
+
+            <span class="badge-alerta">
+
+                {{ alertas_stock_total }}
+
+            </span>
+
         </div>
 
+
         <p class="alerta-descripcion">
-            Productos y kits con stock igual o menor a {{ umbral_stock_bajo }} unidades.
+
+            Productos y kits con stock igual o menor a
+            {{ umbral_stock_bajo }} unidades.
+
         </p>
+
 
         <div class="status-grid">
 
-            <div class="status-card pending">
-                <h2>{{ productos_stock_bajo_count }}</h2>
-                <span>Productos con stock bajo</span>
-            </div>
+
+            <!-- PRODUCTOS -->
 
             <div class="status-card pending">
-                <h2>{{ kits_stock_bajo_count }}</h2>
-                <span>Kits con stock bajo</span>
+
+                <h2>
+                    {{ productos_stock_bajo_count }}
+                </h2>
+
+                <span>
+                    Productos con stock bajo
+                </span>
+
             </div>
+
+
+            <!-- KITS -->
+
+            <div class="status-card pending">
+
+                <h2>
+                    {{ kits_stock_bajo_count }}
+                </h2>
+
+                <span>
+                    Kits con stock bajo
+                </span>
+
+            </div>
+
 
         </div>
+
+
+        <!-- TABLA PRODUCTOS STOCK BAJO -->
 
         <div class="table-wrapper">
 
             <table>
 
                 <thead>
+
                     <tr>
-                        <th>Producto</th>
-                        <th>Tono</th>
-                        <th>SKU</th>
-                        <th>Stock</th>
+
+                        <th>
+                            Producto
+                        </th>
+
+                        <th>
+                            Tono
+                        </th>
+
+                        <th>
+                            SKU
+                        </th>
+
+                        <th>
+                            Stock
+                        </th>
+
                     </tr>
+
                 </thead>
+
 
                 <tbody>
 
                     {% for variante in variantes_stock_bajo %}
+
                     <tr>
-                        <td>{{ variante.producto.nombre }}</td>
-                        <td>{{ variante.nombre_tono|default:"—" }}</td>
-                        <td>{{ variante.sku }}</td>
+
                         <td>
-                            <span class="stock-bajo">{{ variante.stock }}</span>
+                            {{ variante.producto.nombre }}
                         </td>
+
+                        <td>
+                            {{ variante.nombre_tono|default:"—" }}
+                        </td>
+
+                        <td>
+                            {{ variante.sku }}
+                        </td>
+
+                        <td>
+
+                            <span class="stock-bajo">
+
+                                {{ variante.stock }}
+
+                            </span>
+
+                        </td>
+
                     </tr>
+
                     {% empty %}
+
                     <tr>
-                        <td colspan="4" class="tabla-vacia">No hay productos con stock bajo.</td>
+
+                        <td
+                            colspan="4"
+                            class="tabla-vacia"
+                        >
+                            No hay productos con stock bajo.
+                        </td>
+
                     </tr>
+
                     {% endfor %}
 
                 </tbody>
@@ -233,33 +599,74 @@
             </table>
 
         </div>
+
+
+        <!-- TABLA KITS STOCK BAJO -->
 
         <div class="table-wrapper">
 
             <table>
 
                 <thead>
+
                     <tr>
-                        <th>Kit</th>
-                        <th>SKU</th>
-                        <th>Stock</th>
+
+                        <th>
+                            Kit
+                        </th>
+
+                        <th>
+                            SKU
+                        </th>
+
+                        <th>
+                            Stock
+                        </th>
+
                     </tr>
+
                 </thead>
+
 
                 <tbody>
 
                     {% for kit in kits_stock_bajo %}
+
                     <tr>
-                        <td>{{ kit.nombre }}</td>
-                        <td>{{ kit.sku|default:"—" }}</td>
+
                         <td>
-                            <span class="stock-bajo">{{ kit.stock }}</span>
+                            {{ kit.nombre }}
                         </td>
+
+                        <td>
+                            {{ kit.sku|default:"—" }}
+                        </td>
+
+                        <td>
+
+                            <span class="stock-bajo">
+
+                                {{ kit.stock }}
+
+                            </span>
+
+                        </td>
+
                     </tr>
+
                     {% empty %}
+
                     <tr>
-                        <td colspan="3" class="tabla-vacia">No hay kits con stock bajo.</td>
+
+                        <td
+                            colspan="3"
+                            class="tabla-vacia"
+                        >
+                            No hay kits con stock bajo.
+                        </td>
+
                     </tr>
+
                     {% endfor %}
 
                 </tbody>
@@ -270,206 +677,500 @@
 
     </section>
 
-    <!-- PEDIDOS -->
+
+    <!-- ==========================================
+         PEDIDOS
+    =========================================== -->
 
     <section class="stats-row">
+
+
+        <!-- ESTADO PEDIDOS -->
 
         <div class="panel">
 
             <div class="panel-header">
-                <h3>Estado de Pedidos</h3>
+
+                <h3>
+                    Estado de Pedidos
+                </h3>
+
             </div>
+
 
             <div class="status-grid">
 
+
+                <!-- PAGADOS -->
+
                 <div class="status-card paid">
-                    <h2>{{ pedidos_pagados }}</h2>
-                    <span>Pagados</span>
+
+                    <h2>
+                        {{ pedidos_pagados }}
+                    </h2>
+
+                    <span>
+                        Pagados
+                    </span>
+
                 </div>
 
+
+                <!-- PENDIENTES -->
+
                 <div class="status-card pending">
-                    <h2>{{ pedidos_pendientes }}</h2>
-                    <span>Pendientes</span>
+
+                    <h2>
+                        {{ pedidos_pendientes }}
+                    </h2>
+
+                    <span>
+                        Pendientes
+                    </span>
+
                 </div>
+
 
             </div>
 
         </div>
+
+
+        <!-- RESUMEN GENERAL -->
 
         <div class="panel">
 
             <div class="panel-header">
-                <h3>Resumen General</h3>
+
+                <h3>
+                    Resumen General
+                </h3>
+
             </div>
+
 
             <ul class="summary-list">
 
-                <li>
-                    <span>Usuarios</span>
-                    <strong>{{ total_usuarios }}</strong>
-                </li>
 
                 <li>
-                    <span>Pedidos</span>
-                    <strong>{{ total_pedidos }}</strong>
+
+                    <span>
+                        Usuarios
+                    </span>
+
+                    <strong>
+                        {{ total_usuarios }}
+                    </strong>
+
                 </li>
 
-                <li>
-                    <span>Productos</span>
-                    <strong>{{ total_productos }}</strong>
-                </li>
 
                 <li>
-                    <span>Kits en catálogo</span>
-                    <strong>{{ total_kits }}</strong>
+
+                    <span>
+                        Pedidos
+                    </span>
+
+                    <strong>
+                        {{ total_pedidos }}
+                    </strong>
+
                 </li>
 
+
                 <li>
-                    <span>Ventas</span>
-                    <strong>${{ ventas }}</strong>
+
+                    <span>
+                        Productos
+                    </span>
+
+                    <strong>
+                        {{ total_productos }}
+                    </strong>
+
                 </li>
+
+
+                <li>
+
+                    <span>
+                        Proveedores
+                    </span>
+
+                    <strong>
+                        {{ total_proveedores }}
+                    </strong>
+
+                </li>
+
+
+                <li>
+
+                    <span>
+                        Proveedores activos
+                    </span>
+
+                    <strong>
+                        {{ proveedores_activos }}
+                    </strong>
+
+                </li>
+
+
+                <li>
+
+                    <span>
+                        Kits en catálogo
+                    </span>
+
+                    <strong>
+                        {{ total_kits }}
+                    </strong>
+
+                </li>
+
+
+                <li>
+
+                    <span>
+                        Ventas
+                    </span>
+
+                    <strong>
+                        ${{ ventas|floatformat:0 }}
+                    </strong>
+
+                </li>
+
 
             </ul>
 
         </div>
+
 
     </section>
 
-    <!-- ================================
+
+    <!-- ==========================================
          CATÁLOGO DE KITS
-    ================================= -->
+    =========================================== -->
 
     <section class="stats-row">
+
+
+        <!-- INFORMACIÓN KITS -->
 
         <div class="panel">
 
             <div class="panel-header">
+
                 <h3>
+
                     <i class="fa-solid fa-gifts"></i>
+
                     Catálogo de Kits
+
                 </h3>
+
             </div>
+
 
             <div class="status-grid kits-grid">
 
+
+                <!-- ACTIVOS -->
+
                 <div class="status-card kits-active">
-                    <h2>{{ kits_activos }}</h2>
-                    <span>Kits activos</span>
+
+                    <h2>
+                        {{ kits_activos }}
+                    </h2>
+
+                    <span>
+                        Kits activos
+                    </span>
+
                 </div>
 
+
+                <!-- DESTACADOS -->
+
                 <div class="status-card kits-featured">
-                    <h2>{{ kits_destacados }}</h2>
-                    <span>Destacados</span>
+
+                    <h2>
+                        {{ kits_destacados }}
+                    </h2>
+
+                    <span>
+                        Destacados
+                    </span>
+
                 </div>
+
 
             </div>
 
+
             <ul class="summary-list">
 
-                <li>
-                    <span>Stock total de kits</span>
-                    <strong>{{ stock_kits }}</strong>
-                </li>
+
+                <!-- STOCK -->
 
                 <li>
-                    <span>Ahorro promedio ofrecido por kit</span>
-                    <strong>${{ ahorro_promedio }}</strong>
+
+                    <span>
+                        Stock total de kits
+                    </span>
+
+                    <strong>
+                        {{ stock_kits }}
+                    </strong>
+
                 </li>
 
+
+                <!-- AHORRO -->
+
                 <li>
-                    <span>Kits con stock bajo</span>
-                    <strong {% if kits_stock_bajo_count > 0 %}class="stock-bajo"{% endif %}>{{ kits_stock_bajo_count }}</strong>
+
+                    <span>
+                        Ahorro promedio ofrecido por kit
+                    </span>
+
+                    <strong>
+                        ${{ ahorro_promedio }}
+                    </strong>
+
                 </li>
+
+
+                <!-- STOCK BAJO -->
+
+                <li>
+
+                    <span>
+                        Kits con stock bajo
+                    </span>
+
+                    <strong
+                        {% if kits_stock_bajo_count > 0 %}
+                            class="stock-bajo"
+                        {% endif %}
+                    >
+
+                        {{ kits_stock_bajo_count }}
+
+                    </strong>
+
+                </li>
+
 
             </ul>
 
         </div>
+
+
+        <!-- GRÁFICA KITS -->
 
         <div class="chart-card">
 
             <div class="chart-header">
-                <h3>Kits con mayor ahorro ($)</h3>
+
+                <h3>
+                    Kits con mayor ahorro ($)
+                </h3>
+
             </div>
 
             <canvas id="kitsChart"></canvas>
 
         </div>
 
+
     </section>
 
-    <!-- GRAFICAS -->
+
+    <!-- ==========================================
+         GRÁFICAS
+    =========================================== -->
 
     <section class="charts-grid">
+
+
+        <!-- PRODUCTOS POR CATEGORÍA -->
 
         <div class="chart-card">
 
             <div class="chart-header">
-                <h3>Productos por Categoría</h3>
+
+                <h3>
+                    Productos por Categoría
+                </h3>
+
             </div>
 
             <canvas id="categoriasChart"></canvas>
 
         </div>
 
+
+        <!-- NUEVOS USUARIOS -->
+
         <div class="chart-card">
 
             <div class="chart-header">
-                <h3>Nuevos Usuarios</h3>
+
+                <h3>
+                    Nuevos Usuarios
+                </h3>
+
             </div>
 
             <canvas id="usuariosChart"></canvas>
 
         </div>
 
+
     </section>
 
-    <!-- KITS RECIENTES -->
+
+    <!-- ==========================================
+         KITS RECIENTES
+    =========================================== -->
 
     <section class="panel">
 
         <div class="panel-header">
-            <h3>Kits Recientes</h3>
+
+            <h3>
+                Kits Recientes
+            </h3>
+
         </div>
+
 
         <div class="table-wrapper">
 
             <table>
 
                 <thead>
+
                     <tr>
-                        <th>Kit</th>
-                        <th>Precio final</th>
-                        <th>Ahorro</th>
-                        <th>Stock</th>
-                        <th>Estado</th>
+
+                        <th>
+                            Kit
+                        </th>
+
+                        <th>
+                            Precio final
+                        </th>
+
+                        <th>
+                            Ahorro
+                        </th>
+
+                        <th>
+                            Stock
+                        </th>
+
+                        <th>
+                            Estado
+                        </th>
+
                     </tr>
+
                 </thead>
+
 
                 <tbody>
 
                     {% for kit in kits_recientes %}
-                    <tr {% if kit.stock <= umbral_stock_bajo %}class="fila-alerta"{% endif %}>
-                        <td>{{ kit.nombre }}</td>
-                        <td>${{ kit.precio_final|floatformat:0 }}</td>
-                        <td>${{ kit.ahorro|floatformat:0 }}</td>
+
+                    <tr
+                        {% if kit.stock <= umbral_stock_bajo %}
+                            class="fila-alerta"
+                        {% endif %}
+                    >
+
+
+                        <!-- NOMBRE -->
+
                         <td>
-                            <span {% if kit.stock <= umbral_stock_bajo %}class="stock-bajo"{% endif %}>
+                            {{ kit.nombre }}
+                        </td>
+
+
+                        <!-- PRECIO -->
+
+                        <td>
+                            ${{ kit.precio_final|floatformat:0 }}
+                        </td>
+
+
+                        <!-- AHORRO -->
+
+                        <td>
+                            ${{ kit.ahorro|floatformat:0 }}
+                        </td>
+
+
+                        <!-- STOCK -->
+
+                        <td>
+
+                            <span
+                                {% if kit.stock <= umbral_stock_bajo %}
+                                    class="stock-bajo"
+                                {% endif %}
+                            >
+
                                 {{ kit.stock }}
-                                {% if kit.stock <= umbral_stock_bajo %}⚠{% endif %}
+
+                                {% if kit.stock <= umbral_stock_bajo %}
+                                    ⚠
+                                {% endif %}
+
                             </span>
+
                         </td>
+
+
+                        <!-- ESTADO -->
+
                         <td>
+
                             {% if kit.activo %}
-                            <span class="badge-activo">Activo</span>
+
+                                <span class="badge-activo">
+                                    Activo
+                                </span>
+
                             {% else %}
-                            <span class="badge-inactivo">Inactivo</span>
+
+                                <span class="badge-inactivo">
+                                    Inactivo
+                                </span>
+
                             {% endif %}
+
                         </td>
+
+
                     </tr>
+
                     {% empty %}
+
                     <tr>
-                        <td colspan="5" class="tabla-vacia">Aún no hay kits creados.</td>
+
+                        <td
+                            colspan="5"
+                            class="tabla-vacia"
+                        >
+                            Aún no hay kits creados.
+                        </td>
+
                     </tr>
+
                     {% endfor %}
 
                 </tbody>
@@ -480,36 +1181,88 @@
 
     </section>
 
-    <!-- USUARIOS -->
+
+    <!-- ==========================================
+         ÚLTIMOS USUARIOS
+    =========================================== -->
 
     <section class="panel">
 
         <div class="panel-header">
-            <h3>Últimos Usuarios Registrados</h3>
+
+            <h3>
+                Últimos Usuarios Registrados
+            </h3>
+
         </div>
+
 
         <div class="table-wrapper">
 
             <table>
 
                 <thead>
+
                     <tr>
-                        <th>Usuario</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th>Fecha</th>
+
+                        <th>
+                            Usuario
+                        </th>
+
+                        <th>
+                            Correo
+                        </th>
+
+                        <th>
+                            Rol
+                        </th>
+
+                        <th>
+                            Fecha
+                        </th>
+
                     </tr>
+
                 </thead>
+
 
                 <tbody>
 
                     {% for usuario in usuarios_recientes %}
+
                     <tr>
-                        <td>{{ usuario.username }}</td>
-                        <td>{{ usuario.email }}</td>
-                        <td>{{ usuario.rol }}</td>
-                        <td>{{ usuario.date_joined|date:"d/m/Y" }}</td>
+
+                        <td>
+                            {{ usuario.username }}
+                        </td>
+
+                        <td>
+                            {{ usuario.email }}
+                        </td>
+
+                        <td>
+                            {{ usuario.rol }}
+                        </td>
+
+                        <td>
+                            {{ usuario.date_joined|date:"d/m/Y" }}
+                        </td>
+
                     </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="4"
+                            class="tabla-vacia"
+                        >
+                            No hay usuarios registrados.
+                        </td>
+
+                    </tr>
+
                     {% endfor %}
 
                 </tbody>
@@ -520,65 +1273,147 @@
 
     </section>
 
+
 </div>
+
+
+<!-- ==========================================
+     CHART.JS
+=========================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
 <script>
 
-new Chart(
-    document.getElementById("categoriasChart"),
-    {
-        type: "doughnut",
-        data: {
-            labels: {{ categorias_labels|safe }},
-            datasets: [{
-                data: {{ categorias_data|safe }}
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    }
-);
+    /* ==========================================
+       PRODUCTOS POR CATEGORÍA
+    =========================================== */
 
-new Chart(
-    document.getElementById("usuariosChart"),
-    {
-        type: "line",
-        data: {
-            labels: {{ meses|safe }},
-            datasets: [{
-                label: "Usuarios",
-                data: {{ usuarios_mes|safe }},
-                tension: .4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    }
-);
+    new Chart(
 
-new Chart(
-    document.getElementById("kitsChart"),
-    {
-        type: "bar",
-        data: {
-            labels: {{ kits_labels|safe }},
-            datasets: [{
-                label: "Ahorro ($)",
-                data: {{ kits_data|safe }}
-            }]
-        },
-        options: {
-            responsive: true,
-            indexAxis: "y"
+        document.getElementById("categoriasChart"),
+
+        {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: {{ categorias_labels|safe }},
+
+                datasets: [
+
+                    {
+
+                        data: {{ categorias_data|safe }}
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true
+
+            }
+
         }
-    }
-);
+
+    );
+
+
+    /* ==========================================
+       NUEVOS USUARIOS
+    =========================================== */
+
+    new Chart(
+
+        document.getElementById("usuariosChart"),
+
+        {
+
+            type: "line",
+
+            data: {
+
+                labels: {{ meses|safe }},
+
+                datasets: [
+
+                    {
+
+                        label: "Usuarios",
+
+                        data: {{ usuarios_mes|safe }},
+
+                        tension: 0.4,
+
+                        fill: true
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true
+
+            }
+
+        }
+
+    );
+
+
+    /* ==========================================
+       KITS CON MAYOR AHORRO
+    =========================================== */
+
+    new Chart(
+
+        document.getElementById("kitsChart"),
+
+        {
+
+            type: "bar",
+
+            data: {
+
+                labels: {{ kits_labels|safe }},
+
+                datasets: [
+
+                    {
+
+                        label: "Ahorro ($)",
+
+                        data: {{ kits_data|safe }}
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                indexAxis: "y"
+
+            }
+
+        }
+
+    );
 
 </script>
 
+
 {% endblock %}
+
