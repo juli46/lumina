@@ -453,3 +453,19 @@ button:hover{
 .google-login i {
     font-size: 18px;
 }
+.forgot-password {
+    display: block;
+    width: 100%;
+    margin: -5px 0 18px;
+    text-align: right;
+    color: #ff4f87;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.forgot-password:hover {
+    color: #e83d73;
+    text-decoration: underline;
+}

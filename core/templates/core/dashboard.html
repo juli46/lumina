@@ -14,41 +14,40 @@
     <link rel="icon" href="{% static 'img/logos/logo2.png' %}">
 
 
+    <!-- =====================================
+         CONFIG GUARDADA (tema / color / fuente)
+         Se aplica ANTES del CSS y de forma síncrona
+         sobre <html>, así no hay parpadeo al navegar.
+    ===================================== -->
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var theme = localStorage.getItem("theme");
+            var primary = localStorage.getItem("primary");
+            var font = localStorage.getItem("font");
+
+            if (theme === "dark") {
+                root.classList.add("dark");
+            }
+
+            if (primary) {
+                root.style.setProperty("--primary", primary);
+            }
+
+            if (font) {
+                root.style.fontSize = font;
+            }
+        })();
+    </script>
+
+
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
 
-    <link 
+    <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     >
-
-
-
-    <script>
-
-        (function(){
-
-            const theme = localStorage.getItem("theme");
-
-
-            if(theme === "dark"){
-
-                document.addEventListener(
-                    "DOMContentLoaded",
-                    function(){
-
-                        document.body.classList.add("dark");
-
-                    }
-                );
-
-            }
-
-
-        })();
-
-
-    </script>
 
 
 </head>
@@ -57,6 +56,17 @@
 
 <body>
 
+
+
+<!-- =====================================
+     BOTÓN MENÚ (solo visible en responsive)
+===================================== -->
+
+<button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Abrir menú">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 
 <div class="layout">
@@ -82,7 +92,7 @@
 {% if request.user.foto %}
 
 
-<img 
+<img
     src="{{ request.user.foto.url }}"
     alt="Administrador"
 >
@@ -137,7 +147,7 @@ Administrador
 
 
 
-<i class="fa-solid fa-chevron-down profile-arrow"></i> 
+<i class="fa-solid fa-chevron-down profile-arrow"></i>
 
 
 

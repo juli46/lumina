@@ -1,25 +1,3 @@
-"""
-views.py — reorganizado por secciones.
-
-Cambios respecto del original (solo de organización, no de lógica):
-- Se unificaron todos los imports en un único bloque al inicio (antes estaban
-  repetidos en 3 puntos distintos del archivo).
-- Se eliminó la definición duplicada de `obtener_margen_por_monto` (había dos
-  versiones; la primera tenía un bug de orden y nunca llegaba a ejecutarse
-  porque la segunda la pisaba — se conservó la segunda, que es la que
-  realmente corría).
-- Se eliminó la definición duplicada de `UMBRAL_STOCK_BAJO` (mismo valor en
-  ambos casos, sin efecto funcional).
-- Se eliminó la definición duplicada de `dashboard_pedido_estado`. OJO: las
-  dos versiones hacían cosas distintas (una validaba `request.user.rol ==
-  "admin"` y tocaba `pedido.estado`; la otra toca `estado_envio` y NO valida
-  admin). Como en Python la última definición es la que queda activa, se
-  conservó la segunda (la de envío) porque es la que realmente se ejecutaba
-  en producción — pero esa versión no tiene el chequeo de admin. Vale la
-  pena revisar si eso fue intencional.
-- Las funciones y bloques de código en sí no fueron modificados, solo
-  reordenados en secciones temáticas.
-"""
 
 from datetime import date, datetime, timedelta
 import hashlib
@@ -57,6 +35,13 @@ from .models import (
     Pedido, PedidoItem, PedidoItemKitSeleccion, PostIt, Pregunta, Producto,
     ProductoImagen, ProductoVideo, Recordatorio, RecomendacionEmprendimiento,
     ReporteEmprendimiento, Resultado, ResultadoUsuario, Test, Usuario, Variante,
+)
+
+from django.contrib.auth.views import (
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
 )
 
 logger = logging.getLogger(__name__)
@@ -586,19 +571,41 @@ def editar_usuario(request, id):
         "usuario": usuario,
     })
 
-
 @login_required
 @admin_required
 @require_POST
 def eliminar_usuario(request, user_id):
     usuario = get_object_or_404(Usuario, id=user_id)
 
+    # Evitar que el administrador se elimine a sí mismo
     if request.user.id == usuario.id:
+        messages.warning(
+            request,
+            "No puedes eliminar tu propia cuenta."
+        )
         return redirect("usuario_d")
 
-    usuario.delete()
-    return redirect("usuario_d")
+    # Si tiene pedidos, se desactiva en lugar de eliminarse
+    if usuario.pedidos.exists():
+        usuario.estado = "inactivo"
+        usuario.is_active = False
+        usuario.save(update_fields=["estado", "is_active"])
 
+        messages.warning(
+            request,
+            f"El usuario {usuario.username} tiene pedidos asociados. "
+            "La cuenta fue desactivada para conservar su historial de pedidos."
+        )
+    else:
+        # Si no tiene pedidos, se elimina normalmente
+        usuario.delete()
+
+        messages.success(
+            request,
+            f"El usuario {usuario.username} fue eliminado correctamente."
+        )
+
+    return redirect("usuario_d")
 
 @login_required
 @admin_required

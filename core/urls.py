@@ -2,6 +2,8 @@ from django.urls import path, include
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from django.urls import path, include, reverse_lazy
 
 
 urlpatterns = [
@@ -19,6 +21,45 @@ urlpatterns = [
     # ==================================================
     path('registro/', views.registro, name='registro'),
     path('login/', views.login_view, name='login'),
+    # ==================================================
+# RECUPERACIÓN DE CONTRASEÑA
+# ==================================================
+
+path(
+    'recuperar-contrasena/',
+    auth_views.PasswordResetView.as_view(
+        template_name='core/password_reset.html',
+        email_template_name='core/password_reset_email.html',
+        subject_template_name='core/password_reset_subject.txt',
+        success_url='/recuperar-contrasena/enviado/'
+    ),
+    name='password_reset'
+),
+
+path(
+    'recuperar-contrasena/enviado/',
+    auth_views.PasswordResetDoneView.as_view(
+        template_name='core/password_reset_done.html'
+    ),
+    name='password_reset_done'
+),
+
+path(
+    'recuperar-contrasena/<uidb64>/<token>/',
+    auth_views.PasswordResetConfirmView.as_view(
+        template_name='core/password_reset_confirm.html',
+        success_url='/recuperar-contrasena/completado/'
+    ),
+    name='password_reset_confirm'
+),
+
+path(
+    'recuperar-contrasena/completado/',
+    auth_views.PasswordResetCompleteView.as_view(
+        template_name='core/password_reset_complete.html'
+    ),
+    name='password_reset_complete'
+),
     path('logout/', views.logout_view, name='logout'),
     path('validar-email/', views.validar_email, name='validar_email'),
 
