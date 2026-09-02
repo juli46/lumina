@@ -15,6 +15,11 @@ urlpatterns = [
     path('contacto/', views.contacto, name='contacto'),
     path('tips/', views.tips, name='tips'),
     path('emprender/', views.emprender, name='emprender'),
+    path(
+    "terminos-y-condiciones/",
+    views.terminos,
+    name="terminos"
+),
 
     # ==================================================
     # AUTENTICACIÓN Y REGISTRO

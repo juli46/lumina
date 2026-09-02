@@ -28,68 +28,175 @@
         <div class="edit-card">
 
             <div class="edit-header">
-
                 <div class="edit-icon">
                     <i class="fa-solid fa-user-pen"></i>
                 </div>
-
                 <h1>Editar Perfil</h1>
-
-                <p>
-                    Mantén tu información actualizada para una mejor experiencia en Lúmina ✨
-                </p>
-
+                <p>Mantén tu información actualizada para una mejor experiencia en Lúmina ✨</p>
             </div>
 
-            <form method="POST" id="perfilForm" enctype="multipart/form-data" novalidate>
-
-                {% csrf_token %}
-
-                {% if form.errors %}
-                <div class="form-errors">
-                    {{ form.errors }}
-                </div>
-                {% endif %}
-
-                <div class="form-group">
-                    <label>Usuario</label>
-                    {{ form.username }}
-                </div>
-
-                <div class="form-group">
-                    <label>Correo electrónico</label>
-                    {{ form.email }}
-                </div>
-
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    {{ form.telefono }}
-                </div>
-
-                <div class="form-group">
-                    <label>Foto de perfil</label>
-                    {{ form.foto }}
-                </div>
-
-                {% if request.user.foto %}
-                <div class="current-photo">
-                    <img src="{{ request.user.foto.url }}" alt="Foto actual">
-                </div>
-                {% endif %}
-
-                <button type="submit" class="save-btn">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Guardar cambios
+            <!-- PESTAÑAS -->
+            <div class="tabs">
+                <button type="button" class="tab-btn active" data-tab="datos">
+                    <i class="fa-solid fa-id-card"></i> Mis datos
                 </button>
+                <button type="button" class="tab-btn" data-tab="password">
+                    <i class="fa-solid fa-lock"></i> Contraseña
+                </button>
+            </div>
 
-            </form>
+            <!-- TAB: DATOS PERSONALES -->
+            <div class="tab-content active" id="tab-datos">
+                <form method="POST" id="perfilForm" enctype="multipart/form-data" novalidate>
+
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="perfil">
+
+                    {% if form.errors %}
+                    <div class="form-errors">
+                        {{ form.errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        {{ form.username }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correo electrónico</label>
+                        {{ form.email }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        {{ form.telefono }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Foto de perfil</label>
+                        <label class="photo-upload" for="{{ form.foto.id_for_label }}">
+                            <i class="fa-solid fa-camera"></i>
+                            <span id="photo-filename">Elegir una foto...</span>
+                        </label>
+                        {{ form.foto }}
+                    </div>
+
+                    <div class="current-photo">
+                        {% if request.user.foto %}
+                        <img src="{{ request.user.foto.url }}" alt="Foto actual" id="photo-preview">
+                        {% else %}
+                        <img src="" alt="Vista previa" id="photo-preview" style="display:none;">
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="save-btn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Guardar cambios
+                    </button>
+                </form>
+            </div>
+
+            <!-- TAB: CAMBIAR CONTRASEÑA -->
+            <div class="tab-content" id="tab-password">
+                <form method="POST" id="passwordForm" novalidate>
+
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="password">
+
+                    {% if password_form.errors %}
+                    <div class="form-errors">
+                        {{ password_form.errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label>Contraseña actual</label>
+                        <div class="password-wrapper">
+                            {{ password_form.old_password }}
+                            <i class="fa-solid fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nueva contraseña</label>
+                        <div class="password-wrapper">
+                            {{ password_form.new_password1 }}
+                            <i class="fa-solid fa-eye toggle-password"></i>
+                        </div>
+                        <small class="field-hint">Mínimo 8 caracteres, evita contraseñas muy comunes.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirmar nueva contraseña</label>
+                        <div class="password-wrapper">
+                            {{ password_form.new_password2 }}
+                            <i class="fa-solid fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="save-btn">
+                        <i class="fa-solid fa-key"></i>
+                        Actualizar contraseña
+                    </button>
+                </form>
+            </div>
 
         </div>
 
     </div>
+
     <!-- VALIDACIONES -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/validaciones.js' %}"></script>
+
+    <script>
+        // Cambio de pestañas
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Mostrar/ocultar contraseña
+        document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const input = icon.previousElementSibling;
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        });
+
+        // Vista previa de la foto seleccionada
+        const fotoInput = document.getElementById('{{ form.foto.id_for_label }}');
+        if (fotoInput) {
+            fotoInput.addEventListener('change', function () {
+                const file = this.files[0];
+                const preview = document.getElementById('photo-preview');
+                const filenameLabel = document.getElementById('photo-filename');
+                if (file) {
+                    filenameLabel.textContent = file.name;
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Si el formulario de contraseña tiene errores, abrir esa pestaña automáticamente
+        {% if password_form.errors %}
+        document.querySelector('.tab-btn[data-tab="password"]').click();
+        {% endif %}
+    </script>
+
 </body>
 
 </html>

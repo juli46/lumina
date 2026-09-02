@@ -457,23 +457,54 @@ def logout_view(request):
 # =========================
 # PERFIL Y CUENTA
 # =========================
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
 
 @login_required
 def editar_perfil(request):
     if request.method == "POST":
-        form = EditarPerfilForm(
-            request.POST,
-            request.FILES,
-            instance=request.user,
-        )
+        form_type = request.POST.get("form_type")
 
-        if form.is_valid():
-            form.save()
-            return redirect("mi_cuenta")
+        if form_type == "perfil":
+            form = EditarPerfilForm(
+                request.POST,
+                request.FILES,
+                instance=request.user,
+            )
+            password_form = PasswordChangeForm(user=request.user)
+
+            if form.is_valid():
+                form.save()
+                return redirect("mi_cuenta")
+
+        elif form_type == "password":
+            form = EditarPerfilForm(instance=request.user)
+            password_form = PasswordChangeForm(
+                user=request.user,
+                data=request.POST,
+            )
+
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)  # evita que se cierre la sesión
+                return redirect("mi_cuenta")
+
+        else:
+            form = EditarPerfilForm(instance=request.user)
+            password_form = PasswordChangeForm(user=request.user)
     else:
         form = EditarPerfilForm(instance=request.user)
+        password_form = PasswordChangeForm(user=request.user)
 
-    return render(request, "core/editar_perfil.html", {"form": form})
+    return render(
+        request,
+        "core/editar_perfil.html",
+        {
+            "form": form,
+            "password_form": password_form,
+        },
+    )
 
 
 def validar_email(request):
@@ -5834,3 +5865,10 @@ def eliminar_reporte_emprendimiento(request, id):
     reporte.delete()
     messages.success(request, "Reporte eliminado.")
     return redirect("mi_cuenta")
+
+# =====================================================================
+# Terminos y condiciones
+# =====================================================================
+
+def terminos(request):
+    return render(request, "core/terminos.html")
