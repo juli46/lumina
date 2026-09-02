@@ -34,7 +34,7 @@ from .models import (
     Galeria, IdeaContenido, Kit, KitProducto, Marca, NotaAdmin, Opcion, Pago,
     Pedido, PedidoItem, PedidoItemKitSeleccion, PostIt, Pregunta, Producto,
     ProductoImagen, ProductoVideo, Recordatorio, RecomendacionEmprendimiento,
-    ReporteEmprendimiento, Resultado, ResultadoUsuario, Test, Usuario, Variante,
+    ReporteEmprendimiento, Resultado, ResultadoUsuario, Test, Usuario, Variante, Proveedor,
 )
 
 from django.contrib.auth.views import (
@@ -5872,3 +5872,167 @@ def eliminar_reporte_emprendimiento(request, id):
 
 def terminos(request):
     return render(request, "core/terminos.html")
+
+# =====================================================================
+# Proveedores
+# =====================================================================
+@login_required
+@admin_required
+def dashboard_proveedores(request, id=None):
+
+    proveedor = None
+
+    if id:
+        proveedor = get_object_or_404(
+            Proveedor,
+            id=id
+        )
+
+    if request.method == 'POST':
+
+        marca = request.POST.get('marca', '').strip()
+        encargado = request.POST.get('encargado', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        correo = request.POST.get('correo', '').strip()
+        observaciones = request.POST.get(
+            'observaciones',
+            ''
+        ).strip()
+
+        errores = []
+
+        # MARCA
+        if not marca:
+            errores.append(
+                'La marca es obligatoria.'
+            )
+
+        elif len(marca) < 2:
+            errores.append(
+                'La marca debe tener al menos 2 caracteres.'
+            )
+
+        # ENCARGADO
+        if not encargado:
+            errores.append(
+                'El nombre del encargado es obligatorio.'
+            )
+
+        elif not all(
+            caracter.isalpha() or caracter.isspace()
+            for caracter in encargado
+        ):
+            errores.append(
+                'El encargado solo puede contener letras y espacios.'
+            )
+
+        # TELÉFONO
+        if not telefono:
+            errores.append(
+                'El teléfono es obligatorio.'
+            )
+
+        elif not telefono.isdigit():
+            errores.append(
+                'El teléfono solo puede contener números.'
+            )
+
+        elif not 7 <= len(telefono) <= 10:
+            errores.append(
+                'El teléfono debe tener entre 7 y 10 números.'
+            )
+
+        # CORREO
+        from django.core.validators import validate_email
+        from django.core.exceptions import ValidationError
+
+        if not correo:
+            errores.append(
+                'El correo electrónico es obligatorio.'
+            )
+        else:
+            try:
+                validate_email(correo)
+            except ValidationError:
+                errores.append(
+                    'Ingresa un correo electrónico válido.'
+                )
+
+        # MOSTRAR ERRORES
+        if errores:
+
+            for error in errores:
+                messages.error(
+                    request,
+                    error
+                )
+
+        else:
+
+            if proveedor:
+
+                proveedor.marca = marca
+                proveedor.encargado = encargado
+                proveedor.telefono = telefono
+                proveedor.correo = correo
+                proveedor.observaciones = observaciones
+                proveedor.activo = (
+                    request.POST.get('activo') == 'on'
+                )
+
+                proveedor.save()
+
+                messages.success(
+                    request,
+                    'Proveedor actualizado correctamente.'
+                )
+
+            else:
+
+                Proveedor.objects.create(
+                    marca=marca,
+                    encargado=encargado,
+                    telefono=telefono,
+                    correo=correo,
+                    observaciones=observaciones,
+                    activo=True
+                )
+
+                messages.success(
+                    request,
+                    'Proveedor agregado correctamente.'
+                )
+
+            return redirect(
+                'dashboard_proveedores'
+            )
+
+    proveedores = Proveedor.objects.all().order_by('marca')
+
+    return render(
+        request,
+        'core/proveedores.html',
+        {
+            'proveedores': proveedores,
+            'proveedor': proveedor
+        }
+    )
+    
+@login_required
+@admin_required
+@require_POST
+def eliminar_proveedor(request, id):
+
+    proveedor = get_object_or_404(
+        Proveedor,
+        id=id
+    )
+
+    proveedor.delete()
+
+    messages.success(
+        request,
+        'Proveedor eliminado correctamente.'
+    )
+
+    return redirect('dashboard_proveedores')

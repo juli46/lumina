@@ -7,158 +7,241 @@
 
 <div class="config-container">
 
-<h1>⚙️ Configuración</h1>
-{% if messages %}
+    <div class="config-header">
+        <h1><i class="fa-solid fa-gear"></i> Configuración</h1>
+        <p>Personaliza tu experiencia y mantén tu cuenta segura</p>
+    </div>
+
+    {% if messages %}
     <div class="notification-container">
-
         {% for message in messages %}
-            <div class="notification {{ message.tags }}">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>{{ message }}</span>
-            </div>
+        <div class="notification {{ message.tags }}">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>{{ message }}</span>
+        </div>
         {% endfor %}
-
     </div>
-{% endif %}
-<!-- APARIENCIA -->
-<div class="config-card">
-
-    <h2>Apariencia</h2>
-
-    <div class="option">
-        <label>Modo</label>
-        <select id="themeSelect">
-            <option value="light">Claro ☀️</option>
-            <option value="dark">Oscuro 🌙</option>
-        </select>
-    </div>
-
-    <div class="option">
-        <label>Color principal</label>
-        <select id="colorSelect">
-            <option value="#df6d86">Rosa 💗</option>
-            <option value="#7c3aed">Morado 💜</option>
-            <option value="#3b82f6">Azul 💙</option>
-            <option value="#22c55e">Verde 💚</option>
-            <option value="#f97316">Naranja 🧡</option>
-            <option value="#ef4444">Rojo ❤️</option>
-            <option value="#06b6d4">Cian 🩵</option>
-        </select>
-    </div>
-
-    <div class="option">
-        <label>Tamaño de fuente</label>
-        <select id="fontSizeSelect">
-            <option value="13px">Pequeño</option>
-            <option value="16px" selected>Medio</option>
-            <option value="21px">Grande</option>
-        </select>
-    </div>
-
-</div>
-<!-- PERFIL -->
-<div class="config-card">
-
-    <h2>Editar perfil</h2>
-
-    <form method="POST"
-          enctype="multipart/form-data"
-          id="perfilForm">
-
-        {% csrf_token %}
-
-        {% if form_perfil.errors %}
-            <div class="form-errors">
-                {{ form_perfil.errors }}
-            </div>
-        {% endif %}
-
-        <div class="option">
-            <label>Usuario</label>
-            {{ form_perfil.username }}
-        </div>
-
-        <div class="option">
-            <label>Correo electrónico</label>
-            {{ form_perfil.email }}
-        </div>
-
-        <div class="option">
-            <label>Teléfono</label>
-            {{ form_perfil.telefono }}
-        </div>
-
-        <div class="option">
-            <label>Foto de perfil</label>
-            {{ form_perfil.foto }}
-        </div>
-
-        <button type="submit" class="save-btn">
-            <i class="fa-solid fa-floppy-disk"></i>
-            Guardar cambios
-        </button>
-
-        <div class="form-message"></div>
-
-    </form>
-
-</div>
-
-<!-- CAMBIAR CONTRASEÑA -->
-<div class="config-card">
-
-    <h2>🔐 Cambiar contraseña</h2>
-
-    {% if form_password.errors %}
-        <div class="form-errors">
-            {{ form_password.errors }}
-        </div>
     {% endif %}
 
-    <form method="POST" id="passwordForm">
-    {% csrf_token %}
-    <div class="option">
-    <label>Contraseña actual</label>
+    <!-- APARIENCIA -->
+    <div class="config-card">
 
-    <div class="password-wrapper">
-        {{ form_password.password_actual }}
-        <i class="fa-solid fa-eye toggle-password"></i>
-    </div>
-</div>
-
-<div class="option">
-    <label>Nueva contraseña</label>
-
-            <div class="password-wrapper">
-                {{ form_password.password_nueva }}
-                <i class="fa-solid fa-eye toggle-password"></i>
+        <div class="card-header">
+            <div class="card-icon icon-gold"><i class="fa-solid fa-palette"></i></div>
+            <div>
+                <h2>Apariencia</h2>
+                <p class="card-subtitle">Ajusta cómo se ve tu panel</p>
             </div>
         </div>
 
         <div class="option">
-            <label>Confirmar contraseña</label>
+            <label for="themeSelect">Modo</label>
+            <select id="themeSelect">
+                <option value="light">Claro ☀️</option>
+                <option value="dark">Oscuro 🌙</option>
+            </select>
+        </div>
 
-            <div class="password-wrapper">
-                {{ form_password.password_confirmar }}
-                <i class="fa-solid fa-eye toggle-password"></i>
+        <div class="option">
+            <label for="colorSelect">Color principal</label>
+            <select id="colorSelect">
+                <option value="#df6d86">Rosa 💗</option>
+                <option value="#ffa5b4">Rosa claro 🌸</option>
+                <option value="#7c3aed">Morado 💜</option>
+                <option value="#3b82f6">Azul 💙</option>
+                <option value="#22c55e">Verde 💚</option>
+                <option value="#f97316">Naranja 🧡</option>
+                <option value="#ef4444">Rojo ❤️</option>
+                <option value="#06b6d4">Cian 🩵</option>
+            </select>
+        </div>
+
+        <div class="option">
+            <label for="fontSizeSelect">Tamaño de fuente</label>
+            <select id="fontSizeSelect">
+                <option value="13px">Pequeño</option>
+                <option value="16px" selected>Medio</option>
+                <option value="21px">Grande</option>
+            </select>
+        </div>
+
+    </div>
+
+    <!-- PERFIL -->
+    <div class="config-card">
+
+        <div class="card-header">
+            <div class="card-icon icon-pink"><i class="fa-solid fa-user-pen"></i></div>
+            <div>
+                <h2>Editar perfil</h2>
+                <p class="card-subtitle">Tu información pública en Lúmina</p>
             </div>
         </div>
 
-        <button type="submit" class="save-btn">
-            <i class="fa-solid fa-lock"></i>
-            Cambiar contraseña
-        </button>
-    <div class="form-message"></div>
-    </form>
+        <form method="POST" enctype="multipart/form-data" id="perfilForm" novalidate>
+            {% csrf_token %}
 
-</div>
+            {% if form_perfil.non_field_errors %}
+            <div class="form-errors">{{ form_perfil.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="option">
+                <label for="{{ form_perfil.username.id_for_label }}">Usuario</label>
+                {{ form_perfil.username }}
+                {% if form_perfil.username.errors %}
+                <span class="error-msg">{{ form_perfil.username.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="option">
+                <label for="{{ form_perfil.email.id_for_label }}">Correo electrónico</label>
+                {{ form_perfil.email }}
+                {% if form_perfil.email.errors %}
+                <span class="error-msg">{{ form_perfil.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="option">
+                <label for="{{ form_perfil.telefono.id_for_label }}">Teléfono</label>
+                {{ form_perfil.telefono }}
+                {% if form_perfil.telefono.errors %}
+                <span class="error-msg">{{ form_perfil.telefono.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="option">
+                <label for="{{ form_perfil.foto.id_for_label }}">Foto de perfil</label>
+                <label class="photo-upload" for="{{ form_perfil.foto.id_for_label }}">
+                    <i class="fa-solid fa-camera"></i>
+                    <span id="photo-filename">Elegir una foto...</span>
+                </label>
+                {{ form_perfil.foto }}
+                {% if form_perfil.foto.errors %}
+                <span class="error-msg">{{ form_perfil.foto.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="save-btn">
+                <i class="fa-solid fa-floppy-disk"></i>
+                Guardar cambios
+            </button>
+
+            <div class="form-message" aria-live="polite"></div>
+        </form>
+
+    </div>
+
+    <!-- CAMBIAR CONTRASEÑA -->
+    <div class="config-card">
+
+        <div class="card-header">
+            <div class="card-icon icon-pink"><i class="fa-solid fa-lock"></i></div>
+            <div>
+                <h2>Cambiar contraseña</h2>
+                <p class="card-subtitle">Mantén tu cuenta protegida</p>
+            </div>
+        </div>
+
+        <form method="POST" id="passwordForm" novalidate>
+            {% csrf_token %}
+
+            {% if form_password.non_field_errors %}
+            <div class="form-errors">{{ form_password.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="option">
+                <label for="{{ form_password.password_actual.id_for_label }}">Contraseña actual</label>
+                <div class="password-wrapper">
+                    {{ form_password.password_actual }}
+                    <i class="fa-solid fa-eye toggle-password"></i>
+                </div>
+                {% if form_password.password_actual.errors %}
+                <span class="error-msg">{{ form_password.password_actual.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="option">
+                <label for="{{ form_password.password_nueva.id_for_label }}">Nueva contraseña</label>
+                <div class="password-wrapper">
+                    {{ form_password.password_nueva }}
+                    <i class="fa-solid fa-eye toggle-password"></i>
+                </div>
+                <div class="strength-meter">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                <small class="field-hint" id="strengthHint">Mínimo 8 caracteres, evita contraseñas comunes.</small>
+                {% if form_password.password_nueva.errors %}
+                <span class="error-msg">{{ form_password.password_nueva.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="option">
+                <label for="{{ form_password.password_confirmar.id_for_label }}">Confirmar contraseña</label>
+                <div class="password-wrapper">
+                    {{ form_password.password_confirmar }}
+                    <i class="fa-solid fa-eye toggle-password"></i>
+                </div>
+                {% if form_password.password_confirmar.errors %}
+                <span class="error-msg">{{ form_password.password_confirmar.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="save-btn">
+                <i class="fa-solid fa-lock"></i>
+                Cambiar contraseña
+            </button>
+
+            <div class="form-message" aria-live="polite"></div>
+        </form>
+
+    </div>
 
 </div>
 
 {% endblock %}
 
 {% block scripts %}
-
 <script src="{% static 'js/validaciones.js' %}"></script>
+<script>
+    // Vista previa del nombre de archivo de foto
+    const fotoInput = document.getElementById('{{ form_perfil.foto.id_for_label }}');
+    const filenameLabel = document.getElementById('photo-filename');
+    if (fotoInput && filenameLabel) {
+        fotoInput.addEventListener('change', function () {
+            filenameLabel.textContent = this.files[0] ? this.files[0].name : 'Elegir una foto...';
+        });
+    }
 
+    // Mostrar/ocultar contraseña
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', () => {
+            const input = icon.previousElementSibling;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
+    });
+
+    // Medidor simple de fortaleza de contraseña
+    const nuevaPass = document.getElementById('{{ form_password.password_nueva.id_for_label }}');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthHint = document.getElementById('strengthHint');
+    if (nuevaPass) {
+        nuevaPass.addEventListener('input', () => {
+            const val = nuevaPass.value;
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            const niveles = ['weak', 'weak', 'medium', 'strong', 'strong'];
+            const textos = ['', 'Débil', 'Media', 'Fuerte', 'Fuerte'];
+
+            strengthBar.className = 'strength-bar ' + niveles[score];
+            strengthHint.textContent = val ? textos[score] : 'Mínimo 8 caracteres, evita contraseñas comunes.';
+        });
+    }
+</script>
 {% endblock %}

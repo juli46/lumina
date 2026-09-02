@@ -1,0 +1,664 @@
+{% extends 'core/dashboard.html' %}
+{% load static %}
+
+{% block title %}
+Proveedores | Lúmina
+{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<link rel="stylesheet" href="{% static 'css/proveedores.css' %}">
+
+
+<div class="proveedores-page">
+
+    <!-- ==========================================
+         ENCABEZADO
+    =========================================== -->
+
+    <div class="proveedores-header">
+
+        <div>
+            <span class="section-label">
+                <i class="fa-solid fa-truck-field"></i>
+                GESTIÓN DE PROVEEDORES
+            </span>
+
+            <h1>Proveedores</h1>
+
+            <p>
+                Administra las marcas y contactos que suministran
+                productos a Lúmina.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="btn-primary"
+            onclick="mostrarFormulario()"
+        >
+            <i class="fa-solid fa-plus"></i>
+            Nuevo proveedor
+        </button>
+
+    </div>
+
+
+    <!-- ==========================================
+         RESUMEN
+    =========================================== -->
+
+    <div class="stats-row">
+
+        <div class="stat-card">
+            <div class="stat-icon stat-total">
+                <i class="fa-solid fa-truck-field"></i>
+            </div>
+            <div>
+                <span class="stat-value" id="statTotal">{{ proveedores|length }}</span>
+                <span class="stat-label">Total</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-activos">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <span class="stat-value" id="statActivos">0</span>
+                <span class="stat-label">Activos</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon stat-inactivos">
+                <i class="fa-solid fa-circle-pause"></i>
+            </div>
+            <div>
+                <span class="stat-value" id="statInactivos">0</span>
+                <span class="stat-label">Inactivos</span>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         MENSAJES DE DJANGO
+    =========================================== -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div
+                class="django-message"
+                data-message="{{ message }}"
+                data-tag="{{ message.tags }}"
+            ></div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    <!-- ==========================================
+         PANEL DE FORMULARIO (deslizante)
+    =========================================== -->
+
+    <div
+        class="form-overlay {% if proveedor %}active{% endif %}"
+        id="formOverlay"
+        onclick="ocultarFormulario()"
+    ></div>
+
+    <div
+        class="proveedor-form-panel {% if proveedor %}active{% endif %}"
+        id="formularioProveedor"
+    >
+
+        <div class="form-header">
+
+            <div>
+
+                <span class="section-label">
+                    <i class="fa-solid fa-address-card"></i>
+
+                    {% if proveedor %}
+                        EDITAR PROVEEDOR
+                    {% else %}
+                        NUEVO PROVEEDOR
+                    {% endif %}
+                </span>
+
+                <h2>
+                    {% if proveedor %}
+                        Actualizar información
+                    {% else %}
+                        Registrar proveedor
+                    {% endif %}
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="btn-close-form"
+                onclick="ocultarFormulario()"
+                title="Cerrar"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            id="formProveedor"
+            novalidate
+            action="
+            {% if proveedor %}
+                {% url 'editar_proveedor' proveedor.id %}
+            {% else %}
+                {% url 'dashboard_proveedores' %}
+            {% endif %}
+            "
+        >
+
+            {% csrf_token %}
+
+
+            <div class="form-grid">
+
+                <!-- MARCA -->
+
+                <div class="form-group">
+
+                    <label for="marca">
+                        Marca o Distribuidor
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-tag"></i>
+
+                        <input
+                            type="text"
+                            id="marca"
+                            name="marca"
+                            placeholder="Ej. Prosa"
+                            value="{% if proveedor %}{{ proveedor.marca }}{% endif %}"
+                            minlength="2"
+                            maxlength="100"
+                            autocomplete="organization"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- ENCARGADO -->
+
+                <div class="form-group">
+
+                    <label for="encargado">
+                        Encargado
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-user"></i>
+
+                        <input
+                            type="text"
+                            id="encargado"
+                            name="encargado"
+                            placeholder="Nombre del encargado"
+                            value="{% if proveedor %}{{ proveedor.encargado }}{% endif %}"
+                            maxlength="100"
+                            autocomplete="name"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TELÉFONO -->
+
+                <div class="form-group">
+
+                    <label for="telefono">
+                        Teléfono
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-phone"></i>
+
+                        <input
+                            type="tel"
+                            id="telefono"
+                            name="telefono"
+                            placeholder="Ej. 3001234567"
+                            value="{% if proveedor %}{{ proveedor.telefono }}{% endif %}"
+                            minlength="7"
+                            maxlength="10"
+                            inputmode="numeric"
+                            autocomplete="tel"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- CORREO -->
+
+                <div class="form-group">
+
+                    <label for="correo">
+                        Correo electrónico
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-envelope"></i>
+
+                        <input
+                            type="email"
+                            id="correo"
+                            name="correo"
+                            placeholder="correo@empresa.com"
+                            value="{% if proveedor %}{{ proveedor.correo }}{% endif %}"
+                            maxlength="254"
+                            autocomplete="email"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- OBSERVACIONES -->
+
+                <div class="form-group full-width">
+
+                    <label for="observaciones">
+                        Observaciones
+                    </label>
+
+                    <div class="input-wrapper textarea-wrapper">
+
+                        <i class="fa-solid fa-note-sticky"></i>
+
+                        <textarea
+                            id="observaciones"
+                            name="observaciones"
+                            rows="4"
+                            maxlength="1000"
+                            placeholder="Información adicional del proveedor..."
+                        >{% if proveedor %}{{ proveedor.observaciones }}{% endif %}</textarea>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ESTADO -->
+
+                {% if proveedor %}
+
+                <div class="form-group full-width estado-group">
+
+                    <label>
+                        Estado del proveedor
+                    </label>
+
+                    <label class="switch">
+
+                        <input
+                            type="checkbox"
+                            name="activo"
+                            id="activo"
+                            {% if proveedor.activo %}checked{% endif %}
+                        >
+
+                        <span class="slider"></span>
+
+                        <span class="switch-text">
+                            Activo
+                        </span>
+
+                    </label>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="btn-secondary"
+                    onclick="ocultarFormulario()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+
+                    <i class="fa-solid fa-check"></i>
+
+                    {% if proveedor %}
+                        Actualizar proveedor
+                    {% else %}
+                        Guardar proveedor
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ==========================================
+         TABLA DE PROVEEDORES
+    =========================================== -->
+
+    <div class="proveedores-table-card">
+
+        <div class="table-header">
+
+            <div>
+
+                <span class="section-label">
+                    <i class="fa-solid fa-list"></i>
+                    PROVEEDORES REGISTRADOS
+                </span>
+
+                <h2>
+                    Lista de proveedores
+                </h2>
+
+            </div>
+
+            <div class="table-header-actions">
+
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input
+                        type="text"
+                        id="buscarProveedor"
+                        placeholder="Buscar por marca o encargado..."
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="provider-count">
+                    {{ proveedores|length }}
+                    proveedor{{ proveedores|length|pluralize }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {% if proveedores %}
+
+        <div class="table-responsive">
+
+            <table class="proveedores-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Marca</th>
+
+                        <th>Encargado</th>
+
+                        <th>Teléfono</th>
+
+                        <th>Correo</th>
+
+                        <th>Estado</th>
+
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tablaProveedoresBody">
+
+                    {% for proveedor in proveedores %}
+
+                    <tr>
+
+                        <!-- MARCA -->
+
+                        <td data-label="Marca">
+
+                            <div class="marca-cell">
+
+                                <div class="marca-avatar avatar-{{ forloop.counter0|divisibleby:3|yesno:'a,b,c' }}">
+                                    {{ proveedor.marca|slice:":1"|upper }}
+                                </div>
+
+                                <strong>
+                                    {{ proveedor.marca }}
+                                </strong>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ENCARGADO -->
+
+                        <td data-label="Encargado">
+
+                            <div class="contact-cell">
+
+                                <i class="fa-solid fa-user"></i>
+
+                                {{ proveedor.encargado }}
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- TELÉFONO -->
+
+                        <td data-label="Teléfono">
+
+                            <a
+                                href="tel:{{ proveedor.telefono }}"
+                                class="contact-link"
+                            >
+
+                                <i class="fa-solid fa-phone"></i>
+
+                                {{ proveedor.telefono }}
+
+                            </a>
+
+                        </td>
+
+
+                        <!-- CORREO -->
+
+                        <td data-label="Correo">
+
+                            <a
+                                href="mailto:{{ proveedor.correo }}"
+                                class="contact-link"
+                            >
+
+                                <i class="fa-solid fa-envelope"></i>
+
+                                {{ proveedor.correo }}
+
+                            </a>
+
+                        </td>
+
+
+                        <!-- ESTADO -->
+
+                        <td data-label="Estado">
+
+                            {% if proveedor.activo %}
+
+                                <span class="status-badge activo">
+                                    <i class="fa-solid fa-circle"></i>
+                                    Activo
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge inactivo">
+                                    <i class="fa-solid fa-circle"></i>
+                                    Inactivo
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACCIONES -->
+
+                        <td data-label="Acciones">
+
+                            <div class="acciones">
+
+                                <!-- EDITAR -->
+
+                                <a
+                                    href="{% url 'editar_proveedor' proveedor.id %}"
+                                    class="accion editar"
+                                    title="Editar proveedor"
+                                >
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+
+
+                                <!-- ELIMINAR -->
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'eliminar_proveedor' proveedor.id %}"
+                                    class="form-eliminar-proveedor"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="accion eliminar"
+                                        title="Eliminar proveedor"
+                                    >
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            <p class="no-results" id="noResultados" style="display:none;">
+                No se encontraron proveedores que coincidan con tu búsqueda.
+            </p>
+
+        </div>
+
+        {% else %}
+
+        <!-- ==========================================
+             ESTADO VACÍO
+        =========================================== -->
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                <i class="fa-solid fa-truck-field"></i>
+            </div>
+
+            <h3>
+                No hay proveedores registrados
+            </h3>
+
+            <p>
+                Agrega el primer proveedor para comenzar
+                a administrar los contactos de Lúmina.
+            </p>
+
+            <button
+                type="button"
+                class="btn-primary"
+                onclick="mostrarFormulario()"
+            >
+                <i class="fa-solid fa-plus"></i>
+                Agregar proveedor
+            </button>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ==========================================
+     SWEETALERT2
+=========================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<!-- ==========================================
+     JAVASCRIPT PROVEEDORES
+=========================================== -->
+
+<script src="{% static 'js/proveedores.js' %}"></script>
+
+{% endblock %}

@@ -1,5 +1,6 @@
 {% extends "core/dashboard.html" %}
 {% load static %}
+{% load l10n %}
 
 {% block content %}
 
@@ -141,8 +142,8 @@
                                 onclick="editarRecomendacion(
                                     '{{ recomendacion.id }}',
                                     '{{ recomendacion.nombre|escapejs }}',
-                                    '{{ recomendacion.presupuesto_min }}',
-                                    '{{ recomendacion.presupuesto_max }}',
+                                    '{% localize off %}{{ recomendacion.presupuesto_min }}{% endlocalize %}',
+                                    '{% localize off %}{{ recomendacion.presupuesto_max }}{% endlocalize %}',
                                     '{{ recomendacion.producto_interes|default:"" }}',
                                     '{{ recomendacion.plataforma|default:"" }}',
                                     '{{ recomendacion.recomendacion|default:""|escapejs }}',

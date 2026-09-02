@@ -26,6 +26,67 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach((btn) => {
       btn.addEventListener("click", (e) => e.stopPropagation());
     });
+
+  // --------------------------------------------------
+  // CONTADOR DE CARACTERES DEL MENSAJE
+  // --------------------------------------------------
+  const textarea = document.getElementById("recomendacion");
+  const contador = document.getElementById("recomendacionCount");
+
+  if (textarea && contador) {
+    const actualizarContador = () => {
+      contador.textContent = textarea.value.length;
+    };
+
+    textarea.addEventListener("input", actualizarContador);
+
+    // Por si el modal se abre en modo edición con texto ya cargado
+    actualizarContador();
+  }
+
+  // --------------------------------------------------
+  // VALIDACIÓN DE PRESUPUESTO MIN / MAX
+  // --------------------------------------------------
+  const form = document.getElementById("recomendacionForm");
+  const presupuestoMin = document.getElementById("presupuesto_min");
+  const presupuestoMax = document.getElementById("presupuesto_max");
+  const presupuestoError = document.getElementById("presupuesto-error");
+
+  function presupuestoValido() {
+    if (!presupuestoMin || !presupuestoMax) return true;
+
+    const min = parseFloat(presupuestoMin.value);
+    const max = parseFloat(presupuestoMax.value);
+
+    if (Number.isNaN(min) || Number.isNaN(max) || max < min) {
+      if (presupuestoError) presupuestoError.hidden = false;
+      presupuestoMin.classList.add("input-error");
+      presupuestoMax.classList.add("input-error");
+      return false;
+    }
+
+    if (presupuestoError) presupuestoError.hidden = true;
+    presupuestoMin.classList.remove("input-error");
+    presupuestoMax.classList.remove("input-error");
+    return true;
+  }
+
+  if (presupuestoMin && presupuestoMax) {
+    presupuestoMin.addEventListener("input", presupuestoValido);
+    presupuestoMax.addEventListener("input", presupuestoValido);
+  }
+
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      if (!presupuestoValido()) {
+        e.preventDefault();
+        presupuestoError?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    });
+  }
 });
 
 function abrirFormulario() {
@@ -50,6 +111,16 @@ function abrirFormulario() {
 
   const activa = document.getElementById("activa");
   if (activa) activa.checked = true;
+
+  const contador = document.getElementById("recomendacionCount");
+  if (contador) contador.textContent = "0";
+
+  const presupuestoError = document.getElementById("presupuesto-error");
+  if (presupuestoError) presupuestoError.hidden = true;
+
+  document
+    .querySelectorAll("#presupuesto_min, #presupuesto_max")
+    .forEach((input) => input.classList.remove("input-error"));
 
   mostrarModal();
 }
@@ -85,6 +156,16 @@ function editarRecomendacion(
   document.getElementById("modalTitulo").textContent = "Editar recomendación";
   document.getElementById("modalEyebrow").textContent = "✨ EDITANDO";
   document.getElementById("textoGuardar").textContent = "Guardar cambios";
+
+  const contador = document.getElementById("recomendacionCount");
+  if (contador) contador.textContent = (recomendacionTexto || "").length;
+
+  const presupuestoError = document.getElementById("presupuesto-error");
+  if (presupuestoError) presupuestoError.hidden = true;
+
+  document
+    .querySelectorAll("#presupuesto_min, #presupuesto_max")
+    .forEach((input) => input.classList.remove("input-error"));
 
   mostrarModal();
 }

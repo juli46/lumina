@@ -5,157 +5,562 @@
 
 <link rel="stylesheet" href="{% static 'css/usuarios_d.css' %}">
 
-<div class="page-header">
+<div class="usuarios-page">
 
-    <h1> Usuarios registrados</h1>
+    <!-- ==========================================
+         ENCABEZADO
+    =========================================== -->
+
+    <div class="page-header">
+
+        <div>
+            <span class="section-label">
+                <i class="fa-solid fa-users"></i>
+                GESTIÓN DE USUARIOS
+            </span>
+
+            <h1>Usuarios registrados</h1>
+
+            <p>
+                Administra las cuentas y permisos de las
+                personas que acceden a Lúmina.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="btn-primary"
+            onclick="mostrarFormulario()"
+        >
+            <i class="fa-solid fa-user-plus"></i>
+            Nuevo usuario
+        </button>
+
+    </div>
+
+
+    <!-- ==========================================
+         BARRA SUPERIOR (BUSCADOR + EXPORTAR)
+    =========================================== -->
 
     <div class="top-bar">
 
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Buscar usuario..." autocomplete="off">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Buscar usuario..."
+                autocomplete="off"
+            >
         </div>
 
         <a href="{% url 'exportar_usuarios_excel' %}" class="excel-btn">
-            📊 Exportar Excel
+            <i class="fa-solid fa-file-excel"></i>
+            Exportar Excel
         </a>
 
     </div>
 
-</div>
 
-<div class="table-wrapper">
+    <!-- ==========================================
+         MENSAJES DE DJANGO
+    =========================================== -->
 
-    <table class="users-table">
+    {% if messages %}
 
-        <thead>
-            <tr>
-                <th>Usuario</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
+        {% for message in messages %}
 
-        <tbody id="usersTable">
+            <div
+                class="django-message"
+                data-message="{{ message }}"
+                data-tag="{{ message.tags }}"
+            ></div>
 
-            {% for u in usuarios %}
-            <tr>
+        {% endfor %}
 
-                <td class="user-cell">
-
-                    {% if u.foto %}
-                    <img src="{{ u.foto.url }}" alt="{{ u.username }}" class="avatar">
-                    {% else %}
-                    <div class="avatar-fallback">
-                        {{ u.username|first|upper }}
-                    </div>
-                    {% endif %}
-
-                    <div class="user-info">
-                        <strong>{{ u.username }}</strong>
-                    </div>
-
-                </td>
-
-                <td data-label="Correo">
-                    {{ u.email }}
-                </td>
-
-                <td data-label="Teléfono">
-                    {% if u.telefono %}
-                    {{ u.telefono }}
-                    {% else %}
-                    <span class="empty-value">
-                        No registrado
-                    </span>
-                    {% endif %}
-                </td>
-
-                <td data-label="Rol">
-                    <span class="rol">
-                        {{ u.rol }}
-                    </span>
-                </td>
-
-                <td data-label="Estado">
-
-                    {% if u.is_active %}
-                    <span class="estado activo">
-                        🟢 Activo
-                    </span>
-                    {% else %}
-                    <span class="estado inactivo">
-                        🔴 Inactivo
-                    </span>
-                    {% endif %}
-
-                </td>
-
-                <td data-label="Acciones">
-
-                    <div class="actions">
-
-                        <a href="{% url 'editar_usuario' u.id %}" class="edit-btn">
-
-                            <i class="fa-solid fa-pen-to-square"></i>
-                            Editar
-
-                        </a>
-
-                        <form method="POST" action="{% url 'eliminar_usuario' u.id %}" class="delete-form">
-
-                            {% csrf_token %}
-
-                            <button type="submit" class="delete-btn">
-
-                                <i class="fa-solid fa-trash"></i>
-                                Eliminar
-
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                </td>
-
-
-            </tr>
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
-</div>
-
-<div id="noResults" class="no-results" style="display:none;">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <h3>No se encontraron coincidencias</h3>
-    <p>Intenta con otra palabra.</p>
-</div>
-
-<div class="pagination">
-
-    {% if usuarios.has_previous %}
-    <a href="?page={{ usuarios.previous_page_number }}">
-        ⬅ Anterior
-    </a>
     {% endif %}
 
-    <span class="page-info">
-        Página {{ usuarios.number }}
-        de
-        {{ usuarios.paginator.num_pages }}
-    </span>
 
-    {% if usuarios.has_next %}
-    <a href="?page={{ usuarios.next_page_number }}">
-        Siguiente ➡
-    </a>
-    {% endif %}
+    <!-- ==========================================
+         PANEL DE FORMULARIO (deslizante)
+    =========================================== -->
+
+    <div
+        class="form-overlay {% if usuario %}active{% endif %}"
+        id="formOverlay"
+        onclick="ocultarFormulario()"
+    ></div>
+
+    <div
+        class="usuario-form-panel {% if usuario %}active{% endif %}"
+        id="formularioUsuario"
+    >
+
+        <div class="form-header">
+
+            <div>
+
+                <span class="section-label">
+                    <i class="fa-solid fa-id-badge"></i>
+
+                    {% if usuario %}
+                        EDITAR USUARIO
+                    {% else %}
+                        NUEVO USUARIO
+                    {% endif %}
+                </span>
+
+                <h2>
+                    {% if usuario %}
+                        Actualizar información
+                    {% else %}
+                        Registrar usuario
+                    {% endif %}
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="btn-close-form"
+                onclick="ocultarFormulario()"
+                title="Cerrar"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            id="formUsuario"
+            novalidate
+            enctype="multipart/form-data"
+            action="
+            {% if usuario %}
+                {% url 'editar_usuario' usuario.id %}
+            {% else %}
+                {% url 'usuario_d' %}
+            {% endif %}
+            "
+        >
+
+            {% csrf_token %}
+
+
+            <div class="form-grid">
+
+                <!-- FOTO -->
+
+                <div class="form-group full-width foto-group">
+
+                    <div class="foto-preview" id="fotoPreview">
+
+                        {% if usuario.foto %}
+                            <img src="{{ usuario.foto.url }}" alt="{{ usuario.username }}" id="fotoPreviewImg">
+                        {% else %}
+                            <i class="fa-solid fa-user" id="fotoPreviewIcono"></i>
+                            <img src="" alt="" id="fotoPreviewImg" style="display:none;">
+                        {% endif %}
+
+                    </div>
+
+                    <label for="foto" class="foto-label">
+                        <i class="fa-solid fa-camera"></i>
+                        Cambiar foto
+                        <input
+                            type="file"
+                            id="foto"
+                            name="foto"
+                            accept="image/*"
+                            hidden
+                        >
+                    </label>
+
+                </div>
+
+
+                <!-- USUARIO -->
+
+                <div class="form-group">
+
+                    <label for="username">
+                        Usuario
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-user"></i>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Nombre de usuario"
+                            value="{% if usuario %}{{ usuario.username }}{% endif %}"
+                            minlength="3"
+                            maxlength="150"
+                            autocomplete="username"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- ROL -->
+
+                <div class="form-group">
+
+                    <label for="rol">
+                        Rol
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-user-tag"></i>
+
+                        <select
+                            id="rol"
+                            name="rol"
+                        >
+                            <option value="">Selecciona un rol</option>
+                            <option value="administrador" {% if usuario.rol == "administrador" %}selected{% endif %}>Administrador</option>
+                            <option value="vendedor" {% if usuario.rol == "vendedor" %}selected{% endif %}>Vendedor</option>
+                            <option value="bodega" {% if usuario.rol == "bodega" %}selected{% endif %}>Bodega</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CORREO -->
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Correo electrónico
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-envelope"></i>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="correo@empresa.com"
+                            value="{% if usuario %}{{ usuario.email }}{% endif %}"
+                            maxlength="254"
+                            autocomplete="email"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TELÉFONO -->
+
+                <div class="form-group">
+
+                    <label for="telefono">
+                        Teléfono
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-phone"></i>
+
+                        <input
+                            type="tel"
+                            id="telefono"
+                            name="telefono"
+                            placeholder="Ej. 3001234567"
+                            value="{% if usuario %}{{ usuario.telefono }}{% endif %}"
+                            minlength="7"
+                            maxlength="10"
+                            inputmode="numeric"
+                            autocomplete="tel"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONTRASEÑA (solo al crear) -->
+
+                {% if not usuario %}
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Contraseña
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Mínimo 8 caracteres"
+                            minlength="8"
+                            autocomplete="new-password"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="password2">
+                        Confirmar contraseña
+                        <span>*</span>
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            id="password2"
+                            name="password2"
+                            placeholder="Repite la contraseña"
+                            minlength="8"
+                            autocomplete="new-password"
+                        >
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- ESTADO -->
+
+                {% if usuario %}
+
+                <div class="form-group full-width estado-group">
+
+                    <label>
+                        Estado del usuario
+                    </label>
+
+                    <label class="switch">
+
+                        <input
+                            type="checkbox"
+                            name="is_active"
+                            id="is_active"
+                            {% if usuario.is_active %}checked{% endif %}
+                        >
+
+                        <span class="slider"></span>
+
+                        <span class="switch-text">
+                            Activo
+                        </span>
+
+                    </label>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="btn-secondary"
+                    onclick="ocultarFormulario()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+
+                    <i class="fa-solid fa-check"></i>
+
+                    {% if usuario %}
+                        Actualizar usuario
+                    {% else %}
+                        Guardar usuario
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ==========================================
+         TABLA
+    =========================================== -->
+
+    <div class="table-wrapper">
+
+        <table class="users-table">
+
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody id="usersTable">
+
+                {% for u in usuarios %}
+                <tr>
+
+                    <td class="user-cell">
+
+                        {% if u.foto %}
+                        <img src="{{ u.foto.url }}" alt="{{ u.username }}" class="avatar">
+                        {% else %}
+                        <div class="avatar-fallback">
+                            {{ u.username|first|upper }}
+                        </div>
+                        {% endif %}
+
+                        <div class="user-info">
+                            <strong>{{ u.username }}</strong>
+                        </div>
+
+                    </td>
+
+                    <td data-label="Correo">
+                        {{ u.email }}
+                    </td>
+
+                    <td data-label="Teléfono">
+                        {% if u.telefono %}
+                        {{ u.telefono }}
+                        {% else %}
+                        <span class="empty-value">
+                            No registrado
+                        </span>
+                        {% endif %}
+                    </td>
+
+                    <td data-label="Rol">
+                        <span class="rol">
+                            {{ u.rol }}
+                        </span>
+                    </td>
+
+                    <td data-label="Estado">
+
+                        {% if u.is_active %}
+                        <span class="estado activo">
+                            🟢 Activo
+                        </span>
+                        {% else %}
+                        <span class="estado inactivo">
+                            🔴 Inactivo
+                        </span>
+                        {% endif %}
+
+                    </td>
+
+                    <td data-label="Acciones">
+
+                        <div class="actions">
+
+                            <a href="{% url 'editar_usuario' u.id %}" class="edit-btn">
+
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                Editar
+
+                            </a>
+
+                            <form method="POST" action="{% url 'eliminar_usuario' u.id %}" class="delete-form">
+
+                                {% csrf_token %}
+
+                                <button type="submit" class="delete-btn">
+
+                                    <i class="fa-solid fa-trash"></i>
+                                    Eliminar
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div id="noResults" class="no-results" style="display:none;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <h3>No se encontraron coincidencias</h3>
+        <p>Intenta con otra palabra.</p>
+    </div>
+
+    <div class="pagination">
+
+        {% if usuarios.has_previous %}
+        <a href="?page={{ usuarios.previous_page_number }}">
+            <i class="fa-solid fa-chevron-left"></i>
+            Anterior
+        </a>
+        {% endif %}
+
+        <span class="page-info">
+            Página {{ usuarios.number }}
+            de
+            {{ usuarios.paginator.num_pages }}
+        </span>
+
+        {% if usuarios.has_next %}
+        <a href="?page={{ usuarios.next_page_number }}">
+            Siguiente
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+        {% endif %}
+
+    </div>
 
 </div>
 

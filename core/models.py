@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from ckeditor_uploader.fields import RichTextUploadingField
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import RegexValidator
 from decimal import Decimal, ROUND_CEILING
 
 
@@ -342,17 +343,6 @@ class ProductoVideo(models.Model):
 
     def __str__(self):
         return self.producto.nombre
-
-# =========================
-# RESEÑAS
-# =========================
-class Resena(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-
-    rating = models.IntegerField()
-    comentario = models.TextField()
-
 
 # =========================
 # BLOG
@@ -1864,3 +1854,42 @@ class ReporteEmprendimiento(models.Model):
 
     def __str__(self):
         return f"{self.usuario.username} - {self.nombre_recomendacion}"
+    
+class Proveedor(models.Model):
+
+    marca = models.CharField(
+        max_length=100
+    )
+
+    encargado = models.CharField(
+        max_length=100,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$',
+                message='El nombre del encargado solo puede contener letras y espacios.'
+            )
+        ]
+    )
+
+    telefono = models.CharField(
+        max_length=10,
+        validators=[
+            RegexValidator(
+                regex=r'^[0-9]{7,10}$',
+                message='El teléfono debe contener entre 7 y 10 números.'
+            )
+        ]
+    )
+
+    correo = models.EmailField()
+
+    observaciones = models.TextField(
+        blank=True
+    )
+
+    activo = models.BooleanField(
+        default=True
+    )
+
+    def __str__(self):
+        return self.marca

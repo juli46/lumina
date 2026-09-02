@@ -1,4 +1,3 @@
-
 {% extends 'core/base.html' %}
 {% load static %}
 
@@ -7,738 +6,899 @@ Sobre Nosotros | Lúmina
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="stylesheet" href="{% static 'css/nosotros.css' %}">
+
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+>
+
+<link
+    rel="stylesheet"
+    href="{% static 'css/nosotros.css' %}"
+>
+
 {% endblock %}
 
 {% block content %}
 
 <section class="lumina-about">
 
-    <!-- =====================================================
-         HERO
-    ====================================================== -->
+ 
+<!-- =====================================================
+     HERO
+====================================================== -->
 
-    <section class="about-hero">
+<section class="about-hero">
 
-        <div class="about-hero-content">
+    <div class="about-hero-content">
 
-            <span class="badge">
-                <i class="fa-solid fa-sparkles"></i>
-                LÚMINA • MAYORISTA BEAUTY
-            </span>
+        <span class="badge">
+            <i class="fa-solid fa-sparkles"></i>
+            LÚMINA • BEAUTY MAYORISTA
+        </span>
 
-            <h1>
-                Tu belleza puede ser
-                <span>el comienzo de algo grande.</span>
-            </h1>
+        <h1>
+            Todo lo que necesitas
+            <span>para comprar y emprender.</span>
+        </h1>
 
-            <p>
-                Lúmina es una plataforma mayorista de productos de belleza
-                creada para facilitar el acceso a maquillaje, skincare y
-                accesorios, brindando opciones para quienes desean comprar
-                para uso personal o iniciar un emprendimiento.
-            </p>
+        <p>
+            Lúmina es una plataforma digital de productos de belleza
+            donde puedes encontrar maquillaje, skincare, accesorios
+            y kits, ya sea para ti o para comenzar y surtir tu
+            emprendimiento.
+        </p>
 
-            <div class="hero-buttons">
+        <div class="hero-buttons">
 
-                <a href="{% url 'catalogo' %}" class="btn-primary">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    Explorar catálogo
-                </a>
-
-                <a href="#conocenos" class="btn-secondary">
-                    Conoce Lúmina
-                    <i class="fa-solid fa-arrow-down"></i>
-                </a>
-
-            </div>
-
-        </div>
-
-        <div class="about-hero-image">
-
-            <div class="hero-glow"></div>
-
-            <img
-                src="{% static 'img/pagina/cajas.png' %}"
-                alt="Productos y cajas de maquillaje de Lúmina"
+            <a
+                href="{% url 'catalogo' %}"
+                class="btn-primary"
             >
+                <i class="fa-solid fa-bag-shopping"></i>
+                Ver catálogo
+            </a>
 
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         QUIÉNES SOMOS
-    ====================================================== -->
-
-    <section class="about-section" id="conocenos">
-
-        <div class="about-image">
-
-            <img
-                src="{% static 'img/pagina/cajas.png' %}"
-                alt="Productos de belleza Lúmina"
+            <a
+                href="#montos"
+                class="btn-secondary"
             >
-
-        </div>
-
-        <div class="about-text">
-
-            <span class="section-label">
-                <i class="fa-solid fa-heart"></i>
-                QUIÉNES SOMOS
-            </span>
-
-            <h2>
-                Más que una tienda,
-                <span>una oportunidad.</span>
-            </h2>
-
-            <p>
-                Lúmina nace como una plataforma digital enfocada en la
-                comercialización mayorista de productos de belleza de
-                diferentes marcas.
-            </p>
-
-            <p>
-                Nuestro propósito es facilitar que más personas puedan
-                acceder a productos beauty, encontrar opciones de acuerdo
-                con su presupuesto y descubrir nuevas posibilidades para
-                comenzar o fortalecer un emprendimiento.
-            </p>
-
-            <p>
-                Queremos convertir la compra de productos de belleza en una
-                experiencia sencilla, accesible y pensada para quienes
-                buscan crecer dentro de este sector.
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         PROPÓSITO
-    ====================================================== -->
-
-    <section class="purpose-section">
-
-        <div class="section-title">
-
-            <span class="section-label">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                NUESTRO PROPÓSITO
-            </span>
-
-            <h2>
-                ¿Por qué existe Lúmina?
-            </h2>
-
-            <p>
-                Porque comenzar un emprendimiento no debería sentirse
-                complicado.
-            </p>
-
-        </div>
-
-        <div class="purpose-grid">
-
-            <article class="purpose-card">
-
-                <div class="purpose-icon">
-                    <i class="fa-solid fa-store"></i>
-                </div>
-
-                <h3>
-                    Facilitar el acceso
-                </h3>
-
-                <p>
-                    Acercamos productos de belleza de diferentes marcas
-                    a personas que buscan comprar para uso personal o
-                    comercializar.
-                </p>
-
-            </article>
-
-
-            <article class="purpose-card featured">
-
-                <div class="purpose-icon">
-                    <i class="fa-solid fa-rocket"></i>
-                </div>
-
-                <h3>
-                    Impulsar emprendimientos
-                </h3>
-
-                <p>
-                    Ofrecemos alternativas pensadas para quienes desean
-                    iniciar o hacer crecer un negocio de productos beauty.
-                </p>
-
-            </article>
-
-
-            <article class="purpose-card">
-
-                <div class="purpose-icon">
-                    <i class="fa-solid fa-lightbulb"></i>
-                </div>
-
-                <h3>
-                    Crear oportunidades
-                </h3>
-
-                <p>
-                    Buscamos que la belleza también pueda convertirse en
-                    una oportunidad para aprender, emprender y generar
-                    ingresos.
-                </p>
-
-            </article>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         PARA QUIÉN ES LÚMINA
-    ====================================================== -->
-
-    <section class="audience-section">
-
-        <div class="section-title">
-
-            <span class="section-label">
-                <i class="fa-solid fa-users"></i>
-                PENSADA PARA TI
-            </span>
-
-            <h2>
-                ¿Para quién es Lúmina?
-            </h2>
-
-            <p>
-                No necesitas tener un negocio para comenzar.
-            </p>
-
-        </div>
-
-
-        <div class="audience-grid">
-
-            <article class="audience-card">
-
-                <div class="audience-icon">
-                    <i class="fa-solid fa-face-smile-beam"></i>
-                </div>
-
-                <h3>
-                    Amantes del maquillaje
-                </h3>
-
-                <p>
-                    Para quienes disfrutan descubrir nuevos productos
-                    y crear su propio estilo.
-                </p>
-
-            </article>
-
-
-            <article class="audience-card">
-
-                <div class="audience-icon">
-                    <i class="fa-solid fa-seedling"></i>
-                </div>
-
-                <h3>
-                    Principiantes
-                </h3>
-
-                <p>
-                    Para quienes están dando sus primeros pasos en el
-                    mundo del maquillaje y la belleza.
-                </p>
-
-            </article>
-
-
-            <article class="audience-card featured">
-
-                <div class="audience-icon">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-
-                <h3>
-                    Emprendedores
-                </h3>
-
-                <p>
-                    Para quienes quieren comprar productos para revender
-                    y construir una fuente de ingresos.
-                </p>
-
-            </article>
-
-
-            <article class="audience-card">
-
-                <div class="audience-icon">
-                    <i class="fa-solid fa-gift"></i>
-                </div>
-
-                <h3>
-                    Compradores de regalos
-                </h3>
-
-                <p>
-                    Para quienes buscan productos beauty para regalar
-                    o crear detalles especiales.
-                </p>
-
-            </article>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         CÓMO FUNCIONA
-    ====================================================== -->
-
-    <section class="how-section">
-
-        <div class="section-title">
-
-            <span class="section-label">
-                <i class="fa-solid fa-route"></i>
-                ASÍ FUNCIONA
-            </span>
-
-            <h2>
-                Comprar en Lúmina es sencillo
-            </h2>
-
-            <p>
-                Encuentra tus productos y construye tu compra de acuerdo
-                con tus necesidades.
-            </p>
-
-        </div>
-
-
-        <div class="steps">
-
-            <div class="step">
-
-                <span class="step-number">
-                    01
-                </span>
-
-                <div class="step-icon">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </div>
-
-                <h3>
-                    Explora
-                </h3>
-
-                <p>
-                    Descubre maquillaje, productos de cuidado y accesorios
-                    disponibles en nuestro catálogo.
-                </p>
-
-            </div>
-
-
-            <div class="step">
-
-                <span class="step-number">
-                    02
-                </span>
-
-                <div class="step-icon">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                </div>
-
-                <h3>
-                    Elige
-                </h3>
-
-                <p>
-                    Selecciona los productos que necesitas para tu compra
-                    personal o emprendimiento.
-                </p>
-
-            </div>
-
-
-            <div class="step">
-
-                <span class="step-number">
-                    03
-                </span>
-
-                <div class="step-icon">
-                    <i class="fa-solid fa-box-open"></i>
-                </div>
-
-                <h3>
-                    Recibe
-                </h3>
-
-                <p>
-                    Completa tu pedido y recibe tus productos para comenzar
-                    a disfrutarlos o comercializarlos.
-                </p>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         KITS
-    ====================================================== -->
-
-    <section class="kits-section">
-
-        <div class="kits-image">
-
-            <img
-                src="{% static 'img/pagina/kit.png' %}"
-                alt="Kits de maquillaje Lúmina"
-            >
-
-        </div>
-
-
-        <div class="kits-content">
-
-            <span class="section-label">
-                <i class="fa-solid fa-box"></i>
-                KITS LÚMINA
-            </span>
-
-            <h2>
-                Empieza con un kit
-                hecho para ti.
-            </h2>
-
-            <p>
-                Sabemos que comenzar puede generar dudas. Por eso,
-                Lúmina ofrece kits pensados para diferentes necesidades.
-            </p>
-
-
-            <div class="kit-item">
-
-                <div class="kit-icon">
-                    <i class="fa-solid fa-seedling"></i>
-                </div>
-
-                <div>
-                    <h3>
-                        Kit Principiantes
-                    </h3>
-
-                    <p>
-                        Una selección de productos para quienes quieren
-                        aprender, experimentar y disfrutar del maquillaje.
-                    </p>
-                </div>
-
-            </div>
-
-
-            <div class="kit-item">
-
-                <div class="kit-icon">
-                    <i class="fa-solid fa-rocket"></i>
-                </div>
-
-                <div>
-                    <h3>
-                        Kit Emprendedores
-                    </h3>
-
-                    <p>
-                        Una alternativa pensada para quienes desean iniciar
-                        la reventa de productos de belleza.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <a href="{% url 'catalogo' %}" class="btn-primary">
-                Ver kits disponibles
-                <i class="fa-solid fa-arrow-right"></i>
+                Cómo funciona
+                <i class="fa-solid fa-arrow-down"></i>
             </a>
 
         </div>
 
-    </section>
+    </div>
 
 
-    <!-- =====================================================
-         BENEFICIOS
-    ====================================================== -->
+    <div class="about-hero-image">
 
-    <section class="benefits-section">
+        <div class="hero-glow"></div>
 
-        <div class="section-title">
+        <img
+            src="{% static 'img/pagina/cajas.png' %}"
+            alt="Productos de belleza Lúmina"
+        >
 
-            <span class="section-label">
-                <i class="fa-solid fa-gem"></i>
-                ¿QUÉ NOS DIFERENCIA?
-            </span>
+    </div>
 
-            <h2>
-                Una experiencia pensada para crecer
-            </h2>
-
-        </div>
+</section>
 
 
-        <div class="benefits-grid">
 
-            <div class="benefit">
+<!-- =====================================================
+     QUÉ ES LÚMINA
+====================================================== -->
 
-                <i class="fa-solid fa-tags"></i>
+<section class="about-section" id="conocenos">
 
-                <h3>
-                    Precios por inversión
-                </h3>
+    <div class="about-image">
 
-                <p>
-                    Nuestro modelo permite acceder a diferentes niveles
-                    de precio según el valor de la compra.
-                </p>
+        <img
+            src="{% static 'img/pagina/cajas.png' %}"
+            alt="Productos de belleza disponibles en Lúmina"
+        >
 
-            </div>
-
-
-            <div class="benefit">
-
-                <i class="fa-solid fa-layer-group"></i>
-
-                <h3>
-                    Variedad de productos
-                </h3>
-
-                <p>
-                    Reunimos diferentes categorías y marcas de belleza
-                    en un mismo espacio.
-                </p>
-
-            </div>
+    </div>
 
 
-            <div class="benefit">
+    <div class="about-text">
 
-                <i class="fa-solid fa-laptop"></i>
-
-                <h3>
-                    Plataforma digital
-                </h3>
-
-                <p>
-                    Facilitamos el proceso de búsqueda, selección y
-                    compra mediante una experiencia digital.
-                </p>
-
-            </div>
-
-
-            <div class="benefit">
-
-                <i class="fa-solid fa-people-group"></i>
-
-                <h3>
-                    Comunidad emprendedora
-                </h3>
-
-                <p>
-                    Queremos construir un espacio donde las personas
-                    puedan aprender y encontrar nuevas oportunidades.
-                </p>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         MISIÓN Y VISIÓN
-    ====================================================== -->
-
-    <section class="mission-section">
-
-        <div class="mission-card">
-
-            <div class="mission-icon">
-                <i class="fa-solid fa-bullseye"></i>
-            </div>
-
-            <span>
-                NUESTRA MISIÓN
-            </span>
-
-            <h2>
-                Facilitar el acceso al mundo beauty.
-            </h2>
-
-            <p>
-                Brindar una plataforma digital accesible que conecte a
-                consumidores y emprendedores con productos de belleza,
-                ofreciendo variedad, alternativas de compra y herramientas
-                que faciliten el inicio y crecimiento de sus proyectos.
-            </p>
-
-        </div>
-
-
-        <div class="mission-card vision">
-
-            <div class="mission-icon">
-                <i class="fa-solid fa-eye"></i>
-            </div>
-
-            <span>
-                NUESTRA VISIÓN
-            </span>
-
-            <h2>
-                Ser un referente beauty para emprender.
-            </h2>
-
-            <p>
-                Buscamos consolidarnos como una plataforma reconocida
-                por facilitar el acceso a productos de belleza y por
-                impulsar a nuevos emprendedores dentro del mercado beauty.
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         NUESTRA ESENCIA
-    ====================================================== -->
-
-    <section class="goal-box">
-
-        <div class="goal-glow"></div>
-
-        <span class="goal-badge">
-            <i class="fa-solid fa-sparkles"></i>
-            NUESTRA ESENCIA
+        <span class="section-label">
+            <i class="fa-solid fa-store"></i>
+            ¿QUÉ ES LÚMINA?
         </span>
 
         <h2>
-            Creamos oportunidades dentro
-            del universo <span>beauty.</span>
+            Una plataforma para
+            <span>comprar belleza.</span>
         </h2>
 
         <p>
-            En Lúmina creemos que una compra puede ser mucho más que
-            adquirir un producto. Puede ser el primer paso para aprender,
-            descubrir una pasión o comenzar un emprendimiento.
+            En Lúmina reunimos productos de diferentes categorías y
+            marcas de belleza para que puedas encontrar lo que
+            necesitas en un solo lugar.
         </p>
 
-        <div class="goal-stats">
+        <p>
+            Puedes realizar compras para uso personal, comprar
+            productos para regalar o adquirir mercancía para
+            comenzar y surtir un emprendimiento.
+        </p>
 
-            <div class="stat-card">
+        <div class="about-highlight">
+
+            <i class="fa-solid fa-circle-check"></i>
+
+            <div>
+
+                <strong>
+                    Compra según tu presupuesto
+                </strong>
+
+                <p>
+                    El valor de los productos de tu pedido determina
+                    el nivel de compra al que puedes acceder.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     MONTOS DE COMPRA
+====================================================== -->
+
+<section
+    class="info-section"
+    id="montos"
+>
+
+    <div class="section-title">
+
+        <span class="section-label">
+
+            <i class="fa-solid fa-money-bill-wave"></i>
+
+            MONTOS DE COMPRA
+
+        </span>
+
+        <h2>
+            Elige cuánto quieres comprar
+        </h2>
+
+        <p>
+            En Lúmina manejamos diferentes niveles de compra.
+            El nivel se determina por el valor de los productos
+            incluidos en tu pedido.
+        </p>
+
+    </div>
+
+
+    <div class="info-grid">
+
+
+        <!-- NIVEL 100K -->
+
+        <article class="info-card purchase-card">
+
+            <div class="info-icon">
+
+                <i class="fa-solid fa-bag-shopping"></i>
+
+            </div>
+
+            <span class="purchase-tag">
+                NIVEL INICIAL
+            </span>
+
+            <h3>
+                $100.000
+            </h3>
+
+            <p>
+                Ideal para comenzar a comprar en Lúmina, probar
+                diferentes productos o realizar una compra de menor
+                volumen.
+            </p>
+
+            <div class="purchase-description">
+
+                <i class="fa-solid fa-check"></i>
+
+                <span>
+                    Desde $100.000 en productos
+                </span>
+
+            </div>
+
+        </article>
+
+
+
+        <!-- NIVEL 500K -->
+
+        <article class="info-card purchase-card featured">
+
+            <div class="info-icon">
+
+                <i class="fa-solid fa-cart-shopping"></i>
+
+            </div>
+
+            <span class="purchase-tag">
+                NIVEL INTERMEDIO
+            </span>
+
+            <h3>
+                $500.000
+            </h3>
+
+            <p>
+                Pensado para compras de mayor valor y para quienes
+                necesitan surtir mejor su inventario o aumentar la
+                cantidad de productos.
+            </p>
+
+            <div class="purchase-description">
+
+                <i class="fa-solid fa-check"></i>
+
+                <span>
+                    Desde $500.000 en productos
+                </span>
+
+            </div>
+
+        </article>
+
+
+
+        <!-- NIVEL 1.2M -->
+
+        <article class="info-card purchase-card">
+
+            <div class="info-icon">
+
+                <i class="fa-solid fa-store"></i>
+
+            </div>
+
+            <span class="purchase-tag">
+                NIVEL MAYORISTA
+            </span>
+
+            <h3>
+                $1.200.000
+            </h3>
+
+            <p>
+                Para compras de mayor volumen, especialmente
+                pensadas para emprendimientos que necesitan surtir
+                una mayor cantidad de productos.
+            </p>
+
+            <div class="purchase-description">
+
+                <i class="fa-solid fa-check"></i>
+
+                <span>
+                    Desde $1.200.000 en productos
+                </span>
+
+            </div>
+
+        </article>
+
+    </div>
+
+
+    <!-- ACLARACIÓN -->
+
+    <div class="purchase-note">
+
+        <i class="fa-solid fa-circle-info"></i>
+
+        <div>
+
+            <strong>
+                ¿Cómo se calcula el monto?
+            </strong>
+
+            <p>
+                El nivel de compra se calcula tomando en cuenta el
+                valor de los productos incluidos en el pedido.
+                <strong>El costo del envío no se suma para alcanzar
+                estos montos.</strong>
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     QUÉ PUEDES COMPRAR
+====================================================== -->
+
+<section class="audience-section">
+
+    <div class="section-title">
+
+        <span class="section-label">
+
+            <i class="fa-solid fa-box-open"></i>
+
+            ENCUENTRA LO QUE NECESITAS
+
+        </span>
+
+        <h2>
+            ¿Qué puedes comprar?
+        </h2>
+
+        <p>
+            Explora diferentes opciones de productos de belleza
+            dentro de Lúmina.
+        </p>
+
+    </div>
+
+
+    <div class="audience-grid">
+
+
+        <article class="audience-card">
+
+            <div class="audience-icon">
+
+                <i class="fa-solid fa-paintbrush"></i>
+
+            </div>
+
+            <h3>
+                Maquillaje
+            </h3>
+
+            <p>
+                Productos para crear diferentes looks y encontrar
+                nuevos favoritos.
+            </p>
+
+        </article>
+
+
+
+        <article class="audience-card">
+
+            <div class="audience-icon">
+
+                <i class="fa-solid fa-droplet"></i>
+
+            </div>
+
+            <h3>
+                Skincare
+            </h3>
+
+            <p>
+                Productos para complementar tu rutina de cuidado
+                personal.
+            </p>
+
+        </article>
+
+
+
+        <article class="audience-card featured">
+
+            <div class="audience-icon">
 
                 <i class="fa-solid fa-box"></i>
 
-                <h3>
-                    Variedad
-                </h3>
+            </div>
 
-                <span>
-                    Productos beauty
-                </span>
+            <h3>
+                Kits
+            </h3>
+
+            <p>
+                Selecciones de productos pensadas para diferentes
+                necesidades y tipos de compradores.
+            </p>
+
+        </article>
+
+
+
+        <article class="audience-card">
+
+            <div class="audience-icon">
+
+                <i class="fa-solid fa-gem"></i>
 
             </div>
 
+            <h3>
+                Accesorios
+            </h3>
 
-            <div class="stat-card">
+            <p>
+                Complementos para acompañar tus productos y
+                completar tus compras.
+            </p>
 
-                <i class="fa-solid fa-percent"></i>
+        </article>
 
-                <h3>
-                    Mayorista
-                </h3>
+    </div>
 
-                <span>
-                    Beneficios por inversión
-                </span>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <i class="fa-solid fa-rocket"></i>
-
-                <h3>
-                    Emprende
-                </h3>
-
-                <span>
-                    Kits y oportunidades
-                </span>
-
-            </div>
-
-        </div>
-
-    </section>
+</section>
 
 
-    <!-- =====================================================
-         FRASE FINAL
-    ====================================================== -->
 
-    <section class="quote-box">
+<!-- =====================================================
+     CÓMO COMPRAR
+====================================================== -->
 
-        <div class="quote-decoration">
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-sparkles"></i>
-            <i class="fa-solid fa-star"></i>
-        </div>
+<section class="how-section">
+
+    <div class="section-title">
+
+        <span class="section-label">
+
+            <i class="fa-solid fa-route"></i>
+
+            CÓMO COMPRAR
+
+        </span>
 
         <h2>
-            “Empieza con lo que tengas,
-            <span>brilla con lo que sueñas.</span>”
+            Compra en pocos pasos
         </h2>
 
         <p>
-            Tu próximo paso puede comenzar con algo tan sencillo como
-            elegir el primer producto.
+            El proceso está pensado para que puedas realizar tu
+            pedido de manera sencilla.
         </p>
 
-        <a href="{% url 'catalogo' %}" class="btn-primary">
-            Comenzar ahora
+    </div>
+
+
+    <div class="steps">
+
+
+        <div class="step">
+
+            <span class="step-number">
+                01
+            </span>
+
+            <div class="step-icon">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+            </div>
+
+            <h3>
+                Explora
+            </h3>
+
+            <p>
+                Ingresa al catálogo, revisa las categorías y
+                encuentra los productos que buscas.
+            </p>
+
+        </div>
+
+
+
+        <div class="step">
+
+            <span class="step-number">
+                02
+            </span>
+
+            <div class="step-icon">
+
+                <i class="fa-solid fa-cart-plus"></i>
+
+            </div>
+
+            <h3>
+                Agrega al carrito
+            </h3>
+
+            <p>
+                Selecciona los productos, cantidades y opciones
+                disponibles para tu compra.
+            </p>
+
+        </div>
+
+
+
+        <div class="step">
+
+            <span class="step-number">
+                03
+            </span>
+
+            <div class="step-icon">
+
+                <i class="fa-solid fa-credit-card"></i>
+
+            </div>
+
+            <h3>
+                Completa tu compra
+            </h3>
+
+            <p>
+                Revisa el total, agrega tus datos, consulta el
+                envío y completa el proceso de pago.
+            </p>
+
+        </div>
+
+
+
+        <div class="step">
+
+            <span class="step-number">
+                04
+            </span>
+
+            <div class="step-icon">
+
+                <i class="fa-solid fa-truck"></i>
+
+            </div>
+
+            <h3>
+                Recibe tu pedido
+            </h3>
+
+            <p>
+                Una vez procesada tu compra, tu pedido será enviado
+                mediante las opciones de envío disponibles.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     KITS
+====================================================== -->
+
+<section class="kits-section">
+
+    <div class="kits-image">
+
+        <img
+            src="{% static 'img/pagina/kit.png' %}"
+            alt="Kits de productos de belleza Lúmina"
+        >
+
+    </div>
+
+
+    <div class="kits-content">
+
+        <span class="section-label">
+
+            <i class="fa-solid fa-box"></i>
+
+            KITS LÚMINA
+
+        </span>
+
+        <h2>
+            Una opción lista
+            <br>
+            para comenzar.
+        </h2>
+
+        <p>
+            Si no sabes por dónde empezar, puedes encontrar kits
+            preparados con diferentes productos de belleza según
+            la necesidad de cada comprador.
+        </p>
+
+
+        <div class="kit-item">
+
+            <div class="kit-icon">
+
+                <i class="fa-solid fa-seedling"></i>
+
+            </div>
+
+            <div>
+
+                <h3>
+                    Kits para principiantes
+                </h3>
+
+                <p>
+                    Una selección de productos para quienes están
+                    comenzando a conocer y utilizar productos de
+                    belleza.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="kit-item">
+
+            <div class="kit-icon">
+
+                <i class="fa-solid fa-rocket"></i>
+
+            </div>
+
+            <div>
+
+                <h3>
+                    Kits para emprendedores
+                </h3>
+
+                <p>
+                    Alternativas pensadas para quienes desean
+                    adquirir productos para iniciar o fortalecer
+                    una actividad de reventa.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="purchase-note kit-note">
+
+            <i class="fa-solid fa-circle-info"></i>
+
+            <div>
+
+                <strong>
+                    Importante sobre los kits
+                </strong>
+
+                <p>
+                    Cada kit tiene su propio precio y se maneja de
+                    manera independiente. Su valor <strong>no se
+                    acumula</strong> para alcanzar los niveles de
+                    $100.000, $500.000 o $1.200.000.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{% url 'catalogo' %}"
+            class="btn-primary"
+        >
+
+            Ver kits disponibles
+
             <i class="fa-solid fa-arrow-right"></i>
+
         </a>
 
-    </section>
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ENVÍOS
+====================================================== -->
+
+<section class="purpose-section">
+
+    <div class="section-title">
+
+        <span class="section-label">
+
+            <i class="fa-solid fa-truck-fast"></i>
+
+            PEDIDOS Y ENVÍOS
+
+        </span>
+
+        <h2>
+            Tu compra, clara desde el inicio
+        </h2>
+
+        <p>
+            Durante el checkout podrás conocer el valor final de
+            tu pedido antes de completarlo.
+        </p>
+
+    </div>
+
+
+    <div class="purpose-grid">
+
+
+        <article class="purpose-card">
+
+            <div class="purpose-icon">
+
+                <i class="fa-solid fa-calculator"></i>
+
+            </div>
+
+            <h3>
+                Total de compra
+            </h3>
+
+            <p>
+                El checkout muestra el valor de los productos,
+                el costo del envío y el total que debes pagar.
+            </p>
+
+        </article>
+
+
+
+        <article class="purpose-card featured">
+
+            <div class="purpose-icon">
+
+                <i class="fa-solid fa-location-dot"></i>
+
+            </div>
+
+            <h3>
+                Opciones de envío
+            </h3>
+
+            <p>
+                El costo del envío se calcula según la información
+                de entrega seleccionada durante el proceso de compra.
+            </p>
+
+        </article>
+
+
+
+        <article class="purpose-card">
+
+            <div class="purpose-icon">
+
+                <i class="fa-solid fa-receipt"></i>
+
+            </div>
+
+            <h3>
+                Compra organizada
+            </h3>
+
+            <p>
+                Antes de finalizar puedes revisar tu pedido y
+                confirmar que los productos y valores sean correctos.
+            </p>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     TÉRMINOS
+====================================================== -->
+
+<section class="terms-note">
+
+    <div class="terms-note-icon">
+
+        <i class="fa-solid fa-file-contract"></i>
+
+    </div>
+
+
+    <div class="terms-note-content">
+
+        <span>
+            INFORMACIÓN LEGAL
+        </span>
+
+        <h3>
+            Antes de realizar tu compra
+        </h3>
+
+        <p>
+            Consulta los Términos y condiciones de Lúmina para
+            conocer las condiciones aplicables al uso de la
+            plataforma y a tus compras.
+        </p>
+
+        <a href="{% url 'terminos' %}">
+
+            Leer términos y condiciones
+
+            <i class="fa-solid fa-arrow-right"></i>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     CTA FINAL
+====================================================== -->
+
+<section class="quote-box">
+
+    <div class="quote-decoration">
+
+        <i class="fa-solid fa-sparkles"></i>
+
+        <i class="fa-solid fa-star"></i>
+
+        <i class="fa-solid fa-sparkles"></i>
+
+    </div>
+
+
+    <h2>
+
+        ¿Ya sabes qué quieres comprar?
+
+        <span>
+            Empieza a explorar.
+        </span>
+
+    </h2>
+
+
+    <p>
+        Encuentra productos, arma tu carrito y realiza tu compra
+        de acuerdo con tus necesidades.
+    </p>
+
+
+    <a
+        href="{% url 'catalogo' %}"
+        class="btn-primary"
+    >
+
+        Ir al catálogo
+
+        <i class="fa-solid fa-arrow-right"></i>
+
+    </a>
+
+</section>
 
 </section>
 
