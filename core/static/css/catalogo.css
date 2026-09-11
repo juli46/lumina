@@ -5,6 +5,10 @@
    protagonista. Formas orgánicas tipo "blob" en vez de rectángulos,
    un degradado rosa→dorado como firma y un brillo satinado que recorre
    cada tarjeta al pasar el cursor.
+
+   Este archivo fue reescrito para coincidir exactamente con las clases
+   reales de catalogo.html (antes había clases huérfanas que no existían
+   en el HTML, como .catalogo-container, .filtro-campo o .catalogo-vacio).
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -29,6 +33,7 @@
     --lumina-line: rgba(74, 56, 61, 0.08);
     --lumina-line-strong: rgba(74, 56, 61, 0.14);
     --lumina-danger: #C15F6C;
+    --lumina-success: #1b5d31;
 
     /* Tipografía */
     --font-display: 'Fraunces', Georgia, serif;
@@ -42,11 +47,18 @@
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 /* ==========================================================================
-   BASE
+   BASE — section.catalogo
    ========================================================================== */
 
-.catalogo-container {
+.catalogo {
+    display: block;
     background: var(--lumina-paper);
     color: var(--lumina-text);
     font-family: var(--font-body);
@@ -57,8 +69,8 @@
 }
 
 /* Blobs ambientales: la firma "petal & metal" de la marca */
-.catalogo-container::before,
-.catalogo-container::after {
+.catalogo::before,
+.catalogo::after {
     content: "";
     position: absolute;
     z-index: 0;
@@ -66,7 +78,7 @@
     filter: blur(2px);
 }
 
-.catalogo-container::before {
+.catalogo::before {
     top: -260px;
     left: -120px;
     width: 620px;
@@ -76,7 +88,7 @@
     animation: lumina-blob-drift 22s ease-in-out infinite;
 }
 
-.catalogo-container::after {
+.catalogo::after {
     top: -180px;
     right: -160px;
     width: 520px;
@@ -91,28 +103,24 @@
     50% { transform: translate(30px, 20px) scale(1.06); }
 }
 
-.catalogo-container > * {
+.catalogo > * {
     position: relative;
     z-index: 1;
 }
 
 /* ==========================================================================
-   ENCABEZADO
+   ENCABEZADO — .catalogo-header > .catalogo-titulo
    ========================================================================== */
 
 .catalogo-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 40px;
     max-width: 1240px;
-    margin: 0 auto 56px;
+    margin: 0 auto 40px;
     padding-bottom: 40px;
     border-bottom: 1px solid var(--lumina-line);
 }
 
-.catalogo-header-text {
-    max-width: 560px;
+.catalogo-titulo {
+    max-width: 640px;
 }
 
 .catalogo-subtitulo {
@@ -136,7 +144,7 @@
     background: var(--lumina-gradient);
 }
 
-.catalogo-header-text h1 {
+.catalogo-titulo h1 {
     font-family: var(--font-display);
     font-optical-sizing: auto;
     font-weight: 500;
@@ -147,7 +155,7 @@
     margin: 0 0 14px;
 }
 
-.catalogo-header-text h1::after {
+.catalogo-titulo h1::after {
     content: "";
     display: block;
     width: 84px;
@@ -157,22 +165,29 @@
     background: var(--lumina-gradient);
 }
 
-.catalogo-header-text p {
+.catalogo-titulo p {
     font-size: 15px;
     line-height: 1.6;
     color: var(--lumina-text-muted);
     margin: 0;
-    max-width: 42ch;
+    max-width: 48ch;
 }
 
-/* Buscador */
+/* ==========================================================================
+   BUSCADOR — .catalogo-buscador > .buscador-contenedor
+   ========================================================================== */
 
 .catalogo-buscador {
+    max-width: 1240px;
+    margin: 0 auto 32px;
+}
+
+.buscador-contenedor {
     display: flex;
     align-items: center;
     gap: 12px;
     width: 100%;
-    max-width: 340px;
+    max-width: 420px;
     padding: 14px 20px;
     background: var(--lumina-surface);
     border: 1px solid var(--lumina-blush);
@@ -181,19 +196,20 @@
     transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
 }
 
-.catalogo-buscador:focus-within {
+.buscador-contenedor:focus-within {
     border-color: var(--lumina-rose);
     box-shadow: 0 0 0 5px var(--lumina-rose-dim), 0 10px 24px -14px rgba(223, 109, 134, 0.45);
 }
 
-.catalogo-buscador i.fa-magnifying-glass {
+.buscador-contenedor i.fa-magnifying-glass {
     color: var(--lumina-text-muted);
     font-size: 14px;
     flex-shrink: 0;
 }
 
-.catalogo-buscador input {
+.buscador-contenedor input {
     flex: 1;
+    min-width: 0;
     background: transparent;
     border: none;
     outline: none;
@@ -202,7 +218,7 @@
     font-size: 14px;
 }
 
-.catalogo-buscador input::placeholder {
+.buscador-contenedor input::placeholder {
     color: var(--lumina-text-muted);
 }
 
@@ -218,6 +234,7 @@
     color: var(--lumina-text-muted);
     cursor: pointer;
     font-size: 10px;
+    flex-shrink: 0;
     transition: color 0.2s var(--ease), background 0.2s var(--ease);
 }
 
@@ -226,51 +243,175 @@
     color: var(--lumina-rose-deep);
 }
 
+.btn-limpiar-busqueda[hidden] {
+    display: none;
+}
+
 /* ==========================================================================
-   FILTROS
+   FILTROS — .catalogo-filtros > .filtro-grupo (x N) + .btn-limpiar-filtros
    ========================================================================== */
 
 .catalogo-filtros {
     max-width: 1240px;
-    margin: 0 auto 40px;
+    margin: 0 auto 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 18px 20px;
     background: var(--lumina-surface);
     border: 1px solid var(--lumina-blush);
     border-radius: var(--radius-l);
-    padding: 32px clamp(20px, 3vw, 36px);
+    padding: 28px clamp(20px, 3vw, 32px);
     box-shadow: 0 24px 48px -32px rgba(178, 63, 92, 0.28);
+    /* .catalogo > * ya crea un stacking context con z-index:1 para cada
+       hijo directo (buscador, filtros, grid...). Como el grid de
+       productos viene después en el DOM, pintaría encima del panel de
+       etiquetas si no subimos este z-index por encima del suyo. */
+    position: relative;
+    z-index: 5;
 }
 
-.filtros-header {
+.filtro-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 1 160px;
+    min-width: 150px;
+    position: relative;
+}
+
+.filtro-grupo label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--lumina-text-muted);
+}
+
+.filtro-grupo select {
+    width: 100%;
+    appearance: none;
+    background: var(--lumina-paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23DF6D86' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 16px center;
+    border: 1px solid var(--lumina-line-strong);
+    border-radius: var(--radius-s);
+    padding: 12px 36px 12px 14px;
+    color: var(--lumina-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+}
+
+.filtro-grupo select:hover {
+    border-color: var(--lumina-rose-light);
+}
+
+.filtro-grupo select:focus-visible {
+    outline: none;
+    border-color: var(--lumina-rose);
+    box-shadow: 0 0 0 3px var(--lumina-rose-dim);
+}
+
+/* Etiquetas — dropdown a medida (botón + panel) */
+
+.filtro-etiquetas {
+    flex: 1 1 200px;
+}
+
+.filtro-etiqueta-toggle {
+    width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    gap: 24px;
-    margin-bottom: 26px;
+    align-items: center;
+    gap: 10px;
+    background: var(--lumina-paper);
+    border: 1px solid var(--lumina-line-strong);
+    border-radius: var(--radius-s);
+    padding: 12px 14px;
+    color: var(--lumina-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
 }
 
-.filtros-subtitulo {
-    display: block;
-    font-family: var(--font-mono);
+.filtro-etiqueta-toggle:hover {
+    border-color: var(--lumina-rose-light);
+}
+
+.filtro-etiqueta-toggle:focus-visible {
+    outline: none;
+    border-color: var(--lumina-rose);
+    box-shadow: 0 0 0 3px var(--lumina-rose-dim);
+}
+
+.filtro-etiqueta-toggle i {
+    color: var(--lumina-rose);
     font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--lumina-text-muted);
-    margin-bottom: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s var(--ease);
 }
 
-.filtros-header h2 {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 1.4rem;
-    color: var(--lumina-ink);
-    margin: 0;
+.filtro-etiqueta-toggle[aria-expanded="true"] i {
+    transform: rotate(180deg);
 }
+
+#filtroEtiquetaTexto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.etiquetas-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--lumina-surface);
+    border: 1px solid var(--lumina-blush);
+    border-radius: var(--radius-s);
+    padding: 10px;
+    box-shadow: 0 18px 36px -18px rgba(178, 63, 92, 0.35);
+}
+
+.etiquetas-panel[hidden] {
+    display: none;
+}
+
+/* Estilo genérico para los checkboxes que catalogo.js inyecta dentro del panel */
+.etiquetas-panel label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--lumina-text);
+    cursor: pointer;
+    transition: background 0.15s var(--ease);
+}
+
+.etiquetas-panel label:hover {
+    background: var(--lumina-surface-hover);
+}
+
+.etiquetas-panel input[type="checkbox"] {
+    accent-color: var(--lumina-rose);
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+/* Limpiar filtros */
 
 .btn-limpiar-filtros {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
+    padding: 12px 20px;
     background: transparent;
     border: 1px solid var(--lumina-line-strong);
     border-radius: 999px;
@@ -290,86 +431,20 @@
     transform: translateY(-1px);
 }
 
-.filtros-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-}
-
-.filtro-campo {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.filtro-campo label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--lumina-text-muted);
-}
-
-.filtro-campo label i {
-    color: var(--lumina-rose);
-    font-size: 12px;
-    width: 14px;
-}
-
-.filtro-campo select {
-    appearance: none;
-    background: var(--lumina-paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23DF6D86' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 16px center;
-    border: 1px solid var(--lumina-line-strong);
-    border-radius: var(--radius-s);
-    padding: 12px 36px 12px 14px;
-    color: var(--lumina-text);
-    font-family: var(--font-body);
-    font-size: 14px;
-    cursor: pointer;
-    transition: border-color 0.2s var(--ease);
-}
-
-.filtro-campo select:hover {
-    border-color: var(--lumina-rose-light);
-}
-
-.filtro-campo select:focus-visible {
-    outline: none;
-    border-color: var(--lumina-rose);
-    box-shadow: 0 0 0 3px var(--lumina-rose-dim);
-}
-
 /* ==========================================================================
-   RESULTADOS / FILTROS ACTIVOS
+   FILTROS ACTIVOS — #filtrosActivos
    ========================================================================== */
 
-.catalogo-resultados {
-    max-width: 1240px;
-    margin: 0 auto 28px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 14px;
-}
-
-.catalogo-resultados-texto {
-    font-size: 13px;
-    color: var(--lumina-text-muted);
-}
-
-.catalogo-resultados-texto strong {
-    color: var(--lumina-rose-deep);
-    font-family: var(--font-mono);
-    font-weight: 500;
-    margin-right: 4px;
-}
-
 .filtros-activos {
+    max-width: 1240px;
+    margin: 0 auto 20px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.filtros-activos:empty {
+    display: none;
 }
 
 .filtro-activo {
@@ -397,7 +472,7 @@
     color: var(--lumina-rose-deep);
     font-size: 9px;
     cursor: pointer;
-    transition: background 0.2s var(--ease);
+    transition: background 0.2s var(--ease), color 0.2s var(--ease);
 }
 
 .filtro-activo button:hover {
@@ -406,7 +481,29 @@
 }
 
 /* ==========================================================================
-   GRID DE PRODUCTOS
+   INFO DE RESULTADOS — .catalogo-info
+   ========================================================================== */
+
+.catalogo-info {
+    max-width: 1240px;
+    margin: 0 auto 24px;
+}
+
+.catalogo-info p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--lumina-text-muted);
+}
+
+#cantidadProductos {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--lumina-rose-deep);
+    margin-right: 4px;
+}
+
+/* ==========================================================================
+   GRID DE PRODUCTOS — #catalogoProductos.catalogo-grid > .producto-card
    ========================================================================== */
 
 .catalogo-grid {
@@ -415,6 +512,8 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 28px 24px;
+    position: relative;
+    z-index: 1;
 }
 
 .producto-card {
@@ -457,17 +556,15 @@
     inset: -60% -20%;
     background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 48%, rgba(234, 201, 124, 0.5) 54%, transparent 65%);
     transform: translateX(-120%) rotate(3deg);
-    transition: transform 0.75s var(--ease);
+    opacity: 0;
+    transition: transform 0.75s var(--ease), opacity 0.4s var(--ease);
     z-index: 2;
     pointer-events: none;
 }
 
 .producto-card:hover .producto-imagen::after {
     transform: translateX(20%) rotate(3deg);
-}
-
-.producto-card:hover .producto-imagen::after {
-    opacity: 0.5;
+    opacity: 1;
 }
 
 .producto-imagen img {
@@ -484,7 +581,7 @@
     filter: saturate(1) brightness(1.02);
 }
 
-.producto-sin-imagen {
+.imagen-placeholder {
     width: 100%;
     height: 100%;
     display: flex;
@@ -495,18 +592,15 @@
     color: var(--lumina-text-muted);
 }
 
-.producto-sin-imagen i {
+.imagen-placeholder i {
     font-size: 26px;
     color: var(--lumina-rose);
     opacity: 0.55;
 }
 
-.producto-sin-imagen span {
-    font-size: 12px;
-    font-family: var(--font-mono);
-}
+/* Badges sobre la imagen */
 
-.producto-coleccion {
+.producto-tipo {
     position: absolute;
     top: 14px;
     left: 14px;
@@ -522,207 +616,11 @@
     box-shadow: 0 6px 14px -6px rgba(178, 63, 92, 0.5);
 }
 
-.producto-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    padding: 16px 2px 0;
-}
-
-.producto-info h2 {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 1.02rem;
-    line-height: 1.3;
-    color: var(--lumina-ink);
-    margin: 0;
-}
-
-.producto-precio {
-    flex-shrink: 0;
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 600;
-    background: var(--lumina-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.producto-agotado {
-    flex-shrink: 0;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--lumina-danger);
-}
-
-/* ==========================================================================
-   ESTADOS VACÍOS
-   ========================================================================== */
-
-.catalogo-vacio,
-.catalogo-sin-resultados {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 90px 24px;
-    color: var(--lumina-text-muted);
-}
-
-.catalogo-vacio i,
-.catalogo-sin-resultados i {
-    font-size: 30px;
-    color: var(--lumina-rose);
-    margin-bottom: 18px;
-}
-
-.catalogo-vacio h2,
-.catalogo-sin-resultados h2 {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 1.3rem;
-    color: var(--lumina-ink);
-    margin: 0 0 8px;
-}
-
-.catalogo-vacio p,
-.catalogo-sin-resultados p {
-    font-size: 14px;
-    max-width: 34ch;
-    margin: 0 0 20px;
-}
-
-.catalogo-sin-resultados {
-    max-width: 1240px;
-    margin: 0 auto;
-}
-
-.catalogo-sin-resultados .btn-limpiar-filtros {
-    margin: 0;
-}
-
-/* ==========================================================================
-   ACCESIBILIDAD Y RESPONSIVE
-   ========================================================================== */
-
-a.producto-imagen:focus-visible {
-    outline: 2px solid var(--lumina-rose);
-    outline-offset: 3px;
-}
-
-@media (max-width: 1080px) {
-    .filtros-grid { grid-template-columns: repeat(2, 1fr); }
-    .catalogo-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (max-width: 780px) {
-    .catalogo-container { padding: 44px 5vw 72px; }
-    .catalogo-header { flex-direction: column; align-items: stretch; }
-    .catalogo-buscador { max-width: none; }
-    .catalogo-grid { grid-template-columns: repeat(2, 1fr); gap: 20px 16px; }
-}
-
-@media (max-width: 520px) {
-    .filtros-grid { grid-template-columns: 1fr; }
-    .catalogo-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
-    .filtros-header { flex-direction: column; align-items: flex-start; }
-    .btn-limpiar-filtros { align-self: flex-start; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .producto-card,
-    .producto-card:hover,
-    .producto-imagen::after,
-    .catalogo-container::before,
-    .catalogo-container::after,
-    .catalogo-buscador,
-    .btn-limpiar-filtros,
-    .filtro-campo select {
-        animation: none !important;
-        transition: none !important;
-    }
-}
-
-.etiquetas-dropdown {
-    position: relative;
-}
-
-.etiquetas-dropdown-btn {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    background: var(--lumina-paper);
-    border: 1px solid var(--lumina-line-strong);
-    border-radius: var(--radius-s);
-    padding: 12px 14px;
-    color: var(--lumina-text);
-    font-family: var(--font-body);
-    font-size: 14px;
-    text-align: left;
-    cursor: pointer;
-    transition: border-color 0.2s var(--ease);
-}
-
-.etiquetas-dropdown-btn:hover {
-    border-color: var(--lumina-rose-light);
-}
-
-.etiquetas-dropdown-btn:focus-visible {
-    outline: none;
-    border-color: var(--lumina-rose);
-    box-shadow: 0 0 0 3px var(--lumina-rose-dim);
-}
-
-.etiquetas-dropdown-btn i {
-    color: var(--lumina-rose);
-    font-size: 11px;
-    flex-shrink: 0;
-    transition: transform 0.2s var(--ease);
-}
-
-.etiquetas-dropdown-btn[aria-expanded="true"] i,
-.etiquetas-dropdown.abierto .etiquetas-dropdown-btn i {
-    transform: rotate(180deg);
-}
-
-.etiquetas-dropdown-panel {
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    max-height: 220px;
-    overflow-y: auto;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 8px;
-}
-
-.etiqueta-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 4px;
-    cursor: pointer;
-}
-
-/* ==========================================================================
-   KITS
-   ========================================================================== */
-
-.kit-badge {
+.producto-card[data-tipo="kit"] .producto-tipo {
     background: linear-gradient(120deg, var(--lumina-gold) 0%, var(--lumina-gold-soft) 100%);
 }
 
-.kit-descuento {
+.producto-descuento {
     position: absolute;
     top: 14px;
     right: 14px;
@@ -737,33 +635,290 @@ a.producto-imagen:focus-visible {
     box-shadow: 0 6px 14px -6px rgba(178, 63, 92, 0.5);
 }
 
-.kit-precio-normal {
-    display: block;
+.producto-stock {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    z-index: 3;
+    padding: 5px 12px;
+    border-radius: 999px;
     font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--lumina-text-muted);
-    text-decoration: line-through;
-    margin-top: 2px;
-}
-
-.kit-incluye {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    margin: 8px 2px 0;
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--lumina-text-muted);
-}
-
-.kit-incluye i {
-    color: var(--lumina-gold);
     font-size: 10px;
-    margin-top: 3px;
-    flex-shrink: 0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
 }
 
-.kit-incluye-mas {
+.producto-stock.disponible {
+    background: rgba(110, 156, 125, 0.18);
+    color: var(--lumina-success);
+    border: 1px solid rgba(110, 156, 125, 0.35);
+}
+
+.producto-stock.agotado {
+    background: rgba(193, 95, 108, 0.14);
+    color: var(--lumina-danger);
+    border: 1px solid rgba(193, 95, 108, 0.32);
+}
+
+.producto-card:has(.producto-stock.agotado) .producto-imagen img {
+    filter: grayscale(0.35) saturate(0.7) brightness(0.95);
+}
+
+/* Información */
+
+.producto-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 2px 0;
+}
+
+.producto-marca {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lumina-text-muted);
+}
+
+.producto-nombre {
+    margin: 2px 0 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.02rem;
+    line-height: 1.3;
+}
+
+.producto-nombre a {
+    color: var(--lumina-ink);
+    text-decoration: none;
+    transition: color 0.2s var(--ease);
+}
+
+.producto-nombre a:hover {
     color: var(--lumina-rose-deep);
+}
+
+.producto-categoria {
+    font-size: 12px;
+    color: var(--lumina-text-muted);
+}
+
+.producto-precio {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+    background: var(--lumina-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.btn-ver-producto {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 0;
+    color: var(--lumina-rose-deep);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    border-top: 1px solid var(--lumina-line);
+}
+
+.btn-ver-producto i {
+    font-size: 11px;
+    transition: transform 0.25s var(--ease);
+}
+
+.btn-ver-producto:hover i {
+    transform: translateX(4px);
+}
+
+/* ==========================================================================
+   SIN RESULTADOS — #sinResultadosCatalogo.sin-resultados
+   ========================================================================== */
+
+.sin-resultados {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 90px 24px;
+    color: var(--lumina-text-muted);
+}
+
+.sin-resultados[hidden] {
+    display: none;
+}
+
+.sin-resultados-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+    border-radius: 50%;
+    background: var(--lumina-blush);
+}
+
+.sin-resultados-icono i {
+    font-size: 24px;
+    color: var(--lumina-rose);
+}
+
+.sin-resultados h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.3rem;
+    color: var(--lumina-ink);
+    margin: 0 0 8px;
+}
+
+.sin-resultados p {
+    font-size: 14px;
+    max-width: 34ch;
+    margin: 0 0 20px;
+}
+
+.btn-limpiar-resultados {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: var(--lumina-gradient);
+    border: none;
+    border-radius: 999px;
+    color: #FFF;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.btn-limpiar-resultados:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px -12px rgba(178, 63, 92, 0.5);
+}
+
+/* ==========================================================================
+   PAGINACIÓN — #catalogoPaginacion.catalogo-paginacion
+   ========================================================================== */
+
+.catalogo-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    max-width: 1240px;
+    margin: 48px auto 20px;
+    flex-wrap: wrap;
+}
+
+.catalogo-paginacion:empty {
+    display: none;
+}
+
+.paginacion-btn {
+    min-width: 42px;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--lumina-line-strong);
+    border-radius: 10px;
+    background: var(--lumina-surface);
+    color: var(--lumina-text);
+    font-family: var(--font-body);
+    font-size: 14px;
     font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.paginacion-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--lumina-rose-light);
+}
+
+.paginacion-btn.activo {
+    background: var(--lumina-gradient);
+    border-color: transparent;
+    color: #FFF;
+}
+
+.paginacion-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.paginacion-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 42px;
+    color: var(--lumina-text-muted);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   ACCESIBILIDAD Y RESPONSIVE
+   ========================================================================== */
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--lumina-rose);
+    outline-offset: 3px;
+}
+
+@media (max-width: 1080px) {
+    .catalogo-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 780px) {
+    .catalogo { padding: 44px 5vw 72px; }
+    .buscador-contenedor { max-width: none; }
+    .catalogo-filtros { flex-direction: column; align-items: stretch; }
+    .filtro-grupo, .filtro-etiquetas { flex: 1 1 auto; }
+    .btn-limpiar-filtros { align-self: flex-start; }
+    .catalogo-grid { grid-template-columns: repeat(2, 1fr); gap: 20px 16px; }
+}
+
+@media (max-width: 520px) {
+    .catalogo-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+
+    .paginacion-btn {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+
+    .catalogo-paginacion {
+        gap: 5px;
+        margin-top: 32px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .producto-card,
+    .producto-card:hover,
+    .producto-imagen::after,
+    .catalogo::before,
+    .catalogo::after,
+    .buscador-contenedor,
+    .btn-limpiar-filtros,
+    .filtro-grupo select {
+        animation: none !important;
+        transition: none !important;
+    }
 }

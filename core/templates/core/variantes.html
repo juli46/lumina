@@ -55,7 +55,7 @@ Administrar Catálogo | Lúmina
     <div class="catalogo-tabs">
 
 
-        <button class="tab-btn active" onclick="mostrarCatalogo('categorias',this)">
+        <button class="tab-btn active" data-tab="categorias" onclick="mostrarCatalogo('categorias',this)">
 
             <i class="fa-solid fa-folder"></i>
             Categorías
@@ -64,7 +64,7 @@ Administrar Catálogo | Lúmina
 
 
 
-        <button class="tab-btn" onclick="mostrarCatalogo('marcas',this)">
+        <button class="tab-btn" data-tab="marcas" onclick="mostrarCatalogo('marcas',this)">
 
             <i class="fa-solid fa-tag"></i>
             Marcas
@@ -73,13 +73,13 @@ Administrar Catálogo | Lúmina
 
 
 
-        <button class="tab-btn" onclick="mostrarCatalogo('colecciones',this)">
+        <button class="tab-btn" data-tab="colecciones" onclick="mostrarCatalogo('colecciones',this)">
 
             <i class="fa-solid fa-layer-group"></i>
             Colecciones
 
         </button>
-        <button class="tab-btn" onclick="mostrarCatalogo('etiquetas',this)">
+        <button class="tab-btn" data-tab="etiquetas" onclick="mostrarCatalogo('etiquetas',this)">
             <i class="fa-solid fa-tags"></i>
             Etiquetas
         </button>
@@ -299,7 +299,7 @@ Administrar Catálogo | Lúmina
 
                     {% if categorias.has_previous %}
                     <a
-                        href="?categorias_page={{ categorias.previous_page_number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}">
+                        href="?categorias_page={{ categorias.previous_page_number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.number }}&tab=categorias">
                         ←
                     </a>
                     {% endif %}
@@ -309,7 +309,7 @@ Administrar Catálogo | Lúmina
                     <span class="activo">{{ i }}</span>
                     {% else %}
                     <a
-                        href="?categorias_page={{ i }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}">
+                        href="?categorias_page={{ i }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.number }}&tab=categorias">
                         {{ i }}
                     </a>
                     {% endif %}
@@ -317,7 +317,7 @@ Administrar Catálogo | Lúmina
 
                     {% if categorias.has_next %}
                     <a
-                        href="?categorias_page={{ categorias.next_page_number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}">
+                        href="?categorias_page={{ categorias.next_page_number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.number }}&tab=categorias">
                         →
                     </a>
                     {% endif %}
@@ -576,7 +576,7 @@ Administrar Catálogo | Lúmina
 
                     {% if marcas.has_previous %}
                     <a
-                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.previous_page_number }}&colecciones_page={{ colecciones.number }}">
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.previous_page_number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.number }}&tab=marcas">
                         ←
                     </a>
                     {% endif %}
@@ -586,7 +586,7 @@ Administrar Catálogo | Lúmina
                     <span class="activo">{{ i }}</span>
                     {% else %}
                     <a
-                        href="?categorias_page={{ categorias.number }}&marcas_page={{ i }}&colecciones_page={{ colecciones.number }}">
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ i }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.number }}&tab=marcas">
                         {{ i }}
                     </a>
                     {% endif %}
@@ -594,7 +594,7 @@ Administrar Catálogo | Lúmina
 
                     {% if marcas.has_next %}
                     <a
-                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.next_page_number }}&colecciones_page={{ colecciones.number }}">
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.next_page_number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.number }}&tab=marcas">
                         →
                     </a>
                     {% endif %}
@@ -827,7 +827,7 @@ Administrar Catálogo | Lúmina
 
                     {% if colecciones.has_previous %}
                     <a
-                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.previous_page_number }}">
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.previous_page_number }}&etiquetas_page={{ etiquetas.number }}&tab=colecciones">
                         ←
                     </a>
                     {% endif %}
@@ -837,7 +837,7 @@ Administrar Catálogo | Lúmina
                     <span class="activo">{{ i }}</span>
                     {% else %}
                     <a
-                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ i }}">
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ i }}&etiquetas_page={{ etiquetas.number }}&tab=colecciones">
                         {{ i }}
                     </a>
                     {% endif %}
@@ -845,7 +845,7 @@ Administrar Catálogo | Lúmina
 
                     {% if colecciones.has_next %}
                     <a
-                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.next_page_number }}">
+                        href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.next_page_number }}&etiquetas_page={{ etiquetas.number }}&tab=colecciones">
                         →
                     </a>
                     {% endif %}
@@ -908,6 +908,7 @@ Administrar Catálogo | Lúmina
                     placeholder="Ej: Piel seca"
                     required
                 >
+                <small class="error-text"></small>
 
             </div>
 
@@ -942,7 +943,7 @@ Administrar Catálogo | Lúmina
             </h4>
 
             <span>
-                {{ etiquetas.count }} registros
+                {{ etiquetas.paginator.count }} registros
             </span>
 
         </div>
@@ -1028,6 +1029,37 @@ Administrar Catálogo | Lúmina
                 </tbody>
 
             </table>
+
+            {% if etiquetas.has_other_pages %}
+            <div class="paginacion">
+
+                {% if etiquetas.has_previous %}
+                <a
+                    href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.previous_page_number }}&tab=etiquetas">
+                    ←
+                </a>
+                {% endif %}
+
+                {% for i in etiquetas.paginator.page_range %}
+                {% if i == etiquetas.number %}
+                <span class="activo">{{ i }}</span>
+                {% else %}
+                <a
+                    href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ i }}&tab=etiquetas">
+                    {{ i }}
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                {% if etiquetas.has_next %}
+                <a
+                    href="?categorias_page={{ categorias.number }}&marcas_page={{ marcas.number }}&colecciones_page={{ colecciones.number }}&etiquetas_page={{ etiquetas.next_page_number }}&tab=etiquetas">
+                    →
+                </a>
+                {% endif %}
+
+            </div>
+            {% endif %}
 
         </div>
 

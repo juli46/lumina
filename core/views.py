@@ -55,23 +55,23 @@ logger = logging.getLogger(__name__)
 MARGENES_RENTABILIDAD = (
     {
         "desde": Decimal("0"),
-        "margen": Decimal("0.30"),
+        "margen": Decimal("0.40"),
         "etiqueta": "Al detalle",
     },
     {
-        "desde": Decimal("1200000"),
-        "margen": Decimal("0.10"),
-        "etiqueta": "Más de $1.200.000",
+        "desde": Decimal("100000"),
+        "margen": Decimal("0.30"),
+        "etiqueta": "Más de $100.000",
     },
     {
         "desde": Decimal("500000"),
-        "margen": Decimal("0.15"),
+        "margen": Decimal("0.25"),
         "etiqueta": "Más de $500.000",
     },
     {
-        "desde": Decimal("100000"),
+        "desde": Decimal("1200000"),
         "margen": Decimal("0.20"),
-        "etiqueta": "Más de $100.000",
+        "etiqueta": "Más de $1.200.000",
     },
 )
 
@@ -100,9 +100,9 @@ def normalizar_precio(valor):
 
 def calcular_precio_con_margen(costo):
 
-    precio = costo / (Decimal("1") - Decimal("0.30"))
+    precio = costo / (Decimal("1") - Decimal("0.40"))
 
-    return aproximar_precio(precio), Decimal("0.30")
+    return aproximar_precio(precio), Decimal("0.40")
 
 
 def aproximar_precio(precio):
@@ -1313,16 +1313,15 @@ def eliminar_resultado_usuario(request, resultado_id):
 # =========================
 # PRODUCTOS
 # =========================
-
 @login_required
 @admin_required
 def dashboard_productos(request):
 
     producto_editar = None
 
-    # =========================
+    # =====================================================
     # DETECTAR EDICIÓN
-    # =========================
+    # =====================================================
 
     editar_id = request.GET.get("editar")
 
@@ -1333,29 +1332,67 @@ def dashboard_productos(request):
             "imagenes",
             "videos",
             "etiquetas"
-        ).get(id=editar_id)
+        ).get(
+            id=editar_id
+        )
+
+    # =====================================================
+    # PROCESAR POST
+    # =====================================================
 
     if request.method == "POST":
 
         producto_id = request.POST.get("producto_id")
 
-        # =========================
-        # DATOS PRODUCTO
-        # =========================
+        # =================================================
+        # DATOS DEL PRODUCTO
+        # =================================================
 
-        nombre = request.POST.get("nombre")
-        descripcion = request.POST.get("descripcion")
-        info_extra = request.POST.get("info_extra", "").strip()
+        nombre = request.POST.get(
+            "nombre"
+        )
 
-        categoria_id = request.POST.get("categoria")
-        marca_id = request.POST.get("marca")
-        coleccion_id = request.POST.get("coleccion")
+        descripcion = request.POST.get(
+            "descripcion"
+        )
 
-        costo_texto = request.POST.get("costo_base", "").strip()
+        info_extra = request.POST.get(
+            "info_extra",
+            ""
+        ).strip()
 
-        etiquetas_ids = request.POST.getlist("etiquetas[]")
+        categoria_id = request.POST.get(
+            "categoria"
+        )
 
-        costo_base = normalizar_precio(costo_texto)
+        marca_id = request.POST.get(
+            "marca"
+        )
+
+        coleccion_id = request.POST.get(
+            "coleccion"
+        )
+
+        costo_texto = request.POST.get(
+            "costo_base",
+            ""
+        ).strip()
+
+        # =================================================
+        # ETIQUETAS
+        # =================================================
+
+        etiquetas_ids = request.POST.getlist(
+            "etiquetas[]"
+        )
+
+        # =================================================
+        # NORMALIZAR COSTO
+        # =================================================
+
+        costo_base = normalizar_precio(
+            costo_texto
+        )
 
         if costo_base is None:
 
@@ -1364,42 +1401,72 @@ def dashboard_productos(request):
                 "Debes ingresar un costo válido."
             )
 
-            return redirect("dashboard_productos")
+            return redirect(
+                "dashboard_productos"
+            )
 
-        precio_base, margen_aplicado = calcular_precio_con_margen(costo_base)
+        # =================================================
+        # CALCULAR PRECIO NORMAL
+        # =================================================
 
-        # =========================
-        # SI EXISTE ID ACTUALIZA
-        # =========================
+        precio_base, margen_aplicado = (
+            calcular_precio_con_margen(
+                costo_base
+            )
+        )
+
+        # =================================================
+        # ACTUALIZAR PRODUCTO
+        # =================================================
 
         if producto_id:
 
-            producto = Producto.objects.get(
+            producto = get_object_or_404(
+                Producto,
                 id=producto_id
             )
 
             producto.nombre = nombre
+
             producto.descripcion = descripcion
+
             producto.info_extra = info_extra
+
             producto.categoria_id = categoria_id
+
             producto.marca_id = marca_id
-            producto.coleccion_id = coleccion_id or None
+
+            producto.coleccion_id = (
+                coleccion_id
+                or None
+            )
+
             producto.precio_base = precio_base
 
-            if hasattr(producto, "costo_base"):
+            # ---------------------------------------------
+            # COSTO BASE
+            # ---------------------------------------------
+
+            if hasattr(
+                producto,
+                "costo_base"
+            ):
+
                 producto.costo_base = costo_base
 
             producto.save()
 
-            # Actualizar etiquetas
+            # ---------------------------------------------
+            # ACTUALIZAR ETIQUETAS
+            # ---------------------------------------------
 
             producto.etiquetas.set(
                 etiquetas_ids
             )
 
-            # =========================
+            # =================================================
             # ELIMINAR IMÁGENES MARCADAS
-            # =========================
+            # =================================================
 
             ids_imagenes_eliminar = request.POST.getlist(
                 "eliminar_imagenes[]"
@@ -1413,13 +1480,17 @@ def dashboard_productos(request):
 
                 for imagen in imagenes_a_borrar:
 
-                    # Borra el archivo físico del storage
-                    imagen.imagen.delete(save=False)
+                    if imagen.imagen:
+
+                        imagen.imagen.delete(
+                            save=False
+                        )
+
                     imagen.delete()
 
-            # =========================
+            # =================================================
             # ELIMINAR VIDEOS MARCADOS
-            # =========================
+            # =================================================
 
             ids_videos_eliminar = request.POST.getlist(
                 "eliminar_videos[]"
@@ -1433,48 +1504,57 @@ def dashboard_productos(request):
 
                 for video in videos_a_borrar:
 
-                    video.video.delete(save=False)
+                    if video.video:
+
+                        video.video.delete(
+                            save=False
+                        )
+
                     video.delete()
 
-            # =========================
-            # AGREGAR NUEVAS IMAGENES
-            # =========================
+            # =================================================
+            # AGREGAR NUEVAS IMÁGENES
+            # =================================================
 
-            for imagen in request.FILES.getlist(
+            nuevas_imagenes = request.FILES.getlist(
                 "imagenes"
-            ):
+            )
+
+            for imagen in nuevas_imagenes:
 
                 ProductoImagen.objects.create(
                     producto=producto,
                     imagen=imagen
                 )
 
-            # =========================
+            # =================================================
             # AGREGAR NUEVOS VIDEOS
-            # =========================
+            # =================================================
 
-            for video in request.FILES.getlist(
+            nuevos_videos = request.FILES.getlist(
                 "videos"
-            ):
+            )
+
+            for video in nuevos_videos:
 
                 ProductoVideo.objects.create(
                     producto=producto,
                     video=video
                 )
 
-            # =========================
-            # ACTUALIZAR VARIANTES
-            # =========================
-
-            producto.variantes.all().delete()
+        # =====================================================
+        # CREAR PRODUCTO
+        # =====================================================
 
         else:
 
-            # =========================
-            # CREAR SLUG
-            # =========================
+            # =================================================
+            # CREAR SLUG ÚNICO
+            # =================================================
 
-            slug = slugify(nombre)
+            slug = slugify(
+                nombre
+            )
 
             slug_original = slug
 
@@ -1484,13 +1564,16 @@ def dashboard_productos(request):
                 slug=slug
             ).exists():
 
-                slug = f"{slug_original}-{contador}"
+                slug = (
+                    f"{slug_original}-{contador}"
+                )
 
                 contador += 1
 
-            # =========================
+            # =================================================
             # CREAR PRODUCTO
-            # =========================
+            # =================================================
+
             producto = Producto.objects.create(
 
                 nombre=nombre,
@@ -1505,43 +1588,57 @@ def dashboard_productos(request):
 
                 marca_id=marca_id,
 
-                coleccion_id=coleccion_id or None,
+                coleccion_id=(
+                    coleccion_id
+                    or None
+                ),
 
-                precio_base=precio_base
+                precio_base=precio_base,
 
+                costo_base=costo_base
             )
 
-            if hasattr(producto, "costo_base"):
-                producto.costo_base = costo_base
-                producto.save(update_fields=["costo_base"])
+            # =================================================
+            # GUARDAR ETIQUETAS
+            # =================================================
 
             producto.etiquetas.set(
                 etiquetas_ids
             )
 
-            # =========================
+            # =================================================
             # GUARDAR IMÁGENES
-            # =========================
-            for imagen in request.FILES.getlist("imagenes"):
+            # =================================================
+
+            nuevas_imagenes = request.FILES.getlist(
+                "imagenes"
+            )
+
+            for imagen in nuevas_imagenes:
 
                 ProductoImagen.objects.create(
                     producto=producto,
                     imagen=imagen
                 )
 
-            # =========================
+            # =================================================
             # GUARDAR VIDEOS
-            # =========================
-            for video in request.FILES.getlist("videos"):
+            # =================================================
+
+            nuevos_videos = request.FILES.getlist(
+                "videos"
+            )
+
+            for video in nuevos_videos:
 
                 ProductoVideo.objects.create(
                     producto=producto,
                     video=video
                 )
 
-        # =========================
-        # CREAR VARIANTES
-        # =========================
+        # =====================================================
+        # VARIANTES
+        # =====================================================
 
         skus = request.POST.getlist(
             "sku[]"
@@ -1559,118 +1656,378 @@ def dashboard_productos(request):
             "stock[]"
         )
 
-        for i in range(len(nombres_tono)):
+        # =====================================================
+        # ACTUALIZAR VARIANTES
+        # =====================================================
 
-            Variante.objects.create(
+        # Solo aplica para edición.
+        #
+        # En lugar de borrar todas las variantes, vamos a:
+        #
+        # 1. Actualizar las existentes.
+        # 2. Crear las nuevas.
+        # 3. Eliminar únicamente las variantes que no tengan
+        #    pedidos asociados.
 
-                producto=producto,
+        variantes_existentes = list(
+            producto.variantes.all()
+        )
 
-                sku=skus[i],
+        variantes_usadas_en_pedidos = set(
+            PedidoItem.objects.filter(
+                variante__producto=producto
+            ).values_list(
+                "variante_id",
+                flat=True
+            )
+        )
 
-                nombre_tono=nombres_tono[i],
+        variantes_procesadas = set()
 
-                codigo_tono=(
+        # =====================================================
+        # RECORRER VARIANTES DEL FORMULARIO
+        # =====================================================
 
-                    codigos_tono[i]
+        for i in range(
+            len(nombres_tono)
+        ):
 
-                    if i < len(codigos_tono)
+            # ---------------------------------------------
+            # DATOS
+            # ---------------------------------------------
 
-                    else ""
+            sku = (
+                skus[i]
+                if i < len(skus)
+                else ""
+            ).strip()
 
-                ),
+            nombre_tono = (
+                nombres_tono[i]
+                if i < len(nombres_tono)
+                else ""
+            ).strip()
 
-                stock=int(
+            codigo_tono = (
+                codigos_tono[i]
+                if i < len(codigos_tono)
+                else ""
+            ).strip()
 
-                    stocks[i]
+            stock_texto = (
+                stocks[i]
+                if i < len(stocks)
+                else "0"
+            )
 
-                    if i < len(stocks)
+            # ---------------------------------------------
+            # STOCK
+            # ---------------------------------------------
 
-                    else 0
+            try:
+
+                stock = int(
+                    stock_texto
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                stock = 0
+
+            if stock < 0:
+                stock = 0
+
+            # =================================================
+            # INTENTAR ENCONTRAR VARIANTE EXISTENTE
+            # =================================================
+
+            variante_existente = None
+
+            # Primero intentamos por SKU.
+            if sku:
+
+                variante_existente = next(
+                    (
+                        variante
+                        for variante in variantes_existentes
+                        if variante.sku == sku
+                        and variante.id
+                        not in variantes_procesadas
+                    ),
+                    None
+                )
+
+            # Si no existe por SKU, intentamos por posición.
+            if variante_existente is None:
+
+                variantes_disponibles = [
+                    variante
+                    for variante in variantes_existentes
+                    if variante.id
+                    not in variantes_procesadas
+                ]
+
+                if variantes_disponibles:
+
+                    variante_existente = (
+                        variantes_disponibles[0]
+                    )
+
+            # =================================================
+            # ACTUALIZAR VARIANTE EXISTENTE
+            # =================================================
+
+            if variante_existente:
+
+                variante_existente.sku = sku
+
+                variante_existente.nombre_tono = (
+                    nombre_tono
+                )
+
+                variante_existente.codigo_tono = (
+                    codigo_tono
+                )
+
+                variante_existente.stock = stock
+
+                variante_existente.save()
+
+                variantes_procesadas.add(
+                    variante_existente.id
+                )
+
+            # =================================================
+            # CREAR NUEVA VARIANTE
+            # =================================================
+
+            else:
+
+                nueva_variante = Variante.objects.create(
+
+                    producto=producto,
+
+                    sku=sku,
+
+                    nombre_tono=nombre_tono,
+
+                    codigo_tono=codigo_tono,
+
+                    stock=stock
 
                 )
 
-            )
+                variantes_procesadas.add(
+                    nueva_variante.id
+                )
+
+        # =====================================================
+        # ELIMINAR VARIANTES QUE YA NO ESTÁN EN EL FORMULARIO
+        # =====================================================
+
+        for variante in variantes_existentes:
+
+            # Esta variante sigue existiendo en el formulario.
+            if variante.id in variantes_procesadas:
+                continue
+
+            # Si pertenece a un pedido histórico,
+            # NO se puede eliminar.
+            if variante.id in variantes_usadas_en_pedidos:
+                continue
+
+            # Si nunca fue usada en un pedido,
+            # sí podemos eliminarla.
+            variante.delete()
+
+        # =====================================================
+        # FINALIZAR
+        # =====================================================
+
+        messages.success(
+            request,
+            "Producto guardado correctamente."
+        )
 
         return redirect(
             "dashboard_productos"
         )
 
-    # =========================
-    # LISTAR PRODUCTOS (con búsqueda)
-    # =========================
+    # =========================================================
+    # LISTAR PRODUCTOS
+    # =========================================================
 
-    query = request.GET.get("q", "").strip()
+    query = request.GET.get(
+        "q",
+        ""
+    ).strip()
 
-    productos_qs = Producto.objects.prefetch_related(
-
-        "imagenes",
-
-        "videos",
-
-        "variantes",
-
-        "etiquetas"
-
-    ).select_related(
-
-        "categoria",
-
-        "marca",
-
-        "coleccion"
-
-    ).order_by(
-        "-fecha_creacion"
+    productos_qs = (
+        Producto.objects
+        .prefetch_related(
+            "imagenes",
+            "videos",
+            "variantes",
+            "etiquetas"
+        )
+        .select_related(
+            "categoria",
+            "marca",
+            "coleccion"
+        )
+        .order_by(
+            "-fecha_creacion"
+        )
     )
+
+    # =========================================================
+    # BÚSQUEDA
+    # =========================================================
 
     if query:
 
         productos_qs = productos_qs.filter(
-            Q(nombre__icontains=query) |
-            Q(marca__nombre__icontains=query) |
-            Q(categoria__nombre__icontains=query) |
-            Q(coleccion__nombre__icontains=query) |
-            Q(variantes__sku__icontains=query)
+
+            Q(
+                nombre__icontains=query
+            )
+
+            |
+
+            Q(
+                marca__nombre__icontains=query
+            )
+
+            |
+
+            Q(
+                categoria__nombre__icontains=query
+            )
+
+            |
+
+            Q(
+                coleccion__nombre__icontains=query
+            )
+
+            |
+
+            Q(
+                variantes__sku__icontains=query
+            )
+
         ).distinct()
 
-    # =========================
+    # =========================================================
     # STOCK BAJO
-    # =========================
-    # Se calcula sobre productos_qs (respeta la búsqueda activa) y ANTES
-    # de paginar, para que el contador refleje el total real, no solo
-    # lo que se ve en la página actual.
+    # =========================================================
 
     variantes_stock_bajo_qs = Variante.objects.filter(
+
         producto__in=productos_qs,
+
         stock__lte=UMBRAL_STOCK_BAJO
+
     )
 
     productos_stock_bajo_ids = set(
-        variantes_stock_bajo_qs.values_list("producto_id", flat=True)
+
+        variantes_stock_bajo_qs.values_list(
+
+            "producto_id",
+
+            flat=True
+
+        )
+
     )
 
-    total_stock_bajo_productos = len(productos_stock_bajo_ids)
+    total_stock_bajo_productos = len(
+        productos_stock_bajo_ids
+    )
 
-    # =========================
+    # =========================================================
     # PAGINACIÓN
-    # =========================
+    # =========================================================
 
-    paginator = Paginator(productos_qs, 10)
+    paginator = Paginator(
+        productos_qs,
+        10
+    )
 
-    numero_pagina = request.GET.get("page")
+    numero_pagina = request.GET.get(
+        "page"
+    )
 
-    productos = paginator.get_page(numero_pagina)
+    productos = paginator.get_page(
+        numero_pagina
+    )
+
+    # =========================================================
+    # DATOS DE RENTABILIDAD
+    # =========================================================
 
     for producto in productos:
 
         costo_referencia = getattr(
+
             producto,
+
             "costo_base",
+
             producto.precio_base
+
         )
 
-        producto.costo_referencia = costo_referencia
-        producto.precios_rentabilidad = calcular_precios_por_margen(costo_referencia)
+        producto.costo_referencia = (
+            costo_referencia
+        )
+
+        producto.precios_rentabilidad = (
+            calcular_precios_por_margen(
+                costo_referencia
+            )
+        )
+
+    # =========================================================
+    # ETIQUETAS SELECCIONADAS
+    # =========================================================
+
+    etiquetas_seleccionadas = set()
+
+    if producto_editar:
+
+        etiquetas_seleccionadas = {
+
+            etiqueta.id
+
+            for etiqueta
+            in producto_editar.etiquetas.all()
+
+        }
+
+    # =========================================================
+    # DATOS PARA EL FORMULARIO
+    # =========================================================
+
+    categorias = Categoria.objects.all()
+
+    marcas = Marca.objects.filter(
+        activa=True
+    )
+
+    colecciones = Coleccion.objects.filter(
+        activa=True
+    )
+
+    etiquetas = Etiqueta.objects.all()
+
+    # =========================================================
+    # CONTEXTO
+    # =========================================================
 
     contexto = {
 
@@ -1680,24 +2037,35 @@ def dashboard_productos(request):
 
         "producto_editar": producto_editar,
 
-        "categorias": Categoria.objects.all(),
+        "categorias": categorias,
 
-        "marcas": Marca.objects.filter(
-            activa=True
+        "marcas": marcas,
+
+        "colecciones": colecciones,
+
+        "etiquetas": etiquetas,
+
+        "etiquetas_seleccionadas": (
+            etiquetas_seleccionadas
         ),
 
-        "colecciones": Coleccion.objects.filter(
-            activa=True
+        "total_stock_bajo_productos": (
+            total_stock_bajo_productos
         ),
 
-        "etiquetas": Etiqueta.objects.all(),
+        "productos_stock_bajo_ids": (
+            productos_stock_bajo_ids
+        ),
 
-        # Stock bajo
-        "total_stock_bajo_productos": total_stock_bajo_productos,
-        "productos_stock_bajo_ids": productos_stock_bajo_ids,
-        "umbral_stock_bajo": UMBRAL_STOCK_BAJO,
+        "umbral_stock_bajo": (
+            UMBRAL_STOCK_BAJO
+        ),
 
     }
+
+    # =========================================================
+    # RENDER
+    # =========================================================
 
     return render(
 
@@ -1708,8 +2076,6 @@ def dashboard_productos(request):
         contexto
 
     )
-
-
 @login_required
 @admin_required
 def editar_producto(request, producto_id):
@@ -4068,14 +4434,26 @@ def carrito(request):
         "core/carrito.html",
         contexto
     )
-
-
 # ==========================================================
 # AGREGAR AL CARRITO
 # ==========================================================
-@login_required
 @require_POST
 def agregar_al_carrito(request, variante_id):
+
+    # ==========================================
+    # USUARIO NO AUTENTICADO
+    # ==========================================
+
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "ok": False,
+            "login_required": True,
+            "mensaje": "Debes iniciar sesión para agregar productos al carrito."
+        }, status=401)
+
+    # ==========================================
+    # VARIANTE
+    # ==========================================
 
     variante = get_object_or_404(
         Variante.objects.select_related("producto"),
@@ -4110,6 +4488,7 @@ def agregar_al_carrito(request, variante_id):
         cantidad = int(
             request.POST.get("cantidad", 1)
         )
+
     except (TypeError, ValueError):
 
         return JsonResponse({
@@ -4192,8 +4571,6 @@ def agregar_al_carrito(request, variante_id):
         "cantidad_carrito": carrito.cantidad_total,
         "subtotal_item": str(item.subtotal),
     })
-
-
 # ==========================================================
 # AUMENTAR CANTIDAD
 # ==========================================================
@@ -4495,19 +4872,11 @@ def checkout(request):
     # ======================================================
     # 2. NIVEL DE PRECIO
     # ======================================================
+        regla = obtener_margen_por_monto(subtotal_detalle)
 
-    if subtotal_detalle >= Decimal("1200000"):
-        margen = Decimal("0.10")
-        nivel_precio = "Más de $1.200.000"
-    elif subtotal_detalle >= Decimal("500000"):
-        margen = Decimal("0.15")
-        nivel_precio = "Más de $500.000"
-    elif subtotal_detalle >= Decimal("100000"):
-        margen = Decimal("0.20")
-        nivel_precio = "Más de $100.000"
-    else:
-        margen = Decimal("0.30")
-        nivel_precio = "Al detalle"
+        margen = regla["margen"]
+        nivel_precio = regla["etiqueta"]
+   
 
     # ======================================================
     # 3. PRECIO FINAL POR PRODUCTO (con margen)
@@ -4677,19 +5046,10 @@ def pago_checkout(request):
     # ======================================================
     # NIVEL
     # ======================================================
+    regla = obtener_margen_por_monto(subtotal_detalle)
 
-    if subtotal_detalle >= Decimal("1200000"):
-        margen = Decimal("0.10")
-        nivel_precio = "Más de $1.200.000"
-    elif subtotal_detalle >= Decimal("500000"):
-        margen = Decimal("0.15")
-        nivel_precio = "Más de $500.000"
-    elif subtotal_detalle >= Decimal("100000"):
-        margen = Decimal("0.20")
-        nivel_precio = "Más de $100.000"
-    else:
-        margen = Decimal("0.30")
-        nivel_precio = "Al detalle"
+    margen = regla["margen"]
+    nivel_precio = regla["etiqueta"]
 
     # ======================================================
     # SUBTOTAL CON DESCUENTO (PRODUCTOS)
@@ -4870,19 +5230,10 @@ def confirmar_pedido(request):
     # ======================================================
     # NIVEL
     # ======================================================
+        regla = obtener_margen_por_monto(subtotal_detalle)
 
-    if subtotal_detalle >= Decimal("1200000"):
-        margen = Decimal("0.10")
-        etiqueta = "Más de $1.200.000"
-    elif subtotal_detalle >= Decimal("500000"):
-        margen = Decimal("0.15")
-        etiqueta = "Más de $500.000"
-    elif subtotal_detalle >= Decimal("100000"):
-        margen = Decimal("0.20")
-        etiqueta = "Más de $100.000"
-    else:
-        margen = Decimal("0.30")
-        etiqueta = "Al detalle"
+        margen = regla["margen"]
+        etiqueta = regla["etiqueta"]
 
     # ======================================================
     # TOTAL FINAL + DESCUENTO POR ITEM (PRODUCTOS)
@@ -5078,7 +5429,6 @@ def confirmar_pedido(request):
 # ==========================================================
 # CALCULAR CHECKOUT
 # ==========================================================
-
 @login_required
 @require_POST
 def calcular_checkout(request):
@@ -5122,7 +5472,9 @@ def calcular_checkout(request):
     # CARRITO
     # ======================================================
 
-    carrito = Carrito.objects.filter(usuario=request.user).first()
+    carrito = Carrito.objects.filter(
+        usuario=request.user
+    ).first()
 
     if not carrito:
         return JsonResponse({
@@ -5131,7 +5483,11 @@ def calcular_checkout(request):
         }, status=400)
 
     items = list(
-        carrito.items.select_related("variante", "variante__producto", "kit")
+        carrito.items.select_related(
+            "variante",
+            "variante__producto",
+            "kit"
+        )
     )
 
     if not items:
@@ -5140,11 +5496,23 @@ def calcular_checkout(request):
             "mensaje": "Tu carrito está vacío."
         }, status=400)
 
-    items_productos = [item for item in items if not item.es_kit]
-    items_kits = [item for item in items if item.es_kit]
+    # ======================================================
+    # SEPARAR PRODUCTOS Y KITS
+    # ======================================================
+
+    items_productos = [
+        item for item in items
+        if not item.es_kit
+    ]
+
+    items_kits = [
+        item for item in items
+        if item.es_kit
+    ]
 
     # ======================================================
-    # SUBTOTAL AL DETAL (SOLO PRODUCTOS)
+    # SUBTOTAL AL DETAL
+    # SOLO PRODUCTOS
     # ======================================================
 
     subtotal_detalle = Decimal("0")
@@ -5152,32 +5520,29 @@ def calcular_checkout(request):
     for item in items_productos:
 
         producto = item.variante.producto
-        precio_detalle = Decimal(str(producto.precio_base))
 
-        subtotal_detalle += precio_detalle * item.cantidad
+        precio_detalle = Decimal(
+            str(producto.precio_base)
+        )
 
-    # ======================================================
-    # NIVEL
-    # ======================================================
-
-    if subtotal_detalle >= Decimal("1200000"):
-        margen = Decimal("0.10")
-        etiqueta = "Más de $1.200.000"
-
-    elif subtotal_detalle >= Decimal("500000"):
-        margen = Decimal("0.15")
-        etiqueta = "Más de $500.000"
-
-    elif subtotal_detalle >= Decimal("100000"):
-        margen = Decimal("0.20")
-        etiqueta = "Más de $100.000"
-
-    else:
-        margen = Decimal("0.30")
-        etiqueta = "Al detalle"
+        subtotal_detalle += (
+            precio_detalle * item.cantidad
+        )
 
     # ======================================================
-    # TOTAL PRODUCTOS (con margen)
+    # OBTENER MARGEN SEGÚN EL MONTO
+    # ======================================================
+
+    regla = obtener_margen_por_monto(
+        subtotal_detalle
+    )
+
+    margen = regla["margen"]
+    etiqueta = regla["etiqueta"]
+
+    # ======================================================
+    # TOTAL PRODUCTOS
+    # APLICANDO MARGEN
     # ======================================================
 
     subtotal_productos = Decimal("0")
@@ -5186,64 +5551,116 @@ def calcular_checkout(request):
     for item in items_productos:
 
         producto = item.variante.producto
-        costo = Decimal(str(producto.costo_base))
 
-        precio_final = aproximar_precio(
-            costo / (Decimal("1") - margen)
+        # Precio que normalmente tendría el producto
+        precio_detalle = Decimal(
+            str(producto.precio_base)
         )
 
-        subtotal_item = precio_final * item.cantidad
+        # Precio según el margen del tramo
+        precio_final = calcular_precio_segun_monto(
+            producto,
+            subtotal_detalle
+        )
 
+        # Subtotal con precio mayorista
+        subtotal_item = (
+            precio_final * item.cantidad
+        )
+
+        # Subtotal al precio normal
         subtotal_detalle_item = (
-            Decimal(str(producto.precio_base)) * item.cantidad
+            precio_detalle * item.cantidad
         )
 
         subtotal_productos += subtotal_item
-        descuento += (subtotal_detalle_item - subtotal_item)
+
+        # Ahorro real frente al precio normal
+        descuento += (
+            subtotal_detalle_item - subtotal_item
+        )
 
     # ======================================================
-    # TOTAL KITS (precio propio, sin descuento por monto)
+    # TOTAL KITS
+    # PRECIO PROPIO
+    # SIN DESCUENTO POR MONTO
     # ======================================================
 
     subtotal_kits = Decimal("0")
 
     for item in items_kits:
-        precio_kit = item.kit.precio_final
-        subtotal_kits += precio_kit * item.cantidad
 
-    subtotal = subtotal_productos + subtotal_kits
+        precio_kit = Decimal(
+            str(item.kit.precio_final)
+        )
+
+        subtotal_kits += (
+            precio_kit * item.cantidad
+        )
+
+    # ======================================================
+    # SUBTOTAL GENERAL
+    # ======================================================
+
+    subtotal = (
+        subtotal_productos +
+        subtotal_kits
+    )
 
     # ======================================================
     # ENVÍO
     # ======================================================
 
-    costo_envio = calcular_costo_envio(direccion)
+    costo_envio = calcular_costo_envio(
+        direccion
+    )
 
     # ======================================================
-    # TOTAL CON ENVÍO
+    # TOTAL FINAL
     # ======================================================
 
-    total = subtotal + costo_envio
+    total = (
+        subtotal +
+        costo_envio
+    )
 
     # ======================================================
-    # RESPUESTA
+    # RESPUESTA JSON
     # ======================================================
 
     return JsonResponse({
 
         "ok": True,
+
         "direccion_id": direccion.id,
-        "subtotal_detalle": float(subtotal_detalle),
-        "subtotal": float(subtotal),
-        "descuento": float(descuento),
-        "margen": float(margen * Decimal("100")),
+
+        "subtotal_detalle": float(
+            subtotal_detalle
+        ),
+
+        "subtotal": float(
+            subtotal
+        ),
+
+        "descuento": float(
+            descuento
+        ),
+
+        "margen": float(
+            margen * Decimal("100")
+        ),
+
         "nivel": etiqueta,
-        "costo_envio": float(costo_envio),
-        "total": float(total),
+
+        "costo_envio": float(
+            costo_envio
+        ),
+
+        "total": float(
+            total
+        ),
 
     })
-
-
 # =========================
 # PEDIDOS
 # =========================

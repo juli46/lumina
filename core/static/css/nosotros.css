@@ -610,14 +610,14 @@ background:
 .info-grid {
 
  
-max-width: 1150px;
+max-width: 1250px;
 
 margin: auto;
 
 display: grid;
 
 grid-template-columns:
-    repeat(3, 1fr);
+    repeat(4, 1fr);
 
 gap: 22px;
  

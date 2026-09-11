@@ -181,7 +181,7 @@ class Producto(models.Model):
 
     def calcular_precio_con_margen(self):
 
-        return self.costo_base / Decimal("0.70")
+        return self.costo_base / Decimal("0.60")
 
     def aproximar_precio(self, precio):
 
@@ -192,7 +192,7 @@ class Producto(models.Model):
     @property
     def margen_rentabilidad(self):
 
-        return Decimal("30")
+        return Decimal("40")
 
     def save(self, *args, **kwargs):
 
@@ -211,19 +211,19 @@ class Producto(models.Model):
     @property
     def precio_100(self):
         return self.aproximar_precio(
-            self.costo_base / Decimal("0.80"),
+            self.costo_base / Decimal("0.70"),
         )
 
     @property
     def precio_500(self):
         return self.aproximar_precio(
-            self.costo_base / Decimal("0.85"),
+            self.costo_base / Decimal("0.75"),
         )
 
     @property
     def precio_1200(self):
         return self.aproximar_precio(
-            self.costo_base / Decimal("0.90"),
+            self.costo_base / Decimal("0.80"),
         )
 
     def __str__(self):

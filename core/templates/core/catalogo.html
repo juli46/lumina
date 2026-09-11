@@ -1,54 +1,56 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}
-Catálogo | Lúmina
+{% block title %}Catálogo | Lúmina{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
+<section class="catalogo">
 
-
-<div class="catalogo-container">
-
-
-    <!-- ==========================================
+    <!-- =====================================================
          ENCABEZADO
-    =========================================== -->
+    ====================================================== -->
 
-    <header class="catalogo-header">
+    <div class="catalogo-header">
 
-        <div class="catalogo-header-text">
+        <div class="catalogo-titulo">
 
             <span class="catalogo-subtitulo">
-                Descubre nuestros productos
+                DESCUBRE NUESTROS PRODUCTOS
             </span>
 
             <h1>
-                Catálogo Lúmina
+                Catálogo
             </h1>
 
             <p>
-                Encuentra tus productos favoritos y descubre
-                todos sus detalles.
+                Encuentra maquillaje, skincare, accesorios y kits
+                ideales para tu emprendimiento.
             </p>
 
         </div>
 
+    </div>
 
-        <!-- ======================================
-             BUSCADOR
-        ======================================= -->
 
-        <div class="catalogo-buscador">
+    <!-- =====================================================
+         BUSCADOR
+    ====================================================== -->
+
+    <div class="catalogo-buscador">
+
+        <div class="buscador-contenedor">
 
             <i class="fa-solid fa-magnifying-glass"></i>
 
             <input
-                type="search"
+                type="text"
                 id="buscarCatalogo"
-                placeholder="Buscar productos..."
+                placeholder="Buscar productos, marcas, categorías..."
                 autocomplete="off"
             >
 
@@ -56,548 +58,208 @@ Catálogo | Lúmina
                 type="button"
                 id="limpiarBusqueda"
                 class="btn-limpiar-busqueda"
-                aria-label="Limpiar búsqueda"
                 hidden
+                aria-label="Limpiar búsqueda"
             >
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
         </div>
 
-    </header>
+    </div>
 
 
-    <!-- ==========================================
+    <!-- =====================================================
          FILTROS
-    =========================================== -->
+    ====================================================== -->
 
-    <section class="catalogo-filtros">
+    <div class="catalogo-filtros">
 
-        <div class="filtros-header">
+        <!-- TIPO -->
 
-            <div>
+        <div class="filtro-grupo">
 
-                <span class="filtros-subtitulo">
-                    Personaliza tu búsqueda
-                </span>
+            <label for="filtroTipo">
+                Tipo
+            </label>
 
-                <h2>
-                    Filtrar productos
-                </h2>
+            <select id="filtroTipo">
 
-            </div>
+                <option value="">
+                    Todos
+                </option>
 
-            <button
-                type="button"
-                id="limpiarFiltros"
-                class="btn-limpiar-filtros"
-            >
-                <i class="fa-solid fa-rotate-left"></i>
-                Limpiar filtros
-            </button>
+                <option value="producto">
+                    Productos
+                </option>
+
+                <option value="kit">
+                    Kits
+                </option>
+
+            </select>
 
         </div>
 
 
-        <div class="filtros-grid">
+        <!-- CATEGORÍA -->
 
+        <div class="filtro-grupo">
 
-            <!-- ======================================
-                 TIPO
-            ======================================= -->
+            <label for="filtroCategoria">
+                Categoría
+            </label>
 
-            <div class="filtro-campo">
+            <select id="filtroCategoria">
 
-                <label for="filtroTipo">
-                    <i class="fa-solid fa-shapes"></i>
-                    Tipo
-                </label>
+                <option value="">
+                    Todas
+                </option>
 
-                <select id="filtroTipo">
-
-                    <option value="">
-                        Productos y kits
-                    </option>
-
-                    <option value="producto">
-                        Solo productos
-                    </option>
-
-                    <option value="kit">
-                        Solo kits
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <!-- ======================================
-                 CATEGORÍA
-            ======================================= -->
-
-            <div class="filtro-campo">
-
-                <label for="filtroCategoria">
-                    <i class="fa-solid fa-layer-group"></i>
-                    Categoría
-                </label>
-
-                <select id="filtroCategoria">
-
-                    <option value="">
-                        Todas las categorías
-                    </option>
-
-                    {% for categoria in categorias %}
+                {% for categoria in categorias %}
 
                     <option value="{{ categoria.nombre|lower }}">
                         {{ categoria.nombre }}
                     </option>
 
-                    {% endfor %}
+                {% endfor %}
 
-                </select>
+            </select>
 
-            </div>
+        </div>
 
 
-            <!-- ======================================
-                 MARCA
-            ======================================= -->
+        <!-- MARCA -->
 
-            <div class="filtro-campo">
+        <div class="filtro-grupo">
 
-                <label for="filtroMarca">
-                    <i class="fa-solid fa-tag"></i>
-                    Marca
-                </label>
+            <label for="filtroMarca">
+                Marca
+            </label>
 
-                <select id="filtroMarca">
+            <select id="filtroMarca">
 
-                    <option value="">
-                        Todas las marcas
-                    </option>
+                <option value="">
+                    Todas
+                </option>
 
-                    {% for marca in marcas %}
+                {% for marca in marcas %}
 
                     <option value="{{ marca.nombre|lower }}">
                         {{ marca.nombre }}
                     </option>
 
-                    {% endfor %}
+                {% endfor %}
 
-                </select>
+            </select>
 
-            </div>
+        </div>
 
 
-            <!-- ======================================
-                 COLECCIÓN
-            ======================================= -->
+        <!-- COLECCIÓN -->
 
-            <div class="filtro-campo">
+        <div class="filtro-grupo">
 
-                <label for="filtroColeccion">
-                    <i class="fa-solid fa-box-open"></i>
-                    Colección
-                </label>
+            <label for="filtroColeccion">
+                Colección
+            </label>
 
-                <select id="filtroColeccion">
+            <select id="filtroColeccion">
 
-                    <option value="">
-                        Todas las colecciones
-                    </option>
+                <option value="">
+                    Todas
+                </option>
 
-                    {% for coleccion in colecciones %}
+                {% for coleccion in colecciones %}
 
                     <option value="{{ coleccion.nombre|lower }}">
                         {{ coleccion.nombre }}
                     </option>
 
-                    {% endfor %}
+                {% endfor %}
 
-                </select>
-
-            </div>
-
-
-            <!-- ======================================
-                 ETIQUETAS
-            ======================================= -->
-
-            <div class="filtro-campo filtro-etiquetas">
-
-                <label for="filtroEtiquetaToggle">
-                    <i class="fa-solid fa-tags"></i>
-                    Etiquetas
-                </label>
-
-                <div class="etiquetas-dropdown">
-
-                    <button
-                        type="button"
-                        id="filtroEtiquetaToggle"
-                        class="etiquetas-dropdown-btn"
-                    >
-                        <span id="filtroEtiquetaTexto">
-                            Todas las etiquetas
-                        </span>
-
-                        <i class="fa-solid fa-chevron-down"></i>
-
-                    </button>
-
-                    <div
-                        class="etiquetas-dropdown-panel"
-                        id="etiquetasPanel"
-                        hidden
-                    >
-                        <!-- Los checkboxes se generan por JS -->
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ======================================
-                 ORDEN
-            ======================================= -->
-
-            <div class="filtro-campo">
-
-                <label for="ordenCatalogo">
-                    <i class="fa-solid fa-arrow-down-wide-short"></i>
-                    Ordenar
-                </label>
-
-                <select id="ordenCatalogo">
-
-                    <option value="recientes">
-                        Más recientes
-                    </option>
-
-                    <option value="nombre-az">
-                        Nombre A-Z
-                    </option>
-
-                    <option value="nombre-za">
-                        Nombre Z-A
-                    </option>
-
-                    <option value="precio-menor">
-                        Precio menor
-                    </option>
-
-                    <option value="precio-mayor">
-                        Precio mayor
-                    </option>
-
-                </select>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ==========================================
-         INFORMACIÓN DE RESULTADOS
-    =========================================== -->
-
-    <div class="catalogo-resultados">
-
-        <div class="catalogo-resultados-texto">
-
-            <strong id="cantidadProductos">
-                {{ productos|length|add:kits.count }}
-            </strong>
-
-            <span>
-                productos encontrados
-            </span>
+            </select>
 
         </div>
 
 
-        <div
-            class="filtros-activos"
-            id="filtrosActivos"
-        ></div>
+        <!-- ETIQUETAS -->
 
-    </div>
+        <div class="filtro-grupo filtro-etiquetas">
 
+            <label>
+                Etiquetas
+            </label>
 
-    <!-- ==========================================
-         PRODUCTOS Y KITS
-    =========================================== -->
-
-    <div
-        class="catalogo-grid"
-        id="catalogoProductos"
-    >
-
-        {% for producto in productos %}
-
-        <article
-            class="producto-card"
-            data-tipo="producto"
-            data-nombre="{{ producto.nombre|lower }}"
-            data-marca="{% if producto.marca %}{{ producto.marca.nombre|lower }}{% endif %}"
-            data-categoria="{% if producto.categoria %}{{ producto.categoria.nombre|lower }}{% endif %}"
-            data-coleccion="{% if producto.coleccion %}{{ producto.coleccion.nombre|lower }}{% endif %}"
-            data-etiquetas="{% for etiqueta in producto.etiquetas.all %}{{ etiqueta.nombre|lower }} {% endfor %}"
-            data-precio="{{ producto.precio_base }}"
-            data-fecha="{{ producto.fecha_creacion|date:'U' }}"
-        >
-
-
-            <!-- ==================================
-                 IMAGEN
-            =================================== -->
-
-            <a
-                href="{% url 'detalle_producto' producto.slug %}"
-                class="producto-imagen"
+            <button
+                type="button"
+                id="filtroEtiquetaToggle"
+                class="filtro-etiqueta-toggle"
             >
 
-                {% with imagen_principal=producto.imagenes.all|first %}
-
-                {% if imagen_principal %}
-
-                <img
-                    src="{{ imagen_principal.imagen.url }}"
-                    alt="{{ producto.nombre }}"
-                    loading="lazy"
-                >
-
-                {% else %}
-
-                <div class="producto-sin-imagen">
-
-                    <i class="fa-regular fa-image"></i>
-
-                    <span>
-                        Sin imagen
-                    </span>
-
-                </div>
-
-                {% endif %}
-
-                {% endwith %}
-
-
-                <!-- COLECCIÓN -->
-
-                {% if producto.coleccion %}
-
-                <span class="producto-coleccion">
-                    {{ producto.coleccion.nombre }}
+                <span id="filtroEtiquetaTexto">
+                    Todas las etiquetas
                 </span>
 
-                {% endif %}
+                <i class="fa-solid fa-chevron-down"></i>
 
-            </a>
-
-
-            <!-- ==================================
-                 INFORMACIÓN
-            =================================== -->
-
-            <div class="producto-info">
-
-                <h2>
-                    {{ producto.nombre }}
-                </h2>
+            </button>
 
 
-                {% if producto.variantes.all %}
-
-                    {% if producto.tiene_stock %}
-
-                    <strong class="producto-precio">
-                        ${{ producto.precio_base|floatformat:0 }}
-                    </strong>
-
-                    {% else %}
-
-                    <strong class="producto-agotado">
-                        Agotado
-                    </strong>
-
-                    {% endif %}
-
-                {% else %}
-
-                <strong class="producto-precio">
-                    ${{ producto.precio_base|floatformat:0 }}
-                </strong>
-
-                {% endif %}
-
-            </div>
-
-        </article>
-
-        {% endfor %}
-
-
-        <!-- ==================================
-             KITS
-        =================================== -->
-
-        {% for kit in kits %}
-
-        <article
-            class="producto-card"
-            data-tipo="kit"
-            data-nombre="{{ kit.nombre|lower }}"
-            data-marca=""
-            data-coleccion=""
-            data-categoria="{% if kit.categoria %}{{ kit.categoria.nombre|lower }}{% endif %}"
-            data-etiquetas=""
-            data-precio="{{ kit.precio_final }}"
-            data-fecha="{{ kit.fecha_creacion|date:'U' }}"
-        >
-
-            <a
-                href="{% url 'detalle_kit' kit.slug %}"
-                class="producto-imagen"
+            <div
+                id="etiquetasPanel"
+                class="etiquetas-panel"
+                hidden
             >
-
-                {% if kit.imagen %}
-
-                <img
-                    src="{{ kit.imagen.url }}"
-                    alt="{{ kit.nombre }}"
-                    loading="lazy"
-                >
-
-                {% else %}
-
-                <div class="producto-sin-imagen">
-
-                    <i class="fa-solid fa-gift"></i>
-
-                    <span>
-                        Sin imagen
-                    </span>
-
-                </div>
-
-                {% endif %}
-
-
-                <span class="producto-coleccion kit-badge">
-                    <i class="fa-solid fa-gift"></i>
-                    Kit
-                </span>
-
-
-                {% if kit.ahorro_porcentaje > 0 %}
-
-                <span class="kit-descuento">
-                    -{{ kit.ahorro_porcentaje|floatformat:0 }}%
-                </span>
-
-                {% endif %}
-
-            </a>
-
-
-            <div class="producto-info">
-
-                <div>
-
-                    <h2>
-                        {{ kit.nombre }}
-                    </h2>
-
-                    {% if kit.ahorro > 0 %}
-
-                    <span class="kit-precio-normal">
-                        ${{ kit.precio_normal|floatformat:0 }}
-                    </span>
-
-                    {% endif %}
-
-                </div>
-
-
-                {% if kit.stock > 0 %}
-
-                <strong class="producto-precio">
-                    ${{ kit.precio_final|floatformat:0 }}
-                </strong>
-
-                {% else %}
-
-                <strong class="producto-agotado">
-                    Agotado
-                </strong>
-
-                {% endif %}
-
+                <!--
+                    Las etiquetas serán creadas
+                    automáticamente mediante JS.
+                -->
             </div>
-
-        </article>
-
-        {% endfor %}
-
-
-        <!-- ==================================
-             SIN PRODUCTOS NI KITS
-        =================================== -->
-
-        {% if not productos and not kits %}
-
-        <div class="catalogo-vacio">
-
-            <i class="fa-solid fa-box-open"></i>
-
-            <h2>
-                No hay productos disponibles
-            </h2>
-
-            <p>
-                En este momento no tenemos productos
-                disponibles en el catálogo.
-            </p>
 
         </div>
 
-        {% endif %}
 
-    </div>
+        <!-- ORDEN -->
+
+        <div class="filtro-grupo">
+
+            <label for="ordenCatalogo">
+                Ordenar
+            </label>
+
+            <select id="ordenCatalogo">
+
+                <option value="recientes">
+                    Más recientes
+                </option>
+
+                <option value="nombre-az">
+                    Nombre A-Z
+                </option>
+
+                <option value="nombre-za">
+                    Nombre Z-A
+                </option>
+
+                <option value="precio-menor">
+                    Precio menor
+                </option>
+
+                <option value="precio-mayor">
+                    Precio mayor
+                </option>
+
+            </select>
+
+        </div>
 
 
-    <!-- ==========================================
-         SIN RESULTADOS
-    =========================================== -->
-
-    <div
-        id="sinResultadosCatalogo"
-        class="catalogo-sin-resultados"
-        hidden
-    >
-
-        <i class="fa-solid fa-magnifying-glass"></i>
-
-        <h2>
-            No encontramos productos
-        </h2>
-
-        <p>
-            Prueba cambiando los filtros o
-            buscando con otro nombre.
-        </p>
+        <!-- LIMPIAR FILTROS -->
 
         <button
             type="button"
-            id="btnLimpiarSinResultados"
+            id="limpiarFiltros"
             class="btn-limpiar-filtros"
         >
 
@@ -609,1036 +271,393 @@ Catálogo | Lúmina
 
     </div>
 
-</div>
-
-
-<!-- ==========================================
-     JAVASCRIPT DEL CATÁLOGO
-=========================================== -->
-
-<script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-
-        /* =========================================
-           ELEMENTOS
-        ========================================= */
-
-        const buscador =
-            document.getElementById(
-                "buscarCatalogo"
-            );
+    <!-- =====================================================
+         FILTROS ACTIVOS
+    ====================================================== -->
 
-        const limpiarBusqueda =
-            document.getElementById(
-                "limpiarBusqueda"
-            );
+    <div
+        id="filtrosActivos"
+        class="filtros-activos"
+    >
+    </div>
 
-        const filtroTipo =
-            document.getElementById(
-                "filtroTipo"
-            );
 
-        const filtroCategoria =
-            document.getElementById(
-                "filtroCategoria"
-            );
+    <!-- =====================================================
+         INFORMACIÓN DE RESULTADOS
+    ====================================================== -->
 
-        const filtroMarca =
-            document.getElementById(
-                "filtroMarca"
-            );
+    <div class="catalogo-info">
 
-        const filtroColeccion =
-            document.getElementById(
-                "filtroColeccion"
-            );
+        <p>
+            <span id="cantidadProductos">
+                {{ productos|length|add:kits.count }}
+            </span>
 
-        const ordenCatalogo =
-            document.getElementById(
-                "ordenCatalogo"
-            );
+            resultados
+        </p>
 
-        const limpiarFiltros =
-            document.getElementById(
-                "limpiarFiltros"
-            );
+    </div>
 
-        const btnLimpiarSinResultados =
-            document.getElementById(
-                "btnLimpiarSinResultados"
-            );
 
-        const productosContainer =
-            document.getElementById(
-                "catalogoProductos"
-            );
+    <!-- =====================================================
+         CATÁLOGO
+    ====================================================== -->
 
-        const sinResultados =
-            document.getElementById(
-                "sinResultadosCatalogo"
-            );
+    <div
+        id="catalogoProductos"
+        class="catalogo-grid"
+    >
 
-        const cantidadProductos =
-            document.getElementById(
-                "cantidadProductos"
-            );
+        <!-- =================================================
+             PRODUCTOS
+        ================================================== -->
 
-        const filtrosActivos =
-            document.getElementById(
-                "filtrosActivos"
-            );
+        {% for producto in productos %}
 
-        const etiquetaToggle =
-            document.getElementById(
-                "filtroEtiquetaToggle"
-            );
+            <article
+                class="producto-card"
 
-        const etiquetaTexto =
-            document.getElementById(
-                "filtroEtiquetaTexto"
-            );
+                data-tipo="producto"
 
-        const etiquetasPanel =
-            document.getElementById(
-                "etiquetasPanel"
-            );
+                data-nombre="{{ producto.nombre|lower }}"
 
+                data-marca="{{ producto.marca.nombre|default:''|lower }}"
 
-        if (!productosContainer) {
-            return;
-        }
+                data-categoria="{{ producto.categoria.nombre|default:''|lower }}"
 
+                data-coleccion="{{ producto.coleccion.nombre|default:''|lower }}"
 
-        /* =========================================
-           PRODUCTOS
-        ========================================= */
+                data-etiquetas="{% for etiqueta in producto.etiquetas.all %}{{ etiqueta.nombre|lower }} {% endfor %}"
 
-        let productos =
-            Array.from(
-                productosContainer.querySelectorAll(
-                    ".producto-card"
-                )
-            );
+                data-precio="{{ producto.precio_base|default:0 }}"
 
+                data-fecha="{{ producto.fecha_creacion|date:'U' }}"
+            >
 
-        let etiquetasSeleccionadas =
-            new Set();
+                <!-- IMAGEN -->
 
+                <a
+                    href="{% url 'detalle_producto' producto.slug %}"
+                    class="producto-imagen"
+                >
 
-        /* =========================================
-           CONSTRUIR FILTRO DE ETIQUETAS
-        ========================================= */
+                    {% with imagen=producto.imagenes.all|first %}
 
-        function construirFiltroEtiquetas() {
+                        {% if imagen %}
 
-            if (!etiquetasPanel) {
-                return;
-            }
+                            <img
+                                src="{{ imagen.imagen.url }}"
+                                alt="{{ producto.nombre }}"
+                                loading="lazy"
+                            >
 
-            const todas = new Set();
+                        {% else %}
 
-            productos.forEach(
-                function (producto) {
+                            <div class="imagen-placeholder">
 
-                    const lista =
-                        (producto.dataset.etiquetas || "")
-                            .trim()
-                            .split(/\s+/)
-                            .filter(Boolean);
+                                <i class="fa-regular fa-image"></i>
 
-                    lista.forEach(
-                        function (tag) {
-                            todas.add(tag);
-                        }
-                    );
+                            </div>
 
-                }
-            );
+                        {% endif %}
 
-            const ordenadas =
-                Array.from(todas).sort();
+                    {% endwith %}
 
-            etiquetasPanel.innerHTML = "";
 
-            ordenadas.forEach(
-                function (tag) {
+                    <!-- TIPO -->
 
-                    const item =
-                        document.createElement("label");
+                    <span class="producto-tipo">
+                        Producto
+                    </span>
 
-                    item.className =
-                        "etiqueta-item";
 
-                    item.innerHTML = `
-                        <input type="checkbox" value="${tag}">
-                        <span>${tag}</span>
-                    `;
+                    <!-- STOCK -->
 
-                    item.querySelector("input")
-                        .addEventListener(
-                            "change",
-                            function (e) {
+                    {% if producto.tiene_stock %}
 
-                                if (e.target.checked) {
+                        <span class="producto-stock disponible">
+                            Disponible
+                        </span>
 
-                                    etiquetasSeleccionadas.add(
-                                        tag
-                                    );
+                    {% else %}
 
-                                } else {
+                        <span class="producto-stock agotado">
+                            Agotado
+                        </span>
 
-                                    etiquetasSeleccionadas.delete(
-                                        tag
-                                    );
+                    {% endif %}
 
-                                }
+                </a>
 
-                                actualizarTextoEtiquetas();
-                                aplicarCatalogo();
 
-                            }
-                        );
+                <!-- INFORMACIÓN -->
 
-                    etiquetasPanel.appendChild(item);
+                <div class="producto-info">
 
-                }
-            );
+                    {% if producto.marca %}
 
-        }
+                        <span class="producto-marca">
+                            {{ producto.marca.nombre }}
+                        </span>
 
+                    {% endif %}
 
-        /* =========================================
-           TEXTO DEL BOTÓN DE ETIQUETAS
-        ========================================= */
 
-        function actualizarTextoEtiquetas() {
+                    <h2 class="producto-nombre">
 
-            if (!etiquetaTexto) {
-                return;
-            }
+                        <a
+                            href="{% url 'detalle_producto' producto.slug %}"
+                        >
+                            {{ producto.nombre }}
+                        </a>
 
-            const cantidad =
-                etiquetasSeleccionadas.size;
+                    </h2>
 
-            etiquetaTexto.textContent =
-                cantidad === 0
-                    ? "Todas las etiquetas"
-                    : `${cantidad} etiqueta${cantidad > 1 ? "s" : ""} seleccionada${cantidad > 1 ? "s" : ""}`;
 
-        }
+                    {% if producto.categoria %}
 
+                        <span class="producto-categoria">
+                            {{ producto.categoria.nombre }}
+                        </span>
 
-        /* =========================================
-           ABRIR / CERRAR DROPDOWN
-        ========================================= */
+                    {% endif %}
 
-        if (etiquetaToggle) {
 
-            etiquetaToggle.addEventListener(
-                "click",
-                function (e) {
+                    <div class="producto-precio">
 
-                    e.stopPropagation();
+                        ${{ producto.precio_base|floatformat:0 }}
 
-                    etiquetasPanel.hidden =
-                        !etiquetasPanel.hidden;
+                    </div>
 
-                }
-            );
 
-            document.addEventListener(
-                "click",
-                function (e) {
+                    <a
+                        href="{% url 'detalle_producto' producto.slug %}"
+                        class="btn-ver-producto"
+                    >
 
-                    if (
-                        !etiquetasPanel.hidden &&
-                        !etiquetasPanel.contains(e.target) &&
-                        e.target !== etiquetaToggle
-                    ) {
+                        Ver producto
 
-                        etiquetasPanel.hidden = true;
+                        <i class="fa-solid fa-arrow-right"></i>
 
-                    }
+                    </a>
 
-                }
-            );
+                </div>
 
-        }
+            </article>
 
+        {% endfor %}
 
-        /* =========================================
-           APLICAR FILTROS
-        ========================================= */
 
-        function aplicarCatalogo() {
 
+        <!-- =================================================
+             KITS
+        ================================================== -->
 
-            const texto =
-                buscador
-                    ? buscador.value
-                        .toLowerCase()
-                        .trim()
-                    : "";
+        {% for kit in kits %}
 
+            <article
+                class="producto-card"
 
-            const tipo =
-                filtroTipo
-                    ? filtroTipo.value
-                    : "";
+                data-tipo="kit"
 
+                data-nombre="{{ kit.nombre|lower }}"
 
-            const categoria =
-                filtroCategoria
-                    ? filtroCategoria.value
-                    : "";
+                data-marca=""
 
+                data-categoria="{{ kit.categoria.nombre|default:''|lower }}"
 
-            const marca =
-                filtroMarca
-                    ? filtroMarca.value
-                    : "";
+                data-coleccion=""
 
+                data-etiquetas="{% for etiqueta in kit.etiquetas.all %}{{ etiqueta.nombre|lower }} {% endfor %}"
 
-            const coleccion =
-                filtroColeccion
-                    ? filtroColeccion.value
-                    : "";
+                data-precio="{{ kit.precio|default:0 }}"
 
+                data-fecha="{{ kit.fecha_creacion|date:'U' }}"
+            >
 
-            let visibles = [];
+                <!-- IMAGEN -->
 
+                <a
+                    href="{% url 'detalle_kit' kit.slug %}"
+                    class="producto-imagen"
+                >
 
-            productos.forEach(
-                function (producto) {
+                    {% if kit.imagen %}
 
-
-                    const nombre =
-                        producto.dataset.nombre || "";
-
-
-                    const productoTipo =
-                        producto.dataset.tipo || "producto";
-
-
-                    const productoMarca =
-                        producto.dataset.marca || "";
-
-
-                    const productoCategoria =
-                        producto.dataset.categoria || "";
-
-
-                    const productoColeccion =
-                        producto.dataset.coleccion || "";
-
-
-                    const etiquetas =
-                        producto.dataset.etiquetas || "";
-
-
-                    const coincideTexto =
-                        !texto ||
-
-                        nombre.includes(texto) ||
-
-                        productoMarca.includes(texto) ||
-
-                        productoCategoria.includes(texto) ||
-
-                        productoColeccion.includes(texto) ||
-
-                        etiquetas.includes(texto);
-
-
-                    const coincideTipo =
-                        !tipo ||
-
-                        productoTipo === tipo;
-
-
-                    const coincideCategoria =
-                        !categoria ||
-
-                        productoCategoria === categoria;
-
-
-                    const coincideMarca =
-                        !marca ||
-
-                        productoMarca === marca;
-
-
-                    const coincideColeccion =
-                        !coleccion ||
-
-                        productoColeccion === coleccion;
-
-
-                    const coincideEtiquetas =
-                        etiquetasSeleccionadas.size === 0 ||
-
-                        Array.from(
-                            etiquetasSeleccionadas
-                        ).some(
-                            function (tag) {
-
-                                return etiquetas.includes(
-                                    tag
-                                );
-
-                            }
-                        );
-
-
-                    const mostrar =
-                        coincideTexto &&
-                        coincideTipo &&
-                        coincideCategoria &&
-                        coincideMarca &&
-                        coincideColeccion &&
-                        coincideEtiquetas;
-
-
-                    producto.hidden =
-                        !mostrar;
-
-
-                    if (mostrar) {
-                        visibles.push(producto);
-                    }
-
-                }
-            );
-
-
-            /* =====================================
-               ORDENAMIENTO
-            ===================================== */
-
-            ordenarProductos();
-
-
-            /* =====================================
-               CONTADOR
-            ===================================== */
-
-            if (cantidadProductos) {
-
-                cantidadProductos.textContent =
-                    visibles.length;
-
-            }
-
-
-            /* =====================================
-               SIN RESULTADOS
-            ===================================== */
-
-            if (sinResultados) {
-
-                sinResultados.hidden =
-                    visibles.length !== 0;
-
-            }
-
-
-            /* =====================================
-               BUSCADOR
-            ===================================== */
-
-            if (limpiarBusqueda) {
-
-                limpiarBusqueda.hidden =
-                    texto === "";
-
-            }
-
-
-            /* =====================================
-               FILTROS ACTIVOS
-            ===================================== */
-
-            mostrarFiltrosActivos();
-
-        }
-
-
-        /* =========================================
-           ORDENAR
-        ========================================= */
-
-        function ordenarProductos() {
-
-            const orden =
-                ordenCatalogo
-                    ? ordenCatalogo.value
-                    : "recientes";
-
-
-            const ordenados =
-                [...productos];
-
-
-            ordenados.sort(
-                function (a, b) {
-
-
-                    const nombreA =
-                        a.dataset.nombre || "";
-
-
-                    const nombreB =
-                        b.dataset.nombre || "";
-
-
-                    const precioA =
-                        parseFloat(
-                            a.dataset.precio || 0
-                        );
-
-
-                    const precioB =
-                        parseFloat(
-                            b.dataset.precio || 0
-                        );
-
-
-                    const fechaA =
-                        parseInt(
-                            a.dataset.fecha || 0
-                        );
-
-
-                    const fechaB =
-                        parseInt(
-                            b.dataset.fecha || 0
-                        );
-
-
-                    switch (orden) {
-
-
-                        case "nombre-az":
-
-                            return nombreA.localeCompare(
-                                nombreB
-                            );
-
-
-                        case "nombre-za":
-
-                            return nombreB.localeCompare(
-                                nombreA
-                            );
-
-
-                        case "precio-menor":
-
-                            return precioA - precioB;
-
-
-                        case "precio-mayor":
-
-                            return precioB - precioA;
-
-
-                        case "recientes":
-
-                        default:
-
-                            return fechaB - fechaA;
-
-                    }
-
-                }
-            );
-
-
-            ordenados.forEach(
-                function (producto) {
-
-                    productosContainer.appendChild(
-                        producto
-                    );
-
-                }
-            );
-
-        }
-
-
-        /* =========================================
-           MOSTRAR FILTROS ACTIVOS
-        ========================================= */
-
-        function mostrarFiltrosActivos() {
-
-
-            if (!filtrosActivos) {
-                return;
-            }
-
-
-            filtrosActivos.innerHTML = "";
-
-
-            const filtros = [];
-
-
-            if (
-                filtroTipo &&
-                filtroTipo.value
-            ) {
-
-                filtros.push({
-                    texto:
-                        filtroTipo
-                            .options[
-                            filtroTipo.selectedIndex
-                        ]
-                            .text,
-
-                    tipo: "tipoProducto"
-                });
-
-            }
-
-
-            if (
-                filtroCategoria &&
-                filtroCategoria.value
-            ) {
-
-                filtros.push({
-                    texto:
-                        filtroCategoria
-                            .options[
-                            filtroCategoria.selectedIndex
-                        ]
-                            .text,
-
-                    tipo: "categoria"
-                });
-
-            }
-
-
-            if (
-                filtroMarca &&
-                filtroMarca.value
-            ) {
-
-                filtros.push({
-                    texto:
-                        filtroMarca
-                            .options[
-                            filtroMarca.selectedIndex
-                        ]
-                            .text,
-
-                    tipo: "marca"
-                });
-
-            }
-
-
-            if (
-                filtroColeccion &&
-                filtroColeccion.value
-            ) {
-
-                filtros.push({
-                    texto:
-                        filtroColeccion
-                            .options[
-                            filtroColeccion.selectedIndex
-                        ]
-                            .text,
-
-                    tipo: "coleccion"
-                });
-
-            }
-
-
-            etiquetasSeleccionadas.forEach(
-                function (tag) {
-
-                    filtros.push({
-                        texto: tag,
-                        tipo: "etiqueta"
-                    });
-
-                }
-            );
-
-
-            filtros.forEach(
-                function (filtro) {
-
-
-                    const etiqueta =
-                        document.createElement(
-                            "span"
-                        );
-
-
-                    etiqueta.className =
-                        "filtro-activo";
-
-
-                    etiqueta.innerHTML = `
-
-                        ${filtro.texto}
-
-                        <button
-                            type="button"
-                            data-filtro="${filtro.tipo}"
-                            aria-label="Eliminar filtro"
+                        <img
+                            src="{{ kit.imagen.url }}"
+                            alt="{{ kit.nombre }}"
+                            loading="lazy"
                         >
 
-                            <i class="fa-solid fa-xmark"></i>
+                    {% else %}
 
-                        </button>
+                        <div class="imagen-placeholder">
 
-                    `;
+                            <i class="fa-regular fa-image"></i>
 
+                        </div>
 
-                    etiqueta
-                        .querySelector("button")
-                        .addEventListener(
-                            "click",
-                            function () {
+                    {% endif %}
 
 
-                                if (
-                                    filtro.tipo ===
-                                    "tipoProducto"
-                                ) {
+                    <!-- TIPO -->
 
-                                    filtroTipo.value =
-                                        "";
+                    <span class="producto-tipo">
+                        Kit
+                    </span>
 
-                                }
 
+                    <!-- DESCUENTO -->
 
-                                if (
-                                    filtro.tipo ===
-                                    "categoria"
-                                ) {
+                    {% if kit.descuento %}
 
-                                    filtroCategoria.value =
-                                        "";
+                        <span class="producto-descuento">
+                            -{{ kit.descuento }}%
+                        </span>
 
-                                }
+                    {% endif %}
 
 
-                                if (
-                                    filtro.tipo ===
-                                    "marca"
-                                ) {
+                    <!-- STOCK -->
 
-                                    filtroMarca.value =
-                                        "";
+                    {% if kit.tiene_stock %}
 
-                                }
+                        <span class="producto-stock disponible">
+                            Disponible
+                        </span>
 
+                    {% else %}
 
-                                if (
-                                    filtro.tipo ===
-                                    "coleccion"
-                                ) {
+                        <span class="producto-stock agotado">
+                            Agotado
+                        </span>
 
-                                    filtroColeccion.value =
-                                        "";
+                    {% endif %}
 
-                                }
+                </a>
 
 
-                                if (
-                                    filtro.tipo ===
-                                    "etiqueta"
-                                ) {
+                <!-- INFORMACIÓN -->
 
-                                    etiquetasSeleccionadas.delete(
-                                        filtro.texto
-                                    );
+                <div class="producto-info">
 
+                    <span class="producto-marca">
+                        Lúmina
+                    </span>
 
-                                    const checkbox =
-                                        etiquetasPanel.querySelector(
-                                            `input[value="${filtro.texto}"]`
-                                        );
 
+                    <h2 class="producto-nombre">
 
-                                    if (checkbox) {
-                                        checkbox.checked = false;
-                                    }
+                        <a
+                            href="{% url 'detalle_kit' kit.slug %}"
+                        >
+                            {{ kit.nombre }}
+                        </a>
 
+                    </h2>
 
-                                    actualizarTextoEtiquetas();
 
-                                }
+                    {% if kit.categoria %}
 
+                        <span class="producto-categoria">
+                            {{ kit.categoria.nombre }}
+                        </span>
 
-                                aplicarCatalogo();
+                    {% endif %}
 
-                            }
-                        );
 
+                    <div class="producto-precio">
 
-                    filtrosActivos.appendChild(
-                        etiqueta
-                    );
+                        ${{ kit.precio|floatformat:0 }}
 
-                }
-            );
+                    </div>
 
-        }
 
+                    <a
+                        href="{% url 'detalle_kit' kit.slug %}"
+                        class="btn-ver-producto"
+                    >
 
-        /* =========================================
-           LIMPIAR TODO
-        ========================================= */
+                        Ver kit
 
-        function limpiarTodo() {
+                        <i class="fa-solid fa-arrow-right"></i>
 
+                    </a>
 
-            if (buscador) {
-                buscador.value = "";
-            }
+                </div>
 
+            </article>
 
-            if (filtroTipo) {
-                filtroTipo.value = "";
-            }
+        {% endfor %}
 
+    </div>
 
-            if (filtroCategoria) {
-                filtroCategoria.value = "";
-            }
 
+    <!-- =====================================================
+         SIN RESULTADOS
+    ====================================================== -->
 
-            if (filtroMarca) {
-                filtroMarca.value = "";
-            }
+    <div
+        id="sinResultadosCatalogo"
+        class="sin-resultados"
+        hidden
+    >
 
+        <div class="sin-resultados-icono">
 
-            if (filtroColeccion) {
-                filtroColeccion.value = "";
-            }
+            <i class="fa-solid fa-magnifying-glass"></i>
 
+        </div>
 
-            if (ordenCatalogo) {
-                ordenCatalogo.value =
-                    "recientes";
-            }
+        <h2>
+            No encontramos resultados
+        </h2>
 
+        <p>
+            Prueba con otro término de búsqueda
+            o elimina algunos filtros.
+        </p>
 
-            etiquetasSeleccionadas.clear();
+        <button
+            type="button"
+            id="btnLimpiarSinResultados"
+            class="btn-limpiar-resultados"
+        >
 
+            <i class="fa-solid fa-rotate-left"></i>
 
-            if (etiquetasPanel) {
+            Limpiar filtros
 
-                etiquetasPanel.querySelectorAll("input")
-                    .forEach(
-                        function (cb) {
-                            cb.checked = false;
-                        }
-                    );
+        </button>
 
-            }
+    </div>
 
 
-            actualizarTextoEtiquetas();
+    <!-- =====================================================
+         PAGINACIÓN
+    ====================================================== -->
 
+    <nav
+        id="catalogoPaginacion"
+        class="catalogo-paginacion"
+        aria-label="Paginación del catálogo"
+    >
+    </nav>
 
-            aplicarCatalogo();
 
-        }
+</section>
 
+{% endblock %}
 
-        /* =========================================
-           EVENTOS
-        ========================================= */
 
-        if (buscador) {
+<!-- =========================================================
+     JAVASCRIPT EXTERNO
+========================================================== -->
 
-            buscador.addEventListener(
-                "input",
-                aplicarCatalogo
-            );
+{% block extra_js %}
 
-        }
-
-
-        if (filtroTipo) {
-
-            filtroTipo.addEventListener(
-                "change",
-                aplicarCatalogo
-            );
-
-        }
-
-
-        if (filtroCategoria) {
-
-            filtroCategoria.addEventListener(
-                "change",
-                aplicarCatalogo
-            );
-
-        }
-
-
-        if (filtroMarca) {
-
-            filtroMarca.addEventListener(
-                "change",
-                aplicarCatalogo
-            );
-
-        }
-
-
-        if (filtroColeccion) {
-
-            filtroColeccion.addEventListener(
-                "change",
-                aplicarCatalogo
-            );
-
-        }
-
-
-        if (ordenCatalogo) {
-
-            ordenCatalogo.addEventListener(
-                "change",
-                aplicarCatalogo
-            );
-
-        }
-
-
-        if (limpiarBusqueda) {
-
-            limpiarBusqueda.addEventListener(
-                "click",
-                function () {
-
-                    if (buscador) {
-                        buscador.value = "";
-                    }
-
-                    aplicarCatalogo();
-
-                    if (buscador) {
-                        buscador.focus();
-                    }
-
-                }
-            );
-
-        }
-
-
-        if (limpiarFiltros) {
-
-            limpiarFiltros.addEventListener(
-                "click",
-                limpiarTodo
-            );
-
-        }
-
-
-        if (btnLimpiarSinResultados) {
-
-            btnLimpiarSinResultados.addEventListener(
-                "click",
-                limpiarTodo
-            );
-
-        }
-
-
-        /* =========================================
-           INICIALIZAR
-        ========================================= */
-
-        construirFiltroEtiquetas();
-
-
-        /* =========================================
-           CATEGORÍA RECIBIDA DESDE INICIO
-        ========================================= */
-
-        const parametrosURL =
-            new URLSearchParams(
-                window.location.search
-            );
-
-        const categoriaURL =
-            parametrosURL.get("categoria");
-
-
-        if (
-            categoriaURL &&
-            filtroCategoria
-        ) {
-
-            const categoriaNormalizada =
-                categoriaURL
-                    .toLowerCase()
-                    .trim();
-
-
-            /*
-             * Buscar la opción que coincida
-             * con la categoría recibida.
-             */
-
-            const opcionCategoria =
-                Array.from(
-                    filtroCategoria.options
-                ).find(
-                    function (opcion) {
-
-                        return opcion.value
-                            .toLowerCase()
-                            .trim() ===
-                            categoriaNormalizada;
-
-                    }
-                );
-
-
-            if (opcionCategoria) {
-
-                filtroCategoria.value =
-                    opcionCategoria.value;
-
-            }
-
-        }
-
-
-        /* =========================================
-           APLICAR FILTROS INICIALES
-        ========================================= */
-
-        aplicarCatalogo();
-
-    }
-
-);
-
-</script>
+<script src="{% static 'js/catalogo.js' %}"></script>
 
 {% endblock %}

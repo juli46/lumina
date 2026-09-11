@@ -478,10 +478,10 @@ if (etiquetas) {
 const inputCostoBase = document.querySelector('[name="costo_base"]');
 
 const preciosMargen = {
+    40: document.getElementById("precio-margen-40"),
     30: document.getElementById("precio-margen-30"),
-    20: document.getElementById("precio-margen-20"),
-    15: document.getElementById("precio-margen-15"),
-    10: document.getElementById("precio-margen-10")
+    25: document.getElementById("precio-margen-25"),
+    20: document.getElementById("precio-margen-20")
 };
 
 function formatearMoneda(valor) {
@@ -690,9 +690,9 @@ if (formulario) {
 
                 const pesoMB = archivo.size / 1024 / 1024;
 
-                if (pesoMB > 50) {
+                if (pesoMB > 100) {
 
-                    mostrarError(inputVideos, `El video "${archivo.name}" supera los 50 MB.`);
+                    mostrarError(inputVideos, `El video "${archivo.name}" supera los 100 MB.`);
                     hayErrores = true;
                     primerCampoInvalido = primerCampoInvalido || inputVideos;
 
