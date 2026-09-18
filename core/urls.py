@@ -71,9 +71,12 @@ urlpatterns = [
     path('mi-cuenta/', views.mi_cuenta, name='mi_cuenta'),
     path('editar-perfil/', views.editar_perfil, name='editar_perfil'),
 
+    path('direcciones/agregar/', views.agregar_direccion, name='agregar_direccion'),
+    path('direcciones/eliminar/<int:id>/', views.eliminar_direccion, name='eliminar_direccion'),
+
 
     # ==================================================
-    # DASHBOARD Y ADMINISTRACIÓN
+    # DASHBOARD (NÚCLEO)
     # ==================================================
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('configuracion/', views.configuracion, name='configuracion'),
@@ -90,13 +93,6 @@ urlpatterns = [
 
 
     # ==================================================
-    # GESTIÓN DE DIRECCIONES
-    # ==================================================
-    path('direcciones/agregar/', views.agregar_direccion, name='agregar_direccion'),
-    path('direcciones/eliminar/<int:id>/', views.eliminar_direccion, name='eliminar_direccion'),
-
-
-    # ==================================================
     # GESTIÓN DEL BLOG
     # ==================================================
     path('blog/', views.blog, name='blog'),
@@ -110,9 +106,9 @@ urlpatterns = [
     # GESTIÓN DE GALERÍA
     # ==================================================
     path('galeria/', views.galeria, name='galeria'),
+    path('galeria-modal/<int:id>/', views.galeria_modal, name='galeria_modal'),
     path('galeria/editar/<int:id>/', views.editar_galeria, name='editar_galeria'),
     path('galeria/eliminar/<int:id>/', views.eliminar_galeria, name='eliminar_galeria'),
-    path('galeria-modal/<int:id>/', views.galeria_modal, name='galeria_modal'),
 
 
     # ==================================================
@@ -124,35 +120,45 @@ urlpatterns = [
     path('test/eliminar/<int:test_id>/', views.eliminar_test, name='eliminar_test'),
     path('test/activar/<int:test_id>/', views.activar_test, name='activar_test'),
     path('test/desactivar/<int:test_id>/', views.desactivar_test, name='desactivar_test'),
-    path('resultado/eliminar/<int:resultado_id>/', views.eliminar_resultado_usuario, name='eliminar_resultado_usuario'),
     path('guardar-resultado/', views.guardar_resultado_usuario, name='guardar_resultado_usuario'),
+    path('resultado/eliminar/<int:resultado_id>/', views.eliminar_resultado_usuario, name='eliminar_resultado_usuario'),
 
 
     # ==================================================
     # PRODUCTOS Y CATÁLOGO
     # ==================================================
+    path('catalogo/', views.catalogo, name='catalogo'),
+    path('catalogo/producto/<slug:slug>/', views.detalle_producto, name='detalle_producto'),
+
+    path('dashboard/catalogo/', views.dashboard_catalogo, name='dashboard_catalogo'),
     path('dashboard/productos/', views.dashboard_productos, name='dashboard_productos'),
     path('dashboard/productos/<int:producto_id>/editar/', views.editar_producto, name='editar_producto'),
     path('dashboard/productos/<int:producto_id>/eliminar/', views.eliminar_producto, name='eliminar_producto'),
-    path('dashboard/catalogo/', views.dashboard_catalogo, name='dashboard_catalogo'),
     path('dashboard/colecciones/', views.obtener_colecciones, name='obtener_colecciones'),
     path('dashboard/catalogo/categoria/<int:id>/eliminar/', views.eliminar_categoria, name='eliminar_categoria'),
     path('dashboard/catalogo/marca/<int:id>/eliminar/', views.eliminar_marca, name='eliminar_marca'),
     path('dashboard/catalogo/coleccion/<int:id>/eliminar/', views.eliminar_coleccion, name='eliminar_coleccion'),
     path('dashboard/etiqueta/eliminar/<int:etiqueta_id>/', views.eliminar_etiqueta, name='eliminar_etiqueta'),
-    path('catalogo/', views.catalogo, name='catalogo'),
-    path('catalogo/producto/<slug:slug>/', views.detalle_producto, name='detalle_producto'),
 
 
     # ==================================================
     # KITS
     # ==================================================
+    path('catalogo/kit/<slug:slug>/', views.detalle_kit, name='detalle_kit'),
+
     path('dashboard/kits/', views.dashboard_kits, name='dashboard_kits'),
     path('dashboard/kits/eliminar/<int:kit_id>/', views.eliminar_kit, name='eliminar_kit'),
+    path('dashboard/kits/toggle/<int:kit_id>/', views.toggle_kit_activo, name='toggle_kit_activo'),
     path('dashboard/kits/<int:kit_id>/agregar-producto/', views.agregar_producto_kit, name='agregar_producto_kit'),
     path('dashboard/kits/item/eliminar/<int:item_id>/', views.eliminar_producto_kit, name='eliminar_producto_kit'),
-    path('dashboard/kits/toggle/<int:kit_id>/', views.toggle_kit_activo, name='toggle_kit_activo'),
-    path('catalogo/kit/<slug:slug>/', views.detalle_kit, name='detalle_kit'),
+
+
+    # ==================================================
+    # GESTIÓN DE PROVEEDORES
+    # ==================================================
+    path('dashboard/proveedores/', views.dashboard_proveedores, name='dashboard_proveedores'),
+    path('dashboard/proveedores/<int:id>/editar/', views.dashboard_proveedores, name='editar_proveedor'),
+    path('dashboard/proveedores/<int:id>/eliminar/', views.eliminar_proveedor, name='eliminar_proveedor'),
 
 
     # ==================================================
@@ -160,52 +166,43 @@ urlpatterns = [
     # ==================================================
     path('dashboard/contacto/', views.dashboard_contacto, name='dashboard_contacto'),
     path('dashboard/contacto/<int:id>/responder/', views.responder_contacto, name='responder_contacto'),
-    path('dashboard/contactos/sincronizar/', views.sincronizar_respuestas_gmail, name='sincronizar_respuestas_gmail'),
     path('dashboard/contacto/<int:id>/archivar/', views.archivar_contacto, name='archivar_contacto'),
     path('dashboard/contacto/<int:id>/restaurar/', views.restaurar_contacto, name='restaurar_contacto'),
+    path('dashboard/contactos/sincronizar/', views.sincronizar_respuestas_gmail, name='sincronizar_respuestas_gmail'),
     path('dashboard/eliminar-mensaje/<int:id>/', views.eliminar_mensaje, name='eliminar_mensaje'),
     path('contacto/marcar-leido/<int:id>/', views.marcar_leido, name='marcar_leido'),
 
 
     # ==================================================
-    # DASHBOARD - NOTAS CHECKLIST
+    # DASHBOARD - WIDGETS (NOTAS, POST-ITS, IDEAS,
+    # EVENTOS, RECORDATORIOS)
     # ==================================================
-    path('dashboard/nota/<int:id>/eliminar/', views.eliminar_nota, name='eliminar_nota'),
-    path('dashboard/nota/<int:id>/toggle/', views.toggle_nota, name='toggle_nota'),
+
+    # Notas checklist
     path('editar-nota/<int:id>/', views.editar_nota, name='editar_nota'),
+    path('dashboard/nota/<int:id>/toggle/', views.toggle_nota, name='toggle_nota'),
+    path('dashboard/nota/<int:id>/eliminar/', views.eliminar_nota, name='eliminar_nota'),
 
-
-    # ==================================================
-    # DASHBOARD - POST ITS
-    # ==================================================
-    path('dashboard/postit/<int:id>/eliminar/', views.eliminar_postit, name='eliminar_postit'),
+    # Post-its
     path('editar-postit/<int:id>/', views.editar_postit, name='editar_postit'),
+    path('dashboard/postit/<int:id>/eliminar/', views.eliminar_postit, name='eliminar_postit'),
 
-
-    # ==================================================
-    # DASHBOARD - IDEAS
-    # ==================================================
-    path('dashboard/idea/<int:id>/editar/', views.editar_idea, name='editar_idea_dashboard'),
-    path('dashboard/idea/<int:id>/eliminar/', views.eliminar_idea, name='eliminar_idea'),
-    path('dashboard/idea/<int:id>/estado/', views.cambiar_estado_idea, name='cambiar_estado_idea'),
+    # Ideas
     path('editar-idea/<int:id>/', views.editar_idea, name='editar_idea'),
+    path('dashboard/idea/<int:id>/editar/', views.editar_idea, name='editar_idea_dashboard'),
+    path('dashboard/idea/<int:id>/estado/', views.cambiar_estado_idea, name='cambiar_estado_idea'),
+    path('dashboard/idea/<int:id>/eliminar/', views.eliminar_idea, name='eliminar_idea'),
 
-
-    # ==================================================
-    # DASHBOARD - EVENTOS
-    # ==================================================
+    # Eventos
+    path('editar-evento/<int:id>/', views.editar_evento, name='editar_evento'),
     path('dashboard/evento/<int:id>/editar/', views.editar_evento, name='editar_evento_dashboard'),
     path('dashboard/evento/<int:id>/eliminar/', views.eliminar_evento, name='eliminar_evento'),
-    path('editar-evento/<int:id>/', views.editar_evento, name='editar_evento'),
 
-
-    # ==================================================
-    # DASHBOARD - RECORDATORIOS
-    # ==================================================
-    path('dashboard/recordatorio/<int:id>/editar/', views.editar_recordatorio, name='editar_recordatorio_dashboard'),
-    path('dashboard/recordatorio/<int:id>/eliminar/', views.eliminar_recordatorio, name='eliminar_recordatorio'),
-    path('dashboard/recordatorio/<int:id>/toggle/', views.toggle_recordatorio, name='toggle_recordatorio'),
+    # Recordatorios
     path('editar-recordatorio/<int:id>/', views.editar_recordatorio, name='editar_recordatorio'),
+    path('dashboard/recordatorio/<int:id>/editar/', views.editar_recordatorio, name='editar_recordatorio_dashboard'),
+    path('dashboard/recordatorio/<int:id>/toggle/', views.toggle_recordatorio, name='toggle_recordatorio'),
+    path('dashboard/recordatorio/<int:id>/eliminar/', views.eliminar_recordatorio, name='eliminar_recordatorio'),
 
 
     # ==================================================
@@ -220,14 +217,6 @@ urlpatterns = [
 
 
     # ==================================================
-    # GESTIÓN DE PROVEEDORES
-    # ==================================================
-    path('dashboard/proveedores/', views.dashboard_proveedores, name='dashboard_proveedores'),
-    path('dashboard/proveedores/<int:id>/editar/', views.dashboard_proveedores, name='editar_proveedor'),
-    path('dashboard/proveedores/<int:id>/eliminar/', views.eliminar_proveedor, name='eliminar_proveedor'),
-
-
-    # ==================================================
     # CARRITO Y CHECKOUT
     # ==================================================
     path('carrito/', views.carrito, name='carrito'),
@@ -236,19 +225,20 @@ urlpatterns = [
     path('carrito/aumentar/<int:item_id>/', views.aumentar_carrito, name='aumentar_carrito'),
     path('carrito/disminuir/<int:item_id>/', views.disminuir_carrito, name='disminuir_carrito'),
     path('carrito/eliminar/<int:item_id>/', views.eliminar_carrito, name='eliminar_carrito'),
+
     path('checkout/', views.checkout, name='checkout'),
+    path('checkout/calcular/', views.calcular_checkout, name='calcular_checkout'),
     path('checkout/pago/', views.pago_checkout, name='pago_checkout'),
     path('checkout/confirmar/', views.confirmar_pedido, name='confirmar_pedido'),
-    path('checkout/calcular/', views.calcular_checkout, name='calcular_checkout'),
 
 
     # ==================================================
     # PEDIDOS
     # ==================================================
-    path('pedido/<int:pedido_id>/factura/', views.factura_pedido, name='factura_pedido'),
     path('pedidos/', views.dashboard_pedidos, name='dashboard_pedidos'),
     path('pedidos/<int:pedido_id>/', views.dashboard_pedido_detalle, name='dashboard_pedido_detalle'),
     path('pedidos/<int:pedido_id>/estado/', views.dashboard_pedido_estado, name='dashboard_pedido_estado'),
+    path('pedido/<int:pedido_id>/factura/', views.factura_pedido, name='factura_pedido'),
 
 ]
 

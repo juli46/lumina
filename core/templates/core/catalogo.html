@@ -471,7 +471,7 @@
 
                 data-etiquetas="{% for etiqueta in kit.etiquetas.all %}{{ etiqueta.nombre|lower }} {% endfor %}"
 
-                data-precio="{{ kit.precio|default:0 }}"
+                data-precio="{{ kit.precio_final|default:0 }}"
 
                 data-fecha="{{ kit.fecha_creacion|date:'U' }}"
             >
@@ -511,10 +511,10 @@
 
                     <!-- DESCUENTO -->
 
-                    {% if kit.descuento %}
+                    {% if kit.descuento_personalizado %}
 
                         <span class="producto-descuento">
-                            -{{ kit.descuento }}%
+                            -{{ kit.descuento_personalizado|floatformat:0 }}%
                         </span>
 
                     {% endif %}
@@ -522,7 +522,7 @@
 
                     <!-- STOCK -->
 
-                    {% if kit.tiene_stock %}
+                    {% if kit.stock > 0 %}
 
                         <span class="producto-stock disponible">
                             Disponible
@@ -570,7 +570,7 @@
 
                     <div class="producto-precio">
 
-                        ${{ kit.precio|floatformat:0 }}
+                        ${{ kit.precio_final|floatformat:0 }}
 
                     </div>
 

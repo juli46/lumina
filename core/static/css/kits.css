@@ -1,5 +1,3 @@
-
-
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
@@ -438,16 +436,66 @@
     background: #c14f6b;
 }
 
+/* ========================================================= */
+/* LISTA DE PRODUCTOS DISPONIBLES                             */
+/* Altura máxima con scroll interno: si hay muchos productos, */
+/* la lista no estira toda la página hacia abajo.             */
+/* ========================================================= */
+
 .productos-disponibles {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 14px;
     margin-bottom: 8px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding: 4px 6px 4px 0;
+    scroll-behavior: smooth;
+}
+
+.productos-disponibles::-webkit-scrollbar {
+    width: 8px;
+}
+
+.productos-disponibles::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 999px;
+}
+
+.productos-disponibles::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-light);
+}
+
+.productos-disponibles::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .productos-disponibles[style*="display: flex"],
 .productos-disponibles[style*="display:flex"] {
     display: grid !important;
+}
+
+/*
+ * El atributo [hidden] del navegador se oculta con display:none,
+ * pero esa regla nativa tiene menos prioridad que las reglas de
+ * este archivo. Como .productos-disponibles y .producto-card
+ * definen su propio "display" (grid / flex), ese display gana
+ * y el elemento nunca se oculta aunque el JS le ponga [hidden].
+ * Estas reglas devuelven la prioridad al atributo [hidden].
+ */
+
+.productos-disponibles[hidden] {
+    display: none !important;
+}
+
+.producto-card[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 700px) {
+    .productos-disponibles {
+        max-height: 360px;
+    }
 }
 
 .producto-card {
@@ -1147,7 +1195,6 @@
         width: 100%;
     }
 
-    .productos-disponibles,
     .kits-grid {
         grid-template-columns: 1fr;
     }
@@ -1208,6 +1255,19 @@
 
 .mensaje-error-campo i {
     margin-right: 5px;
+}
+
+.sku-generado {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-light);
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.sku-generado i {
+    margin-right: 5px;
+    color: var(--primary);
 }
 
 /* =========================================================

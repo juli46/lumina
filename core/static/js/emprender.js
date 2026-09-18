@@ -1,4 +1,4 @@
-console.log("emprender.js v8 cargado — si no ves este mensaje, el navegador está usando una versión vieja en caché");
+console.log("emprender.js v11 cargado — si no ves este mensaje, el navegador está usando una versión vieja en caché");
 
 function getCookie(name) {
   let cookieValue = null;
@@ -19,12 +19,19 @@ function getCsrfToken() {
   return meta ? meta.content : getCookie("csrftoken");
 }
 
+// Redondea al múltiplo más cercano (por defecto 100) para que las cifras
+// se vean "bonitas" en vez de números como 14.976.
+function redondearCOP(valor, paso = 100) {
+  if (!valor) return 0;
+  return Math.round(valor / paso) * paso;
+}
+
 function formatoCOP(valor) {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
     currency: "COP",
     maximumFractionDigits: 0,
-  }).format(valor || 0);
+  }).format(redondearCOP(valor));
 }
 
 function textoSugerenciaSobrante(sugerencia) {
@@ -44,6 +51,58 @@ function textoSugerenciaSobrante(sugerencia) {
   );
 }
 
+// --------------------------------------------------
+// PRESUPUESTO: input numérico libre con formato de
+// miles (es-CO) + chips de montos sugeridos, en vez
+// del select con 5 valores fijos.
+// --------------------------------------------------
+
+function soloDigitos(texto) {
+  return (texto || "").replace(/\D/g, "");
+}
+
+function formatearMiles(digitos) {
+  if (!digitos) return "";
+  return new Intl.NumberFormat("es-CO").format(Number(digitos));
+}
+
+function obtenerPresupuestoNumerico() {
+  const input = document.getElementById("presupuesto");
+  return input ? soloDigitos(input.value) : "";
+}
+
+function inicializarInputPresupuesto() {
+  const input = document.getElementById("presupuesto");
+  if (!input) return;
+
+  input.addEventListener("input", () => {
+    const posicionOriginal = input.selectionStart;
+    const largoAntes = input.value.length;
+
+    const digitos = soloDigitos(input.value);
+    input.value = formatearMiles(digitos);
+
+    // Mantener el cursor cerca de donde estaba pese a que el
+    // formateo cambia el largo del texto (puntos de miles).
+    const largoDespues = input.value.length;
+    const diferencia = largoDespues - largoAntes;
+    const nuevaPosicion = Math.max(0, (posicionOriginal || 0) + diferencia);
+    input.setSelectionRange(nuevaPosicion, nuevaPosicion);
+
+    const testError = document.getElementById("testError");
+    if (testError) testError.textContent = "";
+  });
+
+  document.querySelectorAll(".lm-chip-monto").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      input.value = formatearMiles(btn.dataset.monto);
+      const testError = document.getElementById("testError");
+      if (testError) testError.textContent = "";
+      input.focus();
+    });
+  });
+}
+
 let graficoGanancias = null;
 
 // Se guardan el último resultado y los filtros usados para poder
@@ -54,6 +113,8 @@ let ultimosFiltros = null;
 document.addEventListener("DOMContentLoaded", () => {
   const btnTest = document.getElementById("btnTest");
   if (btnTest) btnTest.addEventListener("click", ejecutarTest);
+
+  inicializarInputPresupuesto();
 
   const resultadoEl = document.getElementById("resultado");
   const testErrorEl = document.getElementById("testError");
@@ -68,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function ejecutarTest() {
-  const presupuesto = document.getElementById("presupuesto").value;
+  const presupuesto = obtenerPresupuestoNumerico();
   const producto = document.getElementById("producto").value;
   const ventas = document.getElementById("ventas").value;
   const testError = document.getElementById("testError");
@@ -76,7 +137,12 @@ async function ejecutarTest() {
 
   testError.textContent = "";
 
-  if (!presupuesto || !producto || !ventas) {
+  if (!presupuesto || Number(presupuesto) <= 0) {
+    testError.textContent = "Ingresa un presupuesto válido para ver tu recomendación.";
+    return;
+  }
+
+  if (!producto || !ventas) {
     testError.textContent = "Responde las 3 preguntas para ver tu recomendación.";
     return;
   }
@@ -178,16 +244,28 @@ function pintarResultado(data) {
 
   const tieneListaCompra = data.lista_compra && data.lista_compra.length > 0;
 
+  // Pintamos la lista de compra ANTES de armar el texto de explicación,
+  // para poder reutilizar los mismos totales ya redondeados (costo/venta
+  // por unidad) y que el texto siempre cuadre con lo que ve el usuario
+  // abajo, sin desfases de unos pesos por redondeos distintos.
+  const totalesCompra = pintarListaCompra(
+    data.lista_compra,
+    data.presupuesto_sobrante,
+    data.presupuesto_sobrante_sugerencia
+  );
+
   const explicacionEl = document.getElementById("resultadoExplicacion");
   if (explicacionEl) {
     let texto;
 
     if (tieneListaCompra) {
+      const gananciaCompra = totalesCompra.totalVenta - totalesCompra.totalCosto;
+
       texto =
-        `Con ${formatoCOP(data.compra_total_costo)} compras exactamente los productos ` +
+        `Con ${formatoCOP(totalesCompra.totalCosto)} compras exactamente los productos ` +
         `que ves abajo. Si los vendes todos al precio sugerido, recibirías ` +
-        `${formatoCOP(data.compra_total_venta)}, lo que te deja ` +
-        `${formatoCOP(data.ganancia_estimada)} de ganancia.`;
+        `${formatoCOP(totalesCompra.totalVenta)}, lo que te deja ` +
+        `${formatoCOP(gananciaCompra)} de ganancia.`;
 
       if (data.presupuesto_sobrante && data.presupuesto_sobrante > 0) {
         texto += ` Te quedan ${formatoCOP(data.presupuesto_sobrante)} sin usar (no alcanza para otra unidad de estos productos).`;
@@ -212,13 +290,12 @@ function pintarResultado(data) {
       const ejemploVenta = margenDecimal < 1 ? ejemploCosto / (1 - margenDecimal) : ejemploCosto;
       texto +=
         ` Así se calcula el precio de venta sugerido: ${data.formula_precio_venta}. ` +
-        `En tu tramo (${data.tramo_etiqueta || ""}) el margen sugerido es del ${data.margen_porcentaje}%: ` +
+        `En tu tramo el margen sugerido es del ${data.margen_porcentaje}%: ` +
         `por ejemplo, un producto que te cuesta comprarle a Lúmina ${formatoCOP(ejemploCosto)} se vendería en ${formatoCOP(ejemploVenta)}.`;
     }
 
     texto +=
-      ` Ten en cuenta que esto no incluye gastos como envíos, publicidad, ` +
-      `pasarela de pago o empaques, así que tu ganancia real puede ser un poco menor.`;
+      ` Ten en cuenta que esto no incluye gastos como envío.`;
 
     explicacionEl.textContent = texto;
   }
@@ -228,7 +305,6 @@ function pintarResultado(data) {
     nombreEl.textContent = `${data.nombre} (estimación general para tu presupuesto)`;
   }
 
-  pintarListaCompra(data.lista_compra, data.presupuesto_sobrante, data.presupuesto_sobrante_sugerencia);
   pintarListaProductos(data.productos);
   pintarListaKits(data.kits);
 
@@ -247,24 +323,42 @@ function pintarListaCompra(lineas, sobrante, sugerencia) {
   const lista = document.getElementById("listaCompraItems");
   const sobranteEl = document.getElementById("resultadoSobrante");
 
-  if (!contenedor || !lista) return;
+  if (!contenedor || !lista) return { totalCosto: 0, totalVenta: 0 };
 
   lista.innerHTML = "";
 
   if (!lineas || !lineas.length) {
     contenedor.hidden = true;
-    return;
+    return { totalCosto: 0, totalVenta: 0 };
   }
 
+  let totalCosto = 0;
+  let totalVenta = 0;
+
   lineas.forEach((item) => {
+    // Redondeamos el costo y el precio de venta POR UNIDAD a un múltiplo
+    // de 100 (igual que el resto de las cifras) para que el margen que se
+    // muestra siga siendo fiel al margen real. Con pasos más grandes (500,
+    // 1000) el redondeo puede desviar el margen mostrado varios puntos
+    // respecto al margen sugerido real. El subtotal se calcula
+    // multiplicando estos mismos valores ya redondeados, para que el
+    // unitario y el subtotal siempre cuadren entre sí.
+    const costoUnitario = redondearCOP(item.costo_unitario, 100);
+    const ventaUnitario = redondearCOP(item.precio_venta_unitario, 100);
+    const subtotalCosto = costoUnitario * item.cantidad;
+    const subtotalVenta = ventaUnitario * item.cantidad;
+
+    totalCosto += subtotalCosto;
+    totalVenta += subtotalVenta;
+
     const row = document.createElement("div");
     row.className = "lm-result-item";
     row.innerHTML = `
       <span class="lm-result-item-nombre">${item.cantidad}x ${item.nombre}</span>
       <span class="lm-result-item-precio">
-        ${formatoCOP(item.subtotal_costo)} → ${formatoCOP(item.subtotal_venta)}
+        ${formatoCOP(subtotalCosto)} → ${formatoCOP(subtotalVenta)}
         <small style="display:block;opacity:.7;">
-          Margen sugerido: ${item.margen_porcentaje}% · te cuesta ${formatoCOP(item.costo_unitario)} → vendés a ${formatoCOP(item.precio_venta_unitario)}
+          Margen sugerido: ${item.margen_porcentaje}% · te cuesta ${formatoCOP(costoUnitario)} → vendés a ${formatoCOP(ventaUnitario)}
         </small>
       </span>
     `;
@@ -281,6 +375,8 @@ function pintarListaCompra(lineas, sobrante, sugerencia) {
   }
 
   contenedor.hidden = false;
+
+  return { totalCosto, totalVenta };
 }
 
 function pintarLista(contenedorId, listaId, items) {
@@ -371,7 +467,7 @@ function actualizarDashboard(data) {
   const meses = ["Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5", "Mes 6"];
   const inversion = data.inversion_estimada;
   const gananciaMensual = data.ganancia_estimada;
-  const proyeccion = meses.map((_, i) => Math.round(inversion + gananciaMensual * (i + 1)));
+  const proyeccion = meses.map((_, i) => redondearCOP(inversion + gananciaMensual * (i + 1)));
 
   if (graficoGanancias) {
     graficoGanancias.data.labels = meses;

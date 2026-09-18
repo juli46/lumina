@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function () {
 
 
@@ -26,12 +25,100 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* =====================================================
+       ELIMINAR KIT
+       Form real por cada kit (clase .form-eliminar-kit).
+       SweetAlert solo confirma antes de enviarlo; la URL,
+       el CSRF y el POST los maneja el propio <form>.
+    ===================================================== */
+
+    const formulariosEliminar = document.querySelectorAll(
+        ".form-eliminar-kit"
+    );
+
+    formulariosEliminar.forEach(function (formularioEliminar) {
+
+        formularioEliminar.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+                const nombre =
+                    formularioEliminar.dataset.nombre ||
+                    "este kit";
+
+
+                if (!window.Swal) {
+
+                    if (
+                        window.confirm(
+                            "¿Eliminar " + nombre + "?"
+                        )
+                    ) {
+                        formularioEliminar.submit();
+                    }
+
+                    return;
+
+                }
+
+
+                Swal.fire({
+
+                    icon: "warning",
+
+                    title: "¿Eliminar kit?",
+
+                    html: `Se eliminará <strong>${nombre}</strong>.<br>Esta acción no se puede deshacer.`,
+
+                    showCancelButton: true,
+
+                    confirmButtonText: "Sí, eliminar",
+
+                    cancelButtonText: "Cancelar",
+
+                    confirmButtonColor: "#dc2626",
+
+                    cancelButtonColor: "#8b8593",
+
+                    reverseButtons: true
+
+                }).then(function (resultado) {
+
+                    if (resultado.isConfirmed) {
+
+                        /*
+                         * Evita doble envío si el usuario
+                         * alcanza a hacer clic dos veces.
+                         */
+
+                        const boton =
+                            formularioEliminar.querySelector(
+                                'button[type="submit"]'
+                            );
+
+                        if (boton) {
+                            boton.disabled = true;
+                        }
+
+                        formularioEliminar.submit();
+
+                    }
+
+                });
+
+            }
+        );
+
+    });
+
+
+
+    /* =====================================================
        FORMULARIO PRINCIPAL DEL KIT
     ===================================================== */
 
-    const formulario = document.querySelector(
-        'form[method="POST"]:not([action])'
-    );
+    const formulario = document.getElementById("formKit");
 
 
     if (formulario) {
@@ -1475,82 +1562,3 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
 });
-
-
-
-/* =========================================================
-   ELIMINAR KIT
-========================================================= */
-
-window.eliminarKit = function (
-    id,
-    nombre
-) {
-
-    if (!window.Swal) {
-
-        if (
-            window.confirm(
-                "¿Eliminar kit " +
-                nombre +
-                "?"
-            )
-        ) {
-
-            window.location.href =
-                "/dashboard/kits/eliminar/" +
-                id +
-                "/";
-
-        }
-
-        return;
-
-    }
-
-
-    Swal.fire({
-
-        title:
-            "¿Eliminar kit?",
-
-        html:
-            `Se eliminará <b>${nombre}</b>`,
-
-        icon:
-            "warning",
-
-        showCancelButton:
-            true,
-
-        confirmButtonText:
-            "Sí, eliminar",
-
-        cancelButtonText:
-            "Cancelar",
-
-        confirmButtonColor:
-            "#df6d86",
-
-        cancelButtonColor:
-            "#8b8593",
-
-        reverseButtons:
-            true
-
-    }).then(function (result) {
-
-        if (
-            result.isConfirmed
-        ) {
-
-            window.location.href =
-                "/dashboard/kits/eliminar/" +
-                id +
-                "/";
-
-        }
-
-    });
-
-};

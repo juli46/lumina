@@ -1031,6 +1031,17 @@ class Kit(models.Model):
     # PRECIOS
     # =====================================================
 
+    def aproximar_precio(self, precio):
+        """
+        Redondea hacia arriba al múltiplo de 100 más cercano.
+        Misma convención que Producto.aproximar_precio, para que
+        el redondeo sea consistente en todo el sistema.
+        Ej: 119.255 -> 119.300
+        """
+        return (precio / Decimal("100")).to_integral_value(
+            rounding=ROUND_CEILING
+        ) * Decimal("100")
+
     @property
     def precio_normal(self):
         """
@@ -1050,6 +1061,7 @@ class Kit(models.Model):
     def precio_final(self):
         """
         Precio que realmente paga el cliente.
+        Redondeado hacia arriba al múltiplo de 100.
         """
 
         if (
@@ -1062,16 +1074,16 @@ class Kit(models.Model):
                 / Decimal("100")
             )
 
-            return (
+            precio_con_descuento = (
                 self.precio_normal
                 * (Decimal("1") - descuento)
-            ).quantize(
-                Decimal("0.01")
             )
+
+            return self.aproximar_precio(precio_con_descuento)
 
         if self.precio_personalizado:
 
-            return self.precio_personalizado
+            return self.aproximar_precio(self.precio_personalizado)
 
         return self.precio_normal
 
@@ -1722,13 +1734,10 @@ class PedidoItemKitSeleccion(models.Model):
 class RecomendacionEmprendimiento(models.Model):
  
     PRODUCTOS_INTERES = [
-        ("accesorios", "Accesorios"),
-        ("skincare", "Skincare"),
-        ("facial", "Facial"),
-        ("ojos", "Ojos"),
-        ("general", "General"),
-        ("kits", "Kits"),
-    ]
+    ("maquillaje", "Maquillaje"),
+    ("skincare", "Skincare"),
+    ("general", "Maquillaje y Skincare"),
+]
  
     PLATAFORMAS = [
         ("tiktok", "TikTok"),

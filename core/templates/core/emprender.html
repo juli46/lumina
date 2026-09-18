@@ -27,6 +27,53 @@
     }
     #btnImprimirPdf, #btnGuardarReporte, #guardarReporteMsg { display: none !important; }
 }
+
+.lm-presupuesto-input {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    background: var(--card);
+    transition: var(--transition);
+}
+.lm-presupuesto-input:focus-within {
+    border-color: var(--primary);
+}
+.lm-presupuesto-input span {
+    color: var(--text-light);
+    font-weight: 600;
+}
+.lm-presupuesto-input input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 1rem;
+    background: transparent;
+    color: var(--title);
+}
+.lm-presupuesto-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+.lm-chip-monto {
+    border: 1px solid var(--border);
+    background: var(--primary-soft);
+    color: var(--title);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.lm-chip-monto:hover,
+.lm-chip-monto:focus-visible {
+    background: var(--primary);
+    color: #fff;
+}
 </style>
 
 <div class="lm-wrap">
@@ -64,28 +111,29 @@
             <div class="lm-test-card">
                 <div class="lm-test-grid">
 
-                    <div class="lm-field">
+                    <div class="lm-field lm-field--presupuesto">
                         <label for="presupuesto">💸 ¿Cuál es tu presupuesto?</label>
-                        <select id="presupuesto">
-                            <option value="">Selecciona</option>
-                            <option value="50000">$50.000 COP</option>
-                            <option value="100000">$100.000 COP</option>
-                            <option value="300000">$300.000 COP</option>
-                            <option value="500000">$500.000+ COP</option>
-                        </select>
+                        <div class="lm-presupuesto-input">
+                            <span aria-hidden="true">$</span>
+                            <input type="text" id="presupuesto" inputmode="numeric"
+                                   placeholder="Ej: 180.000" autocomplete="off">
+                        </div>
+                        <div class="lm-presupuesto-chips" role="group" aria-label="Montos sugeridos">
+                            <button type="button" class="lm-chip-monto" data-monto="50000">$50.000</button>
+                            <button type="button" class="lm-chip-monto" data-monto="150000">$150.000</button>
+                            <button type="button" class="lm-chip-monto" data-monto="300000">$300.000</button>
+                            <button type="button" class="lm-chip-monto" data-monto="600000">$600.000</button>
+                            <button type="button" class="lm-chip-monto" data-monto="1000000">$1.000.000+</button>
+                        </div>
                     </div>
 
                     <div class="lm-field">
                         <label for="producto">💄 ¿Qué quieres vender?</label>
                         <select id="producto">
                             <option value="">Selecciona</option>
-                            <option value="accesorios">Accesorios</option>
+                            <option value="maquillaje">Maquillaje</option>
                             <option value="skincare">Skincare</option>
-                            <option value="facial">Facial</option>
-                            <option value="ojos">Ojos</option>
-                            <option value="general">General</option>
-                            <option value="kits">Kits beauty</option>
-                            <option value="otro">Otro</option>
+                            <option value="general">Maquillaje y Skincare</option>
                         </select>
                     </div>
 
@@ -304,5 +352,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/emprender.js' %}?v=8"></script>
+<script src="{% static 'js/emprender.js' %}?v=10"></script>
 {% endblock %}

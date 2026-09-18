@@ -40,7 +40,7 @@
         <div class="info-icon" aria-hidden="true"><i class="fa-solid fa-lightbulb"></i></div>
         <div>
             <h3>¿Cómo funcionan las recomendaciones?</h3>
-            <p>Aquí defines las reglas que utilizará Lúmina para recomendar productos y kits en el test de emprendimiento. Puedes establecer un rango de inversión, productos, kits y la plataforma donde venderá el usuario.</p>
+            <p>Aquí defines las reglas que utilizará Lúmina para recomendar productos y kits en el test de emprendimiento. Puedes establecer un rango de inversión, el producto de interés, y qué kits y productos sugerir.</p>
         </div>
     </div>
 
@@ -48,14 +48,32 @@
         <div class="section-title">
             <div>
                 <h2>Recomendaciones creadas</h2>
-                <p>{{ recomendaciones|length }} recomendación{{ recomendaciones|length|pluralize }} configurada{{ recomendaciones|length|pluralize }}</p>
+                <p><span id="recomendacionesVisibleCount">{{ recomendaciones|length }}</span> recomendación{{ recomendaciones|length|pluralize }} configurada{{ recomendaciones|length|pluralize }}</p>
             </div>
         </div>
 
         {% if recomendaciones %}
-            <div class="recommendations-grid">
+            <div class="rec-search-bar">
+                <div class="selection-search rec-search-input">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="text"
+                           id="buscadorRecomendaciones"
+                           class="selection-filter-input"
+                           placeholder="Buscar por nombre, producto, kit o mensaje..."
+                           autocomplete="off">
+                </div>
+                <select id="filtroEstadoRecomendacion" class="rec-filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="activa">Activas</option>
+                    <option value="inactiva">Inactivas</option>
+                </select>
+            </div>
+
+            <div class="recommendations-grid" id="recomendacionesGrid">
                 {% for recomendacion in recomendaciones %}
-                    <article class="recommendation-card">
+                    <article class="recommendation-card"
+                             data-search="{{ recomendacion.nombre|lower }} {% if recomendacion.producto_interes %}{{ recomendacion.get_producto_interes_display|lower }}{% endif %} {{ recomendacion.recomendacion|default:''|lower }} {% for kit in recomendacion.kits.all %}{{ kit.nombre|lower }} {% endfor %}{% for producto in recomendacion.productos.all %}{{ producto.nombre|lower }} {% endfor %}"
+                             data-estado="{% if recomendacion.activa %}activa{% else %}inactiva{% endif %}">
 
                         <div class="recommendation-card-header">
                             <div class="recommendation-icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -81,59 +99,69 @@
                             </div>
                         </div>
 
-                        <div class="recommendation-info">
-                            <div class="info-row">
-                                <span><i class="fa-solid fa-tag" aria-hidden="true"></i> Producto</span>
-                                <strong>{% if recomendacion.producto_interes %}{{ recomendacion.get_producto_interes_display }}{% else %}Cualquiera{% endif %}</strong>
-                            </div>
-                            <div class="info-row">
-                                <span><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Plataforma</span>
-                                <strong>{% if recomendacion.plataforma %}{{ recomendacion.get_plataforma_display }}{% else %}Cualquiera{% endif %}</strong>
-                            </div>
-                        </div>
+                        <details class="recommendation-details">
+                            <summary class="details-toggle">
+                                <span class="details-toggle-text">
+                                    <span class="show-text">Ver detalles</span>
+                                    <span class="hide-text">Ocultar detalles</span>
+                                </span>
+                                <i class="fa-solid fa-chevron-down details-toggle-icon" aria-hidden="true"></i>
+                            </summary>
 
-                        <div class="related-section">
-                            <div class="related-title">
-                                <span><i class="fa-solid fa-box-open" aria-hidden="true"></i> Kits recomendados</span>
-                                <small>{{ recomendacion.kits.count }}</small>
-                            </div>
-                            {% if recomendacion.kits.count %}
-                                <div class="chips">
-                                    {% for kit in recomendacion.kits.all %}
-                                        <a href="{% url 'dashboard_kits' %}" class="chip chip-kit" title="Ir a Kits">
-                                            <i class="fa-solid fa-box" aria-hidden="true"></i> {{ kit.nombre }}
-                                        </a>
-                                    {% endfor %}
+                            <div class="details-content">
+
+                                <div class="recommendation-info">
+                                    <div class="info-row">
+                                        <span><i class="fa-solid fa-tag" aria-hidden="true"></i> Producto</span>
+                                        <strong>{% if recomendacion.producto_interes %}{{ recomendacion.get_producto_interes_display }}{% else %}Cualquiera{% endif %}</strong>
+                                    </div>
                                 </div>
-                            {% else %}
-                                <p class="empty-related">No hay kits asociados.</p>
-                            {% endif %}
-                        </div>
 
-                        <div class="related-section">
-                            <div class="related-title">
-                                <span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Productos recomendados</span>
-                                <small>{{ recomendacion.productos.count }}</small>
-                            </div>
-                            {% if recomendacion.productos.count %}
-                                <div class="chips">
-                                    {% for producto in recomendacion.productos.all %}
-                                        <a href="{% url 'editar_producto' producto.id %}" class="chip chip-product" title="Editar producto">
-                                            <i class="fa-solid fa-sparkles" aria-hidden="true"></i> {{ producto.nombre }}
-                                        </a>
-                                    {% endfor %}
+                                <div class="related-section">
+                                    <div class="related-title">
+                                        <span><i class="fa-solid fa-box-open" aria-hidden="true"></i> Kits recomendados</span>
+                                        <small>{{ recomendacion.kits.count }}</small>
+                                    </div>
+                                    {% if recomendacion.kits.count %}
+                                        <div class="chips">
+                                            {% for kit in recomendacion.kits.all %}
+                                                <a href="{% url 'dashboard_kits' %}" class="chip chip-kit" title="Ir a Kits">
+                                                    <i class="fa-solid fa-box" aria-hidden="true"></i> {{ kit.nombre }}
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="empty-related">No hay kits asociados.</p>
+                                    {% endif %}
                                 </div>
-                            {% else %}
-                                <p class="empty-related">No hay productos asociados.</p>
-                            {% endif %}
-                        </div>
 
-                        {% if recomendacion.recomendacion %}
-                            <div class="recommendation-text">
-                                <div class="recommendation-text-title"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i> Mensaje para el usuario</div>
-                                <p>{{ recomendacion.recomendacion }}</p>
+                                <div class="related-section">
+                                    <div class="related-title">
+                                        <span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Productos recomendados</span>
+                                        <small>{{ recomendacion.productos.count }}</small>
+                                    </div>
+                                    {% if recomendacion.productos.count %}
+                                        <div class="chips">
+                                            {% for producto in recomendacion.productos.all %}
+                                                <a href="{% url 'editar_producto' producto.id %}" class="chip chip-product" title="Editar producto">
+                                                    <i class="fa-solid fa-sparkles" aria-hidden="true"></i> {{ producto.nombre }}
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="empty-related">No hay productos asociados.</p>
+                                    {% endif %}
+                                </div>
+
+                                {% if recomendacion.recomendacion %}
+                                    <div class="recommendation-text">
+                                        <div class="recommendation-text-title"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i> Mensaje para el usuario</div>
+                                        <p>{{ recomendacion.recomendacion }}</p>
+                                    </div>
+                                {% endif %}
+
                             </div>
-                        {% endif %}
+                        </details>
 
                         <div class="recommendation-actions">
                             <button
@@ -145,7 +173,6 @@
                                     '{% localize off %}{{ recomendacion.presupuesto_min }}{% endlocalize %}',
                                     '{% localize off %}{{ recomendacion.presupuesto_max }}{% endlocalize %}',
                                     '{{ recomendacion.producto_interes|default:"" }}',
-                                    '{{ recomendacion.plataforma|default:"" }}',
                                     '{{ recomendacion.recomendacion|default:""|escapejs }}',
                                     {% if recomendacion.activa %}true{% else %}false{% endif %},
                                     [{% for kit in recomendacion.kits.all %}{{ kit.id }}{% if not forloop.last %},{% endif %}{% endfor %}],
@@ -156,7 +183,10 @@
                                 <i class="fa-solid fa-pen" aria-hidden="true"></i> Editar
                             </button>
 
-                            <form method="POST" action="{% url 'eliminar_recomendacion' recomendacion.id %}" class="delete-form" onsubmit="return confirmarEliminacion(event);">
+                            <form method="POST"
+                                  action="{% url 'eliminar_recomendacion' recomendacion.id %}"
+                                  class="delete-form form-eliminar-recomendacion"
+                                  data-nombre="{{ recomendacion.nombre|escapejs }}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-action btn-delete" aria-label="Eliminar recomendación {{ recomendacion.nombre }}">
                                     <i class="fa-solid fa-trash" aria-hidden="true"></i> Eliminar
@@ -166,6 +196,25 @@
 
                     </article>
                 {% endfor %}
+            </div>
+
+            <div class="rec-load-more" id="recomendacionesLoadMore" hidden>
+                <p class="rec-load-more-text">
+                    <span id="recomendacionesShownCount">0</span> de <span id="recomendacionesTotalCount">0</span>
+                </p>
+                <button type="button" class="btn-secondary" id="btnVerMasRecomendaciones">
+                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                    Ver más recomendaciones
+                </button>
+            </div>
+
+            <div class="empty-state rec-search-empty" id="recomendacionesSinResultados" hidden>
+                <div class="empty-icon" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <h3>Sin resultados</h3>
+                <p>No encontramos recomendaciones que coincidan con tu búsqueda. Prueba con otro término o filtro.</p>
+                <button type="button" class="btn-secondary" onclick="limpiarBusquedaRecomendaciones()">
+                    <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i> Limpiar búsqueda
+                </button>
             </div>
         {% else %}
             <div class="empty-state">
@@ -244,23 +293,9 @@
                         <label for="producto_interes">Producto de interés</label>
                         <select id="producto_interes" name="producto_interes">
                             <option value="">Cualquier producto</option>
-                            <option value="accesorios">Accesorios</option>
+                            <option value="maquillaje">Maquillaje</option>
                             <option value="skincare">Skincare</option>
-                            <option value="facial">Facial</option>
-                            <option value="ojos">Ojos</option>
-                            <option value="general">General</option>
-                            <option value="kits">Kits beauty</option>
-                            <option value="otro">Otro</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="plataforma">Plataforma de venta</label>
-                        <select id="plataforma" name="plataforma">
-                            <option value="">Cualquier plataforma</option>
-                            <option value="instagram">Instagram</option>
-                            <option value="tiktok">TikTok</option>
-                            <option value="whatsapp">WhatsApp</option>
+                            <option value="general">Maquillaje y Skincare</option>
                         </select>
                     </div>
                 </div>
@@ -275,9 +310,24 @@
                     </div>
 
                     {% if kits %}
-                        <div class="selection-list">
+                        <div class="selection-toolbar">
+                            <div class="selection-search">
+                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                <input type="text"
+                                       class="selection-filter-input"
+                                       data-target="kits"
+                                       placeholder="Buscar kit por nombre..."
+                                       autocomplete="off">
+                            </div>
+                            <div class="selection-toolbar-actions">
+                                <span class="selection-count" id="kitsSelectedCount">0 seleccionados</span>
+                                <button type="button" class="btn-link" data-select-all="kits">Todos</button>
+                                <button type="button" class="btn-link" data-select-none="kits">Ninguno</button>
+                            </div>
+                        </div>
+                        <div class="selection-list" id="kitsSelectionList" data-group="kits">
                             {% for kit in kits %}
-                                <label class="selection-item">
+                                <label class="selection-item" data-search="{{ kit.nombre|lower }}">
                                     <input type="checkbox" name="kits" value="{{ kit.id }}" class="kit-checkbox">
                                     <span class="selection-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                                     <span class="selection-content">
@@ -286,6 +336,10 @@
                                     </span>
                                 </label>
                             {% endfor %}
+                            <p class="empty-selection selection-no-results" hidden>
+                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                <span>No hay kits que coincidan con la búsqueda.</span>
+                            </p>
                         </div>
                     {% else %}
                         <div class="empty-selection">
@@ -300,22 +354,55 @@
                         <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
                         <div>
                             <h3>Productos recomendados</h3>
-                            <p>Selecciona los productos que quieres sugerir.</p>
+                            <p>Selecciona los productos que quieres sugerir. Filtra por categoría para marcar solo skincare o solo maquillaje sin revisar uno por uno.</p>
                         </div>
                     </div>
 
                     {% if productos %}
-                        <div class="selection-list">
+                        <div class="selection-toolbar">
+                            <div class="selection-search">
+                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                <input type="text"
+                                       class="selection-filter-input"
+                                       data-target="productos"
+                                       placeholder="Buscar producto por nombre..."
+                                       autocomplete="off">
+                            </div>
+                            {% if categorias_productos %}
+                                <select class="selection-categoria-filter rec-filter-select"
+                                        data-target="productos"
+                                        aria-label="Filtrar productos por categoría">
+                                    <option value="">Todas las categorías</option>
+                                    {% for categoria in categorias_productos %}
+                                        <option value="{{ categoria.nombre|lower }}">{{ categoria.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            <div class="selection-toolbar-actions">
+                                <span class="selection-count" id="productosSelectedCount">0 seleccionados</span>
+                                <button type="button" class="btn-link" data-select-all="productos">Todos</button>
+                                <button type="button" class="btn-link" data-select-none="productos">Ninguno</button>
+                            </div>
+                        </div>
+                        <div class="selection-list" id="productosSelectionList" data-group="productos">
                             {% for producto in productos %}
-                                <label class="selection-item">
+                                <label class="selection-item"
+                                       data-search="{{ producto.nombre|lower }} {% if producto.categoria %}{{ producto.categoria.nombre|lower }}{% endif %}"
+                                       data-categoria="{% if producto.categoria %}{{ producto.categoria.nombre|lower }}{% endif %}">
                                     <input type="checkbox" name="productos" value="{{ producto.id }}" class="producto-checkbox">
                                     <span class="selection-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                                     <span class="selection-content">
                                         <strong>{{ producto.nombre }}</strong>
-                                        <small>${{ producto.precio_base|floatformat:0 }}</small>
+                                        <small>
+                                            ${{ producto.precio_base|floatformat:0 }}{% if producto.categoria %} · {{ producto.categoria.nombre }}{% endif %}
+                                        </small>
                                     </span>
                                 </label>
                             {% endfor %}
+                            <p class="empty-selection selection-no-results" hidden>
+                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                <span>No hay productos que coincidan con la búsqueda.</span>
+                            </p>
                         </div>
                     {% else %}
                         <div class="empty-selection">
@@ -365,6 +452,7 @@
 
 </div>
 
-<script src="{% static 'js/recomendaciones.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/recomendaciones.js' %}?v=4"></script>
 
 {% endblock %}

@@ -1,4 +1,3 @@
-
 {% extends "core/dashboard.html" %}
 {% load static %}
 
@@ -438,6 +437,36 @@
 
             <strong>
                 {{ kits_destacados }}
+            </strong>
+
+        </div>
+
+
+        <!-- UNIDADES VENDIDAS -->
+
+        <div class="mini-card highlight">
+
+            <h4>
+                Unidades vendidas
+            </h4>
+
+            <strong>
+                {{ total_unidades_vendidas }}
+            </strong>
+
+        </div>
+
+
+        <!-- INGRESOS POR PRODUCTOS -->
+
+        <div class="mini-card highlight" title="Suma de los ingresos generados por todos los productos vendidos (no es un promedio por producto)">
+
+            <h4>
+                Ingresos totales (productos)
+            </h4>
+
+            <strong>
+                ${{ total_ingresos_productos_fmt }}
             </strong>
 
         </div>
@@ -1035,6 +1064,174 @@
 
 
     <!-- ==========================================
+         VENTAS POR PRODUCTO
+    =========================================== -->
+
+    <section class="panel" id="ventas-producto">
+
+        <div class="panel-header">
+
+            <h3>
+                <i class="fa-solid fa-ranking-star"></i>
+                Ventas por Producto
+            </h3>
+
+        </div>
+
+        <p class="alerta-descripcion">
+            Unidades vendidas e ingresos generados por cada producto,
+            calculados sobre pedidos pagados.
+        </p>
+
+        <!-- GRÁFICAS MÁS / MENOS VENDIDOS -->
+
+        <div class="charts-grid ventas-producto-charts">
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+
+                    <h3>
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        Top 10 más vendidos
+                    </h3>
+
+                </div>
+
+                <canvas id="productosMasVendidosChart"></canvas>
+
+            </div>
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+
+                    <h3>
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                        Top 10 menos vendidos
+                    </h3>
+
+                </div>
+
+                <canvas id="productosMenosVendidosChart"></canvas>
+
+            </div>
+
+        </div>
+
+        <!-- BUSCADOR + ORDEN -->
+
+        <div class="ventas-producto-toolbar">
+
+            <div class="ventas-producto-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="text"
+                       id="buscadorVentasProducto"
+                       placeholder="Buscar producto..."
+                       autocomplete="off">
+            </div>
+
+            <div class="ventas-producto-orden">
+                <button type="button" class="btn-orden active" data-orden="desc">
+                    <i class="fa-solid fa-arrow-down-wide-short"></i> Más vendidos primero
+                </button>
+                <button type="button" class="btn-orden" data-orden="asc">
+                    <i class="fa-solid fa-arrow-up-short-wide"></i> Menos vendidos primero
+                </button>
+            </div>
+
+        </div>
+
+        <!-- TABLA COMPLETA -->
+
+        <div class="table-wrapper">
+
+            <table id="tablaVentasProducto">
+
+                <thead>
+
+                    <tr>
+                        <th>#</th>
+                        <th>Producto</th>
+                        <th>Unidades vendidas</th>
+                        <th>Ingresos generados</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for item in ventas_por_producto %}
+
+                    <tr data-search="{{ item.producto_nombre|lower }}"
+                        data-unidades="{{ item.unidades_vendidas|default:0 }}">
+
+                        <td>
+                            {% if forloop.counter == 1 %}🥇
+                            {% elif forloop.counter == 2 %}🥈
+                            {% elif forloop.counter == 3 %}🥉
+                            {% else %}{{ forloop.counter }}
+                            {% endif %}
+                        </td>
+
+                        <td>{{ item.producto_nombre }}</td>
+
+                        <td>
+                            <strong>{{ item.unidades_vendidas|default:0 }}</strong>
+                        </td>
+
+                        <td>
+                            ${{ item.ingresos_fmt }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="4" class="tabla-vacia">
+                            Todavía no hay ventas registradas por producto.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            <p class="tabla-vacia ventas-producto-sin-resultados" hidden>
+                No hay productos que coincidan con tu búsqueda.
+            </p>
+
+        </div>
+
+        <!-- PRODUCTOS SIN VENTAS -->
+
+        {% if productos_sin_ventas %}
+
+        <div class="ventas-producto-sin-ventas">
+
+            <h4>
+                <i class="fa-solid fa-circle-exclamation"></i>
+                Productos sin ventas registradas
+                <span class="badge-alerta">{{ productos_sin_ventas|length }}</span>
+            </h4>
+
+            <div class="chips-sin-ventas">
+                {% for producto in productos_sin_ventas %}
+                    <span class="chip-sin-ventas">{{ producto.nombre }}</span>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
          KITS RECIENTES
     =========================================== -->
 
@@ -1412,8 +1609,176 @@
 
     );
 
+
+    /* ==========================================
+       PRODUCTOS MÁS VENDIDOS
+    =========================================== */
+
+    new Chart(
+
+        document.getElementById("productosMasVendidosChart"),
+
+        {
+
+            type: "bar",
+
+            data: {
+
+                labels: {{ productos_labels|safe }},
+
+                datasets: [
+
+                    {
+
+                        label: "Unidades vendidas",
+
+                        data: {{ productos_data|safe }}
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                indexAxis: "y"
+
+            }
+
+        }
+
+    );
+
+
+    /* ==========================================
+       PRODUCTOS MENOS VENDIDOS
+    =========================================== */
+
+    new Chart(
+
+        document.getElementById("productosMenosVendidosChart"),
+
+        {
+
+            type: "bar",
+
+            data: {
+
+                labels: {{ productos_menos_labels|safe }},
+
+                datasets: [
+
+                    {
+
+                        label: "Unidades vendidas",
+
+                        data: {{ productos_menos_data|safe }},
+
+                        backgroundColor: "#d84d3c"
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                indexAxis: "y"
+
+            }
+
+        }
+
+    );
+
+</script>
+
+
+<!-- ==========================================
+     BUSCADOR / ORDEN DE VENTAS POR PRODUCTO
+=========================================== -->
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const tabla = document.getElementById("tablaVentasProducto");
+        if (!tabla) return;
+
+        const tbody = tabla.querySelector("tbody");
+        const filas = Array.from(tbody.querySelectorAll("tr[data-search]"));
+        const buscador = document.getElementById("buscadorVentasProducto");
+        const sinResultados = document.querySelector(".ventas-producto-sin-resultados");
+        const botonesOrden = document.querySelectorAll(".btn-orden");
+
+        let ordenActual = "desc";
+
+        function renumerar(filasVisibles) {
+            const medallas = ["🥇", "🥈", "🥉"];
+            filasVisibles.forEach((fila, i) => {
+                const celdaNumero = fila.querySelector("td:first-child");
+                celdaNumero.textContent = medallas[i] || (i + 1);
+            });
+        }
+
+        function aplicar() {
+            const termino = (buscador?.value || "").trim().toLowerCase();
+
+            // Ordenar según el botón activo
+            const ordenadas = [...filas].sort((a, b) => {
+                const ua = parseInt(a.dataset.unidades, 10) || 0;
+                const ub = parseInt(b.dataset.unidades, 10) || 0;
+                return ordenActual === "desc" ? ub - ua : ua - ub;
+            });
+
+            ordenadas.forEach((fila) => tbody.appendChild(fila));
+
+            // Filtrar por búsqueda
+            let visibles = 0;
+            const filasVisibles = [];
+
+            ordenadas.forEach((fila) => {
+                const coincide = !termino || fila.dataset.search.includes(termino);
+                fila.hidden = !coincide;
+                if (coincide) {
+                    visibles += 1;
+                    filasVisibles.push(fila);
+                }
+            });
+
+            renumerar(filasVisibles);
+
+            if (sinResultados) sinResultados.hidden = visibles !== 0;
+            tabla.hidden = visibles === 0 && filas.length > 0;
+        }
+
+        if (buscador) {
+            let t = null;
+            buscador.addEventListener("input", () => {
+                clearTimeout(t);
+                t = setTimeout(aplicar, 120);
+            });
+        }
+
+        botonesOrden.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                botonesOrden.forEach((b) => b.classList.remove("active"));
+                btn.classList.add("active");
+                ordenActual = btn.dataset.orden;
+                aplicar();
+            });
+        });
+
+        aplicar();
+    });
+
 </script>
 
 
 {% endblock %}
-

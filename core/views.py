@@ -1,4 +1,3 @@
-
 from datetime import date, datetime, timedelta
 import hashlib
 import json
@@ -7,7 +6,7 @@ import uuid
 
 import requests
 from decimal import Decimal, InvalidOperation, ROUND_CEILING
-
+from django.db.models import F, ExpressionWrapper, DecimalField
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -3292,8 +3291,6 @@ def editar_recordatorio(request, id):
     return redirect(
         "admin_dashboard"
     )
-
-
 # =========================
 # ESTADÍSTICAS
 # =========================
@@ -3547,25 +3544,84 @@ def estadisticas(request):
     ).count()
 
     # =====================================
-    # PRODUCTOS MÁS VENDIDOS
+    # VENTAS POR PRODUCTO (más vendidos,
+    # menos vendidos y sin ventas)
+    #
+    # NOTA: asumo que PedidoItem tiene un
+    # campo "precio_unitario" y una FK
+    # "pedido" con el estado del pedido.
+    # Si tus nombres de campo son distintos,
+    # ajusta las líneas marcadas con "->".
     # =====================================
 
-    top_productos = PedidoItem.objects.values(
+    ventas_por_producto_qs = PedidoItem.objects.filter(
+        pedido__estado="PAGADO"          # -> ajustar si el campo/estado se llama distinto
+    ).values(
         "producto_nombre"
     ).annotate(
-        vendidos=Sum("cantidad")
-    ).order_by(
-        "-vendidos"
-    )[:5]
+        unidades_vendidas=Sum("cantidad"),
+        ingresos=Sum(
+            ExpressionWrapper(
+                F("cantidad") * F("precio_unitario"),   # -> ajustar nombre del campo de precio
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        )
+    ).order_by("-unidades_vendidas")
 
+    ventas_por_producto = list(ventas_por_producto_qs)
+
+    # Formateo de ingresos por fila para que se vean con puntos de miles
+    for item in ventas_por_producto:
+        item["ingresos_fmt"] = "{:,.0f}".format(
+            item["ingresos"] or 0
+        ).replace(",", ".")
+
+    # Top 10 más vendidos
+    productos_mas_vendidos = ventas_por_producto[:10]
+
+    # Top 10 menos vendidos (de los que sí tienen al menos 1 venta)
+    productos_menos_vendidos = sorted(
+        ventas_por_producto,
+        key=lambda p: p["unidades_vendidas"] or 0
+    )[:10]
+
+    # Productos del catálogo que nunca se han vendido
+    nombres_con_ventas = [
+        p["producto_nombre"] for p in ventas_por_producto
+    ]
+
+    productos_sin_ventas = Producto.objects.exclude(
+        nombre__in=nombres_con_ventas
+    ).order_by("nombre")
+
+    total_unidades_vendidas = sum(
+        p["unidades_vendidas"] or 0 for p in ventas_por_producto
+    )
+
+    total_ingresos_productos = sum(
+        p["ingresos"] or 0 for p in ventas_por_producto
+    )
+
+    # Formateado con separador de miles ($402.900 en vez de $402900)
+    total_ingresos_productos_fmt = "{:,.0f}".format(
+        total_ingresos_productos
+    ).replace(",", ".")
+
+    # Datos para las gráficas (top 10 más y top 10 menos vendidos)
     productos_labels = [
-        p["producto_nombre"]
-        for p in top_productos
+        p["producto_nombre"] for p in productos_mas_vendidos
     ]
 
     productos_data = [
-        p["vendidos"] or 0
-        for p in top_productos
+        p["unidades_vendidas"] for p in productos_mas_vendidos
+    ]
+
+    productos_menos_labels = [
+        p["producto_nombre"] for p in productos_menos_vendidos
+    ]
+
+    productos_menos_data = [
+        p["unidades_vendidas"] for p in productos_menos_vendidos
     ]
 
     # =====================================
@@ -3726,14 +3782,41 @@ def estadisticas(request):
             json.dumps(tests_data),
 
         # ---------------------------------
-        # PRODUCTOS VENDIDOS
+        # VENTAS POR PRODUCTO
         # ---------------------------------
+
+        "ventas_por_producto":
+            ventas_por_producto,
+
+        "productos_mas_vendidos":
+            productos_mas_vendidos,
+
+        "productos_menos_vendidos":
+            productos_menos_vendidos,
+
+        "productos_sin_ventas":
+            productos_sin_ventas,
+
+        "total_unidades_vendidas":
+            total_unidades_vendidas,
+
+        "total_ingresos_productos":
+            total_ingresos_productos,
+
+        "total_ingresos_productos_fmt":
+            total_ingresos_productos_fmt,
 
         "productos_labels":
             json.dumps(productos_labels),
 
         "productos_data":
             json.dumps(productos_data),
+
+        "productos_menos_labels":
+            json.dumps(productos_menos_labels),
+
+        "productos_menos_data":
+            json.dumps(productos_menos_data),
 
         # ---------------------------------
         # CONTACTOS
@@ -3755,6 +3838,24 @@ def estadisticas(request):
 # =========================
 # KITS
 # =========================
+def generar_sku(nombre):
+    """
+    Genera un SKU único a partir del nombre del kit.
+    Ej: "Kit Piel Radiante" -> "KIT-PIEL-RADIANTE"
+    Si ya existe, agrega un sufijo numérico: KIT-PIEL-RADIANTE-2
+    """
+
+    base = slugify(nombre).upper()[:40]
+
+    sku = base
+    contador = 1
+
+    while Kit.objects.filter(sku=sku).exists():
+        contador += 1
+        sku = f"{base}-{contador}"
+
+    return sku
+
 
 @login_required
 @admin_required
@@ -3886,10 +3987,19 @@ def dashboard_kits(request):
                 or None
             )
 
-            kit.sku = (
-                sku
-                or None
-            )
+            # =================================================
+            # SKU
+            # Si el usuario escribió uno, se respeta.
+            # Si lo dejó vacío pero el kit ya tenía SKU, se
+            # conserva el existente (no se borra).
+            # Si lo dejó vacío y el kit nunca tuvo SKU, se
+            # genera uno automáticamente a partir del nombre.
+            # =================================================
+
+            if sku:
+                kit.sku = sku
+            elif not kit.sku:
+                kit.sku = generar_sku(nombre)
 
             kit.stock = (
                 int(stock)
@@ -3993,9 +4103,10 @@ def dashboard_kits(request):
                     or None
                 ),
 
+                # SKU: se respeta el que escribió el usuario;
+                # si lo dejó vacío, se genera automáticamente.
                 sku=(
-                    sku
-                    or None
+                    sku or generar_sku(nombre)
                 ),
 
                 stock=(
@@ -4114,28 +4225,28 @@ def dashboard_kits(request):
         "core/kits.html",
         contexto
     )
-
+    
+from django.db.models import ProtectedError
 
 @login_required
 @admin_required
 @require_POST
 def eliminar_kit(request, kit_id):
 
-    kit = get_object_or_404(
-        Kit,
-        id=kit_id
-    )
+    kit = get_object_or_404(Kit, id=kit_id)
 
-    kit.delete()
+    try:
+        kit.delete()
+        messages.success(request, "Kit eliminado correctamente.")
 
-    messages.success(
-        request,
-        "Kit eliminado correctamente."
-    )
+    except ProtectedError:
+        messages.error(
+            request,
+            f'No se puede eliminar "{kit.nombre}" porque tiene pedidos asociados. '
+            "Puedes desactivarlo en su lugar para que deje de mostrarse en la tienda."
+        )
 
-    return redirect(
-        "dashboard_kits"
-    )
+    return redirect("dashboard_kits")
 
 
 @login_required
@@ -5819,6 +5930,31 @@ def dashboard_pedido_estado(request, pedido_id):
 # =========================================================================
 # RECOMENDACIONES DE EMPRENDIMIENTO
 # =========================================================================
+PLATAFORMA_LABELS = {
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "whatsapp": "WhatsApp",
+}
+
+
+def _plataforma_display_usuario(plataforma):
+    """
+    Devuelve la etiqueta de la plataforma que el usuario eligió en el
+    test (no la de la regla que hizo match). Si no eligió ninguna,
+    "Cualquiera".
+    """
+    if not plataforma:
+        return "Cualquiera"
+    return PLATAFORMA_LABELS.get(plataforma, "Cualquiera")
+
+
+# Debe coincidir exactamente con los choices del campo producto_interes
+# del modelo (PRODUCTOS_INTERES). Se usa para validar cualquier valor que
+# llegue por POST — tanto el que elige el emprendedor en el test como el
+# que guarda el admin al crear/editar una regla — antes de usarlo, en vez
+# de confiar ciegamente en lo que venga en el request.
+PRODUCTOS_INTERES_VALIDOS = {"maquillaje", "skincare", "general"}
+
 
 def _nivel_desde_presupuesto(presupuesto):
     if presupuesto <= 100000:
@@ -5827,43 +5963,83 @@ def _nivel_desde_presupuesto(presupuesto):
         return "Intermedio"
     return "Avanzado"
 
-
-# atributo_precio (precio_base / precio_500 / precio_1200) es lo que LE
-# CUESTA AL EMPRENDEDOR comprarle a Lúmina, según el tramo de volumen de su
-# compra — NO es un precio de reventa. precio_base es "el mismo que ve
-# cualquier cliente" (sin descuento por volumen, para compras chicas);
-# precio_500 y precio_1200 son precios con descuento por volumen para
-# compras mayores. costo_base es el costo INTERNO de Lúmina y no participa
-# en este cálculo: es contabilidad nuestra, no del emprendedor.
+# =============================================================
+# TRAMOS DE PRESUPUESTO — RECOMENDACIÓN DE EMPRENDIMIENTO
+# =============================================================
+# 'atributo_precio' es la property de Producto que representa lo
+# que le cuesta al EMPRENDEDOR comprarle a Lúmina en este tramo.
+# Tiene que coincidir exactamente con el tramo real que usa el
+# checkout (ver MARGENES_RENTABILIDAD más arriba en este archivo),
+# porque si no, la recomendación le muestra un costo distinto al
+# que realmente va a pagar cuando compre de verdad:
 #
-# El primer tramo es "hasta $99.999" (no $100.000), para que un presupuesto
-# de exactamente $100.000 caiga en el segundo tramo.
+#   Al detalle   (< $100.000)        margen Lúmina 40% -> precio_base  (costo_base / 0.60)
+#   Desde $100.000                   margen Lúmina 30% -> precio_100   (costo_base / 0.70)
+#   Desde $500.000                   margen Lúmina 25% -> precio_500   (costo_base / 0.75)
+#   Desde $1.200.000                 margen Lúmina 20% -> precio_1200  (costo_base / 0.80)
 #
-# `divisor` es la base del margen sugerido de reventa para ese tramo:
-# margen = 1 − divisor, y el precio de venta al cliente final sale de
-# precio_venta = costo_emprendedor ÷ divisor (ver FORMULA_PRECIO_VENTA).
+# 'margen_reventa_sugerido' es OTRO número, independiente: el
+# margen que le sugerimos al emprendedor aplicar cuando él revenda
+# esos mismos productos a sus propios clientes. No tiene por qué
+# ser igual al margen que Lúmina le aplicó a él — ajusta estos
+# valores según la estrategia comercial que quieras sugerir.
+#
+# 'hasta' es el límite superior (inclusive) del tramo; el último
+# tramo usa None para "sin límite superior". El primer tramo es
+# "hasta $99.999" (no $100.000), para que un presupuesto de
+# exactamente $100.000 caiga en el segundo tramo.
 TRAMOS_MARGEN = [
-    (Decimal("99999"), Decimal("0.75"), "precio_base", "hasta $99.999"),
-    (Decimal("500000"), Decimal("0.85"), "precio_500", "entre $100.000 y $500.000"),
-    (None, Decimal("0.90"), "precio_1200", "más de $500.000"),
+    {
+        "hasta": Decimal("99999"),
+        "atributo_precio": "precio_base",
+        "etiqueta": "hasta $99.999",
+        "margen_reventa_sugerido": Decimal("0.30"),
+    },
+    {
+        "hasta": Decimal("499999"),
+        "atributo_precio": "precio_100",
+        "etiqueta": "entre $100.000 y $499.999",
+        "margen_reventa_sugerido": Decimal("0.30"),
+    },
+    {
+        "hasta": Decimal("1199999"),
+        "atributo_precio": "precio_500",
+        "etiqueta": "entre $500.000 y $1.199.999",
+        "margen_reventa_sugerido": Decimal("0.35"),
+    },
+    {
+        "hasta": None,
+        "atributo_precio": "precio_1200",
+        "etiqueta": "más de $1.200.000",
+        "margen_reventa_sugerido": Decimal("0.40"),
+    },
 ]
-
 # Fórmula de precio de venta sugerido al cliente final, expuesta tal cual
 # al frontend para que la explicación al usuario no dependa de texto
 # hardcodeado en el JS. costo = lo que el emprendedor le paga a Lúmina
-# (atributo_precio del tramo), margen = el margen sugerido de ese tramo.
+# (atributo_precio del tramo), margen = margen_reventa_sugerido del tramo.
 FORMULA_PRECIO_VENTA = "precio_venta = costo ÷ (1 − margen)"
-
-MAX_UNIDADES_POR_PRODUCTO = 3  # evita recomendar "8x lo mismo" cuando hay poca variedad
 
 
 def _tramo_margen_por_presupuesto(presupuesto):
-    for limite, divisor, atributo_precio, etiqueta in TRAMOS_MARGEN:
-        if limite is None or presupuesto <= limite:
-            return divisor, atributo_precio, etiqueta
-    ultimo = TRAMOS_MARGEN[-1]
-    return ultimo[1], ultimo[2], ultimo[3]
+    """
+    Devuelve (divisor, atributo_precio, etiqueta) para el tramo que
+    corresponde a ese presupuesto.
 
+    divisor = 1 − margen_reventa_sugerido; se usa para calcular el
+    precio de venta sugerido (precio_venta = costo / divisor), NO
+    para elegir el atributo_precio — eso lo decide directamente el
+    tramo, para que quede pegado al margen real que le cobra Lúmina
+    al emprendedor en ese volumen de compra (ver comentario arriba).
+    """
+    for tramo in TRAMOS_MARGEN:
+        if tramo["hasta"] is None or presupuesto <= tramo["hasta"]:
+            divisor = Decimal("1") - tramo["margen_reventa_sugerido"]
+            return divisor, tramo["atributo_precio"], tramo["etiqueta"]
+
+    ultimo = TRAMOS_MARGEN[-1]
+    divisor = Decimal("1") - ultimo["margen_reventa_sugerido"]
+    return divisor, ultimo["atributo_precio"], ultimo["etiqueta"]
 
 def _ganancia_y_roi_generico(presupuesto, divisor):
     """
@@ -5894,6 +6070,33 @@ def _kits_activos(recomendacion):
     return [k for k in recomendacion.kits.all() if k.activo]
 
 
+def _max_unidades_por_producto(presupuesto):
+    """
+    Tope de unidades por referencia individual, escalado según el tamaño
+    del presupuesto.
+
+    Con un tope fijo y bajo (ej. 3), un presupuesto grande obliga al
+    algoritmo a recorrer TODO el catálogo —incluso ítems que no deberían
+    venderse en cantidades chicas, como displays mayoristas— solo para
+    poder "gastar" el dinero, resultando en una lista con decenas de
+    referencias distintas en vez de una compra concentrada y manejable.
+
+    Al escalar el tope con el presupuesto, se prioriza comprar MÁS
+    unidades de MENOS referencias (más realista para un negocio real)
+    en vez de un poco de absolutamente todo. Ajusta estos umbrales según
+    qué tan concentrada quieras que sea la recomendación en cada tramo.
+    """
+    if presupuesto <= 300_000:
+        return 3
+    if presupuesto <= 1_000_000:
+        return 8
+    if presupuesto <= 3_000_000:
+        return 12
+    if presupuesto <= 8_000_000:
+        return 25
+    return 50
+
+
 def _construir_lista_compra(productos_activos, presupuesto, atributo_precio, divisor):
     """
     Arma una lista de compra concreta repartiendo el presupuesto entre los
@@ -5907,10 +6110,17 @@ def _construir_lista_compra(productos_activos, presupuesto, atributo_precio, div
     del tramo sobre ese costo: precio_venta = costo ÷ divisor (ver
     FORMULA_PRECIO_VENTA, donde margen = 1 − divisor).
 
-    Pone un tope de MAX_UNIDADES_POR_PRODUCTO por producto: si con eso no
-    se agota el presupuesto, es señal de que a esta recomendación le faltan
-    productos asociados (se deja advertencia en logs) en vez de comprar
-    cantidades absurdas de un solo producto.
+    Prioriza CANTIDAD sobre VARIEDAD: agota primero hasta el tope de
+    unidades que corresponda según el presupuesto (ver
+    _max_unidades_por_producto) del producto más barato antes de pasar al
+    siguiente (en vez de repartir "en ronda" comprando 1 unidad de cada
+    producto por turno), para que la recomendación final tenga pocos
+    productos con varias unidades cada uno, en lugar de muchos productos
+    con 1 unidad cada uno.
+
+    Si con ese tope no se agota el presupuesto, es señal de que a esta
+    recomendación le faltan productos asociados (se deja advertencia en
+    logs) en vez de comprar cantidades absurdas de un solo producto.
 
     Devuelve None si ningún producto activo tiene precio > 0 para este
     tramo (el caller debe usar el fallback genérico del tramo en ese caso).
@@ -5924,20 +6134,16 @@ def _construir_lista_compra(productos_activos, presupuesto, atributo_precio, div
 
     productos = sorted(productos, key=lambda p: getattr(p, atributo_precio))
 
+    max_unidades = _max_unidades_por_producto(presupuesto)
+
     restante = presupuesto
     cantidades = {p.id: 0 for p in productos}
 
-    compro_algo = True
-    while compro_algo:
-        compro_algo = False
-        for p in productos:
-            if cantidades[p.id] >= MAX_UNIDADES_POR_PRODUCTO:
-                continue
-            costo_unit = getattr(p, atributo_precio)
-            if costo_unit <= restante:
-                cantidades[p.id] += 1
-                restante -= costo_unit
-                compro_algo = True
+    for p in productos:
+        costo_unit = getattr(p, atributo_precio)
+        while cantidades[p.id] < max_unidades and costo_unit <= restante:
+            cantidades[p.id] += 1
+            restante -= costo_unit
 
     margen_tramo = ((1 - divisor) * 100).quantize(Decimal("0.1"))
 
@@ -5963,11 +6169,11 @@ def _construir_lista_compra(productos_activos, presupuesto, atributo_precio, div
             {
                 "nombre": p.nombre,
                 "cantidad": cantidad,
-                "costo_unitario": float(costo_unit),
-                "precio_venta_unitario": float(precio_venta_unit),
+                "costo_unitario": int(costo_unit),
+                "precio_venta_unitario": int(precio_venta_unit),
                 "margen_porcentaje": float(margen_tramo),
-                "subtotal_costo": float(subtotal_costo),
-                "subtotal_venta": float(subtotal_venta),
+                "subtotal_costo": int(subtotal_costo),
+                "subtotal_venta": int(subtotal_venta),
             }
         )
 
@@ -5975,14 +6181,14 @@ def _construir_lista_compra(productos_activos, presupuesto, atributo_precio, div
         return None
 
     limite_alcanzado_en_todos = all(
-        cantidades[p.id] >= MAX_UNIDADES_POR_PRODUCTO for p in productos
+        cantidades[p.id] >= max_unidades for p in productos
     )
     if limite_alcanzado_en_todos and restante > (presupuesto * Decimal("0.15")):
         logger.warning(
             "recomendación: solo tiene %d producto(s) configurado(s) y "
             "queda %.0f sin usar del presupuesto tras topar %d unidades por "
             "producto — considera asociar más productos a esta regla.",
-            len(productos), restante, MAX_UNIDADES_POR_PRODUCTO,
+            len(productos), restante, max_unidades,
         )
 
     return {
@@ -5990,6 +6196,7 @@ def _construir_lista_compra(productos_activos, presupuesto, atributo_precio, div
         "total_costo": total_costo,
         "total_venta": total_venta,
         "sobrante": restante,
+        "ids_incluidos": {p.id for p in productos if cantidades[p.id] > 0},
     }
 
 
@@ -6137,6 +6344,12 @@ def _mejor_match(candidatas, presupuesto, producto, plataforma):
     Elige la regla MÁS ESPECÍFICA (la que coincide en más criterios
     explícitos) entre las que matchean, en vez de la primera. Si ninguna
     matchea, devuelve None para que el caller use el fallback genérico.
+
+    Si dos o más reglas empatan en especificidad, gana la primera que
+    aparezca en `candidatas` (por eso el caller ordena el queryset con
+    .order_by("id") antes de pasarlo: así el desempate es siempre
+    predecible — la regla más antigua — en vez de depender del orden en
+    que la base de datos decida devolver las filas).
     """
     mejor = None
     mejor_score = -1
@@ -6173,9 +6386,20 @@ def recomendar_emprendimiento(request):
     producto = request.POST.get("producto") or None
     plataforma = request.POST.get("plataforma") or None
 
+    if producto and producto not in PRODUCTOS_INTERES_VALIDOS:
+        return JsonResponse(
+            {"encontrada": False, "mensaje": "Selecciona un producto válido."},
+            status=400,
+        )
+
+    # Lo que se le muestra al usuario SIEMPRE es la plataforma que él
+    # escogió en el test, sin importar qué regla haga match ni qué
+    # plataforma tenga configurada esa regla.
+    plataforma_display = _plataforma_display_usuario(plataforma)
+
     candidatas = RecomendacionEmprendimiento.objects.filter(
         activa=True
-    ).prefetch_related("kits__items__producto", "productos")
+    ).order_by("id").prefetch_related("kits__items__producto", "productos")
 
     recomendacion = _mejor_match(candidatas, presupuesto, producto, plataforma)
 
@@ -6196,7 +6420,7 @@ def recomendar_emprendimiento(request):
                 "generica": True,
                 "nombre": "Recomendación general",
                 "producto_interes_display": "Cualquiera",
-                "plataforma_display": "Cualquiera",
+                "plataforma_display": plataforma_display,
                 "nivel": _nivel_desde_presupuesto(presupuesto),
                 "inversion_estimada": float(presupuesto),
                 "ganancia_estimada": float(ganancia_estimada),
@@ -6252,6 +6476,7 @@ def recomendar_emprendimiento(request):
         presupuesto_sobrante_sugerencia = _sugerir_uso_sobrante(
             lista_compra["sobrante"], productos_activos, atributo_precio
         )
+        ids_productos_sugeridos = lista_compra["ids_incluidos"]
     else:
         logger.warning(
             "recomendar_emprendimiento: recomendación '%s' sin productos con "
@@ -6265,6 +6490,7 @@ def recomendar_emprendimiento(request):
         compra_total_venta = None
         presupuesto_sobrante = None
         presupuesto_sobrante_sugerencia = None
+        ids_productos_sugeridos = set()
 
     kits_estimados_info = _kits_estimados(kits_activos, presupuesto)
     kits_estimados = kits_estimados_info["cantidad"] if kits_estimados_info else None
@@ -6275,6 +6501,13 @@ def recomendar_emprendimiento(request):
         if kits_estimados_info else None
     )
 
+    # Solo se muestran los kits que el presupuesto realmente alcanza a
+    # comprar, no todos los kits que el admin asoció a la regla.
+    kits_para_mostrar = [
+        k for k in kits_activos
+        if k.precio_final and k.precio_final <= presupuesto
+    ]
+
     kits_data = [
         {
             "id": k.id,
@@ -6284,11 +6517,18 @@ def recomendar_emprendimiento(request):
             "composicion": _composicion_kit(k),
             "reventa_individual": _reventa_individual_kit(k, atributo_precio, divisor),
         }
-        for k in kits_activos
+        for k in kits_para_mostrar
+    ]
+
+    # Solo se muestran los productos que el algoritmo de arriba decidió
+    # comprar (los que aparecen en la lista de compra), no todos los
+    # productos que el admin asoció a la regla.
+    productos_para_mostrar = [
+        p for p in productos_activos if p.id in ids_productos_sugeridos
     ]
 
     productos_data = []
-    for p in productos_activos:
+    for p in productos_para_mostrar:
         costo_unit = getattr(p, atributo_precio)
         if costo_unit and costo_unit > 0:
             precio_venta_unit = (costo_unit / divisor).quantize(Decimal("1"))
@@ -6303,8 +6543,8 @@ def recomendar_emprendimiento(request):
                 "nombre": p.nombre,
                 # Lo que le cuesta al emprendedor comprarle a Lúmina en este
                 # tramo (NO es costo_base, que es el costo interno de Lúmina).
-                "costo": float(costo_unit) if costo_unit else None,
-                "precio_sugerido": float(precio_venta_unit) if precio_venta_unit is not None else None,
+                "costo": int(costo_unit) if costo_unit else None,
+                "precio_sugerido": int(precio_venta_unit) if precio_venta_unit is not None else None,
                 "precio_catalogo": float(p.precio_base),
                 "margen_porcentaje": margen_unit,
                 "url": reverse("detalle_producto", args=[p.slug]),
@@ -6322,11 +6562,7 @@ def recomendar_emprendimiento(request):
                 if recomendacion.producto_interes
                 else "Cualquiera"
             ),
-            "plataforma_display": (
-                recomendacion.get_plataforma_display()
-                if recomendacion.plataforma
-                else "Cualquiera"
-            ),
+            "plataforma_display": plataforma_display,
             "nivel": _nivel_desde_presupuesto(presupuesto),
             "inversion_estimada": float(presupuesto),
             "ganancia_estimada": float(ganancia_estimada),
@@ -6348,6 +6584,11 @@ def recomendar_emprendimiento(request):
     )
 
 
+# =========================================================================
+# REEMPLAZA la función dashboard_recomendaciones existente en views.py
+# por esta versión completa. Todo lo demás en views.py queda igual.
+# =========================================================================
+
 @login_required
 def dashboard_recomendaciones(request):
     if request.method == "POST":
@@ -6355,7 +6596,6 @@ def dashboard_recomendaciones(request):
 
         nombre = request.POST.get("nombre", "").strip()
         producto_interes = request.POST.get("producto_interes") or None
-        plataforma = request.POST.get("plataforma") or None
         recomendacion_texto = request.POST.get("recomendacion", "").strip()
         activa = request.POST.get("activa") == "on"
         kits_ids = request.POST.getlist("kits")
@@ -6363,6 +6603,10 @@ def dashboard_recomendaciones(request):
 
         if not nombre:
             messages.error(request, "El nombre de la recomendación es obligatorio.")
+            return redirect("dashboard_recomendaciones")
+
+        if producto_interes and producto_interes not in PRODUCTOS_INTERES_VALIDOS:
+            messages.error(request, "El producto de interés seleccionado no es válido.")
             return redirect("dashboard_recomendaciones")
 
         try:
@@ -6392,7 +6636,6 @@ def dashboard_recomendaciones(request):
         recomendacion.presupuesto_min = presupuesto_min
         recomendacion.presupuesto_max = presupuesto_max
         recomendacion.producto_interes = producto_interes
-        recomendacion.plataforma = plataforma
         recomendacion.recomendacion = recomendacion_texto
         recomendacion.activa = activa
         recomendacion.save()
@@ -6407,7 +6650,20 @@ def dashboard_recomendaciones(request):
         "kits", "productos"
     ).all()
     kits = Kit.objects.filter(activo=True)
-    productos = Producto.objects.filter(activo=True)
+
+    # select_related("categoria") evita una query extra por producto al
+    # pintar su categoría en cada checkbox del formulario.
+    productos = Producto.objects.filter(activo=True).select_related("categoria")
+
+    # Categorías que realmente tienen al menos un producto activo, para
+    # armar el dropdown de filtro rápido (skincare / maquillaje / etc.)
+    # en la sección "Productos recomendados" del formulario.
+    categorias_productos = (
+        Categoria.objects
+        .filter(producto__activo=True)
+        .distinct()
+        .order_by("nombre")
+    )
 
     return render(
         request,
@@ -6416,6 +6672,7 @@ def dashboard_recomendaciones(request):
             "recomendaciones": recomendaciones,
             "kits": kits,
             "productos": productos,
+            "categorias_productos": categorias_productos,
         },
     )
 

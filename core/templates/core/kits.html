@@ -39,7 +39,7 @@ Kits | Lúmina
                 {{ kits|length }} Kits
 
             </div>
-<br>
+            <br>
             {% if kits_stock_bajo > 0 %}
             <div class="alerta-stock-header">
                 <i class="fa-solid fa-triangle-exclamation"></i>
@@ -50,12 +50,13 @@ Kits | Lúmina
         </div>
 
     </div>
-<br>
+    <br>
+
     <!-- ========================================= -->
     <!-- FORMULARIO -->
     <!-- ========================================= -->
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" id="formKit" enctype="multipart/form-data">
 
         {% csrf_token %}
 
@@ -130,8 +131,8 @@ Kits | Lúmina
                                 {% for categoria in categorias %}
 
                                 <option value="{{ categoria.id }}" {% if kit_editar and kit_editar.categoria_id == categoria.id %}selected{% endif %}>
-    {{ categoria.nombre }}
-</option>
+                                    {{ categoria.nombre }}
+                                </option>
 
                                 {% endfor %}
 
@@ -142,21 +143,21 @@ Kits | Lúmina
                     </div>
 
                     <div class="grid-producto">
-<div class="campo">
 
-    <label>
-        SKU / Código
-    </label>
+                        <div class="campo">
 
-    <input
-        type="text"
-        name="sku"
-        maxlength="50"
-        placeholder="Se genera automáticamente si se deja vacío"
-        value="{% if kit_editar and kit_editar.sku %}{{ kit_editar.sku }}{% endif %}">
+                            <label>
+                                SKU / Código
+                            </label>
 
-</div>
+                            <input
+                                type="text"
+                                name="sku"
+                                maxlength="50"
+                                placeholder="Se genera automáticamente si se deja vacío"
+                                value="{% if kit_editar and kit_editar.sku %}{{ kit_editar.sku }}{% endif %}">
 
+                        </div>
 
                         <div class="campo">
 
@@ -176,20 +177,20 @@ Kits | Lúmina
                         </div>
 
                     </div>
-<div class="campo">
 
-    <label>
-        Descripción
-    </label>
+                    <div class="campo">
 
-    <textarea
-        name="descripcion"
-        required
-        maxlength="2000"
-        placeholder="Describe qué incluye este kit...">{% if kit_editar %}{{ kit_editar.descripcion }}{% endif %}</textarea>
+                        <label>
+                            Descripción
+                        </label>
 
-</div>
+                        <textarea
+                            name="descripcion"
+                            required
+                            maxlength="2000"
+                            placeholder="Describe qué incluye este kit...">{% if kit_editar %}{{ kit_editar.descripcion }}{% endif %}</textarea>
 
+                    </div>
 
                     <div class="grid-producto">
 
@@ -238,6 +239,7 @@ Kits | Lúmina
                     {% endif %}
 
                 </div>
+
                 <!-- ========================================= -->
                 <!-- ESTADO -->
                 <!-- ========================================= -->
@@ -250,20 +252,20 @@ Kits | Lúmina
 
                         <div class="campo check-campo">
 
-    <label class="switch">
+                            <label class="switch">
 
-        <input type="checkbox" name="activo"
-            {% if not kit_editar or kit_editar.activo %}
-                checked
-            {% endif %}>
+                                <input type="checkbox" name="activo"
+                                    {% if not kit_editar or kit_editar.activo %}
+                                        checked
+                                    {% endif %}>
 
-        <span class="slider"></span>
+                                <span class="slider"></span>
 
-    </label>
+                            </label>
 
-    <span>Kit activo</span>
+                            <span>Kit activo</span>
 
-</div>
+                        </div>
 
                         <div class="campo check-campo">
 
@@ -531,6 +533,7 @@ Kits | Lúmina
                     {% csrf_token %}
 
                     <input type="hidden" name="producto" value="{{ producto.id }}">
+
                     <div class="acciones-agregar">
 
                         <select name="variante">
@@ -670,6 +673,7 @@ Kits | Lúmina
         {% endif %}
 
     </div>
+
     <!-- ========================================= -->
     <!-- KITS REGISTRADOS -->
     <!-- ========================================= -->
@@ -708,7 +712,7 @@ Kits | Lúmina
 
                     <span class="kit-destacado-badge">
 
-                        â­ Destacado
+                        ⭐ Destacado
 
                     </span>
 
@@ -771,11 +775,11 @@ Kits | Lúmina
                 </div>
 
                 <button type="button" class="btn-toggle-info" data-info="info-{{ kit.id }}">
-                    <i class="fa-solid fa-eye-slash"></i>
-                    Ocultar información
+                    <i class="fa-solid fa-eye"></i>
+                    Mostrar información
                 </button>
 
-                <div class="kit-tabs" id="info-{{ kit.id }}">
+                <div class="kit-tabs" id="info-{{ kit.id }}" hidden>
 
                     <div class="kit-tabs-nav">
 
@@ -878,7 +882,7 @@ Kits | Lúmina
                         <div class="tab-row">
                             <span>Destacado</span>
                             <strong>
-                                {% if kit.destacado %}­{% else %}No{% endif %}
+                                {% if kit.destacado %}Sí{% else %}No{% endif %}
                             </strong>
                         </div>
 
@@ -933,20 +937,41 @@ Kits | Lúmina
                         Editar
 
                     </a>
+
                     <form method="POST" action="{% url 'toggle_kit_activo' kit.id %}" style="display:inline;">
+
                         {% csrf_token %}
+
                         <button type="submit" class="btn-toggle {% if kit.activo %}activo{% else %}inactivo{% endif %}">
                             <i class="fa-solid {% if kit.activo %}fa-toggle-on{% else %}fa-toggle-off{% endif %}"></i>
                             {% if kit.activo %}Desactivar{% else %}Activar{% endif %}
                         </button>
+
                     </form>
-                    <button type="button" class="btn-eliminar"
-                        onclick="eliminarKit('{{ kit.id }}', '{{ kit.nombre|escapejs }}')">
 
-                        <i class="fa-solid fa-trash"></i>
-                        Eliminar
+                    <!-- ========================================= -->
+                    <!-- ELIMINAR KIT                              -->
+                    <!-- Form real: la URL la genera Django y el   -->
+                    <!-- CSRF viaja siempre. La confirmación con   -->
+                    <!-- SweetAlert vive en kits.js.               -->
+                    <!-- ========================================= -->
 
-                    </button>
+                    <form method="POST"
+                          action="{% url 'eliminar_kit' kit.id %}"
+                          class="form-eliminar-kit"
+                          data-nombre="{{ kit.nombre|escapejs }}"
+                          style="display:inline;">
+
+                        {% csrf_token %}
+
+                        <button type="submit" class="btn-eliminar">
+
+                            <i class="fa-solid fa-trash"></i>
+                            Eliminar
+
+                        </button>
+
+                    </form>
 
                 </div>
 
@@ -993,559 +1018,7 @@ Kits | Lúmina
         {% endfor %}
     </div>
     {% endif %}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const formulario = document.querySelector('form[method="POST"]:not([action])');
-
-    if (!formulario) {
-        return;
-    }
-
-    /* =========================================
-       FUNCIONES DE VALIDACIÓN
-    ========================================= */
-
-    function limpiarError(input) {
-
-        if (!input) return;
-
-        input.classList.remove("campo-error");
-        input.classList.remove("campo-exito");
-
-        const campo = input.closest(".campo");
-
-        if (campo) {
-            campo.classList.remove("has-error");
-
-            const error = campo.querySelector(".mensaje-error-campo");
-
-            if (error) {
-                error.remove();
-            }
-        }
-    }
-
-
-    function mostrarError(input, mensaje) {
-
-        if (!input) return;
-
-        limpiarError(input);
-
-        input.classList.add("campo-error");
-
-        const campo = input.closest(".campo");
-
-        if (!campo) return;
-
-        campo.classList.add("has-error");
-
-        const error = document.createElement("small");
-
-        error.className = "mensaje-error-campo";
-
-        error.innerHTML = `
-            <i class="fa-solid fa-circle-exclamation"></i>
-            ${mensaje}
-        `;
-
-        campo.appendChild(error);
-    }
-
-
-    function mostrarExito(input) {
-
-        if (!input) return;
-
-        limpiarError(input);
-
-        input.classList.add("campo-exito");
-    }
-
-
-    function validarNombre() {
-
-        const input = formulario.querySelector('[name="nombre"]');
-
-        if (!input) return true;
-
-        const valor = input.value.trim();
-
-        if (!valor) {
-
-            mostrarError(
-                input,
-                "El nombre del kit es obligatorio."
-            );
-
-            return false;
-        }
-
-        if (valor.length < 3) {
-
-            mostrarError(
-                input,
-                "El nombre debe tener al menos 3 caracteres."
-            );
-
-            return false;
-        }
-
-        if (valor.length > 150) {
-
-            mostrarError(
-                input,
-                "El nombre no puede superar los 150 caracteres."
-            );
-
-            return false;
-        }
-
-        mostrarExito(input);
-
-        return true;
-    }
-
-
-    function validarCategoria() {
-
-        const input = formulario.querySelector('[name="categoria"]');
-
-        if (!input) return true;
-
-        if (!input.value) {
-
-            mostrarError(
-                input,
-                "Selecciona una categoría para el kit."
-            );
-
-            return false;
-        }
-
-        mostrarExito(input);
-
-        return true;
-    }
-
-
-    function validarStock() {
-
-        const input = formulario.querySelector('[name="stock"]');
-
-        if (!input) return true;
-
-        const valor = input.value.trim();
-
-        if (valor === "") {
-
-            mostrarError(
-                input,
-                "El stock es obligatorio."
-            );
-
-            return false;
-        }
-
-        const stock = Number(valor);
-
-        if (!Number.isInteger(stock)) {
-
-            mostrarError(
-                input,
-                "El stock debe ser un número entero."
-            );
-
-            return false;
-        }
-
-        if (stock < 0) {
-
-            mostrarError(
-                input,
-                "El stock no puede ser negativo."
-            );
-
-            return false;
-        }
-
-        mostrarExito(input);
-
-        return true;
-    }
-
-
-    function validarDescuento() {
-
-        const input = formulario.querySelector(
-            '[name="descuento_personalizado"]'
-        );
-
-        if (!input) return true;
-
-        const valor = input.value.trim();
-
-        /*
-         * El descuento puede quedar vacío.
-         */
-
-        if (valor === "") {
-
-            limpiarError(input);
-
-            return true;
-        }
-
-        /*
-         * Permitir 15,5 o 15.5
-         */
-
-        const numero = Number(
-            valor.replace(",", ".")
-        );
-
-        if (isNaN(numero)) {
-
-            mostrarError(
-                input,
-                "Ingresa un descuento válido."
-            );
-
-            return false;
-        }
-
-        if (numero < 0 || numero > 100) {
-
-            mostrarError(
-                input,
-                "El descuento debe estar entre 0% y 100%."
-            );
-
-            return false;
-        }
-
-        mostrarExito(input);
-
-        return true;
-    }
-
-
-    function validarImagen() {
-
-        const input = formulario.querySelector(
-            '[name="imagen"]'
-        );
-
-        if (!input) return true;
-
-        /*
-         * La imagen es opcional.
-         */
-
-        if (!input.files || input.files.length === 0) {
-
-            limpiarError(input);
-
-            return true;
-        }
-
-        const archivo = input.files[0];
-
-        const formatosPermitidos = [
-            "image/jpeg",
-            "image/png",
-            "image/webp"
-        ];
-
-        if (!formatosPermitidos.includes(archivo.type)) {
-
-            mostrarError(
-                input,
-                "La imagen debe ser JPG, PNG o WEBP."
-            );
-
-            return false;
-        }
-
-        /*
-         * Máximo 5 MB
-         */
-
-        const maximo = 5 * 1024 * 1024;
-
-        if (archivo.size > maximo) {
-
-            mostrarError(
-                input,
-                "La imagen no puede superar los 5 MB."
-            );
-
-            return false;
-        }
-
-        mostrarExito(input);
-
-        return true;
-    }
-
-
-    /* =========================================
-       VALIDACIÓN GENERAL
-    ========================================= */
-
-    function validarFormulario() {
-
-        let valido = true;
-
-        const validaciones = [
-            validarNombre(),
-            validarCategoria(),
-            validarStock(),
-            validarDescuento(),
-            validarImagen()
-        ];
-
-        if (validaciones.includes(false)) {
-            valido = false;
-        }
-
-        return valido;
-    }
-
-
-    /* =========================================
-       VALIDACIÓN EN TIEMPO REAL
-    ========================================= */
-
-    const nombre = formulario.querySelector('[name="nombre"]');
-
-    if (nombre) {
-        nombre.addEventListener("input", validarNombre);
-        nombre.addEventListener("blur", validarNombre);
-    }
-
-
-    const categoria = formulario.querySelector('[name="categoria"]');
-
-    if (categoria) {
-        categoria.addEventListener("change", validarCategoria);
-    }
-
-
-    const stock = formulario.querySelector('[name="stock"]');
-
-    if (stock) {
-        stock.addEventListener("input", validarStock);
-        stock.addEventListener("blur", validarStock);
-    }
-
-
-    const descuento = formulario.querySelector(
-        '[name="descuento_personalizado"]'
-    );
-
-    if (descuento) {
-        descuento.addEventListener("input", validarDescuento);
-        descuento.addEventListener("blur", validarDescuento);
-    }
-
-
-    const imagen = formulario.querySelector(
-        '[name="imagen"]'
-    );
-
-    if (imagen) {
-        imagen.addEventListener("change", validarImagen);
-    }
-
-
-    /* =========================================
-       SUBMIT DEL FORMULARIO
-    ========================================= */
-
-    formulario.addEventListener("submit", function (event) {
-
-        event.preventDefault();
-
-        const valido = validarFormulario();
-
-        if (!valido) {
-
-            Swal.fire({
-                icon: "error",
-                title: "Revisa el formulario",
-                text: "Hay campos que necesitan ser corregidos.",
-                confirmButtonText: "Entendido",
-                confirmButtonColor: "#df6d86"
-            });
-
-            /*
-             * Llevar al primer campo con error.
-             */
-
-            const primerError = formulario.querySelector(
-                ".campo-error"
-            );
-
-            if (primerError) {
-
-                primerError.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center"
-                });
-
-                primerError.focus();
-            }
-
-            return;
-        }
-
-
-        /* =========================================
-           CONFIRMACIÓN
-        ========================================= */
-
-        const editando = formulario.querySelector(
-            '[name="kit_id"]'
-        )?.value;
-
-
-        Swal.fire({
-            icon: "question",
-            title: editando
-                ? "¿Actualizar kit?"
-                : "¿Guardar kit?",
-            text: editando
-                ? "Se actualizará la información del kit."
-                : "Se creará un nuevo kit.",
-            showCancelButton: true,
-            confirmButtonText: editando
-                ? "Sí, actualizar"
-                : "Sí, guardar",
-            cancelButtonText: "Cancelar",
-            confirmButtonColor: "#df6d86",
-            cancelButtonColor: "#6b7280",
-            reverseButtons: true
-        }).then((resultado) => {
-
-            if (resultado.isConfirmed) {
-
-                /*
-                 * Evitamos que el listener vuelva
-                 * a interceptar el submit.
-                 */
-
-                formulario.submit();
-            }
-
-        });
-
-    });
-
-
-    /* =========================================
-       VALIDACIÓN PRODUCTOS DEL KIT
-    ========================================= */
-
-    const formulariosProductos = document.querySelectorAll(
-        'form[action*="agregar_producto_kit"]'
-    );
-
-
-    formulariosProductos.forEach(function (formularioProducto) {
-
-        formularioProducto.addEventListener(
-            "submit",
-            function (event) {
-
-                const variante = formularioProducto.querySelector(
-                    '[name="variante"]'
-                );
-
-                const cantidad = formularioProducto.querySelector(
-                    '[name="cantidad"]'
-                );
-
-
-                if (
-                    variante &&
-                    !variante.value
-                ) {
-
-                    event.preventDefault();
-
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Selecciona una variante",
-                        text: "Debes seleccionar una variante antes de agregar el producto.",
-                        confirmButtonText: "Entendido",
-                        confirmButtonColor: "#df6d86"
-                    });
-
-                    variante.focus();
-
-                    return;
-                }
-
-
-                if (
-                    cantidad &&
-                    (
-                        cantidad.value === "" ||
-                        Number(cantidad.value) < 1
-                    )
-                ) {
-
-                    event.preventDefault();
-
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Cantidad inválida",
-                        text: "La cantidad debe ser como mínimo 1.",
-                        confirmButtonText: "Entendido",
-                        confirmButtonColor: "#df6d86"
-                    });
-
-                    cantidad.focus();
-
-                    return;
-                }
-
-
-                event.preventDefault();
-
-
-                Swal.fire({
-                    icon: "question",
-                    title: "¿Agregar producto?",
-                    text: "El producto se agregará al kit.",
-                    showCancelButton: true,
-                    confirmButtonText: "Sí, agregar",
-                    cancelButtonText: "Cancelar",
-                    confirmButtonColor: "#df6d86",
-                    cancelButtonColor: "#6b7280",
-                    reverseButtons: true
-                }).then((resultado) => {
-
-                    if (resultado.isConfirmed) {
-                        formularioProducto.submit();
-                    }
-
-                });
-
-            }
-        );
-
-    });
-
-
-});
-</script>
-
-<script src="{% static 'js/kits.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/kits.js' %}"></script>
 
