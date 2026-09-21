@@ -1,148 +1,93 @@
-
 {% load static %}
 {% load socialaccount %}
 
 <!DOCTYPE html>
-
 <html lang="es">
 
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Iniciar Sesión | Lúmina</title>
 
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="icon" href="{% static 'img/logos/logo2.png' %}">
 
-    <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
 
 </head>
 
 
 <body>
 
-
-<a href="{% url 'home' %}" class="btn-volver">
-
-    <i class="fa-solid fa-arrow-left"></i>
-
-    Volver al inicio
-
-</a>
+    <a href="{% url 'home' %}" class="btn-volver">
+        <i class="fa-solid fa-arrow-left"></i>
+        Volver al inicio
+    </a>
 
 
+    <form method="POST">
 
-<form method="POST">
+        {% csrf_token %}
 
-    {% csrf_token %}
+        <h2>Bienvenida a Lúmina</h2>
 
-
-    <h2>
-        Bienvenida a Lúmina
-    </h2>
-
-
-    <p class="subtitle">
-        Inicia sesión y sigue construyendo tu camino emprendedor.
-    </p>
+        <p class="subtitle">
+            Inicia sesión y sigue construyendo tu camino emprendedor.
+        </p>
 
 
-
-    {% if messages %}
+        {% if messages %}
 
         <div class="messages">
 
             {% for message in messages %}
-
-                <p class="msg {{ message.tags }}">
-                    {{ message }}
-                </p>
-
+            <p class="msg {{ message.tags }}">
+                {{ message }}
+            </p>
             {% endfor %}
 
         </div>
 
-    {% endif %}
+        {% endif %}
 
 
+        <input type="email" name="email" placeholder="Usuario" autocomplete="username" required>
 
-    <input
-        type="email"
-        name="email"
-        placeholder="Usuario"
-        required
-    >
+        <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required>
 
-
-    <input
-        type="password"
-        name="password"
-        placeholder="Contraseña"
-        required
-    >
-    <a href="{% url 'password_reset' %}" class="forgot-password">
-    ¿Olvidaste tu contraseña?
-</a>
-
-
-    <button type="submit">
-        Iniciar Sesión
-    </button>
-
-
-
-    <!-- ========================= -->
-    <!-- SEPARADOR -->
-    <!-- ========================= -->
-
-    <div class="login-divider">
-
-        <span>o continúa con</span>
-
-    </div>
-
-
-
-    <!-- ========================= -->
-    <!-- GOOGLE -->
-    <!-- ========================= -->
-
-    <a
-        href="{% provider_login_url 'google' %}"
-        class="google-login"
-    >
-
-        <i class="fa-brands fa-google"></i>
-
-        <span>
-            Continuar con Google
-        </span>
-
-    </a>
-
-
-
-    <!-- ========================= -->
-    <!-- REGISTRO -->
-    <!-- ========================= -->
-
-    <div class="auth-footer">
-
-        ¿No tienes cuenta?
-
-        <a href="{% url 'registro' %}">
-            Regístrate
+        <a href="{% url 'password_reset' %}" class="forgot-password">
+            ¿Olvidaste tu contraseña?
         </a>
 
-    </div>
+        <button type="submit">
+            Iniciar Sesión
+        </button>
 
 
-</form>
+        <!-- SEPARADOR -->
+        <div class="login-divider">
+            <span>o continúa con</span>
+        </div>
 
+
+        <!-- GOOGLE -->
+        <a href="{% provider_login_url 'google' %}" class="google-login">
+            <i class="fa-brands fa-google"></i>
+            <span>Continuar con Google</span>
+        </a>
+
+
+        <!-- REGISTRO -->
+        <div class="auth-footer">
+            ¿No tienes cuenta?
+            <a href="{% url 'registro' %}">Regístrate</a>
+        </div>
+
+    </form>
 
 </body>
 
