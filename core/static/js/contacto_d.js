@@ -23,6 +23,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ======================================
+// CSRF HELPER
+// ======================================
+
+function obtenerCSRFToken() {
+
+    const match =
+        document.cookie.match(/csrftoken=([^;]+)/);
+
+    return match ? match[1] : "";
+
+}
+
+
+
+// ======================================
 // ABRIR MENSAJES
 // ======================================
 
@@ -713,13 +728,33 @@ function iniciarBotonesArchivo() {
                 if (resultado.isConfirmed) {
 
 
-                    window.location.href =
+                    fetch(`/dashboard/contacto/${id}/archivar/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": obtenerCSRFToken()
+                        }
+                    })
+                    .then(response => {
 
-                        "/dashboard/contacto/" +
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            throw new Error("Error al archivar");
+                        }
 
-                        id +
+                    })
+                    .catch(() => {
 
-                        "/archivar/";
+                        Swal.fire({
+                            title: "Error",
+                            text: "No se pudo archivar el mensaje.",
+                            icon: "error",
+                            confirmButtonText: "Aceptar"
+                        });
+
+                    });
 
 
                 }
@@ -783,13 +818,33 @@ function iniciarBotonesArchivo() {
                 if (resultado.isConfirmed) {
 
 
-                    window.location.href =
+                    fetch(`/dashboard/contacto/${id}/restaurar/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": obtenerCSRFToken()
+                        }
+                    })
+                    .then(response => {
 
-                        "/dashboard/contacto/" +
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            throw new Error("Error al restaurar");
+                        }
 
-                        id +
+                    })
+                    .catch(() => {
 
-                        "/restaurar/";
+                        Swal.fire({
+                            title: "Error",
+                            text: "No se pudo restaurar el mensaje.",
+                            icon: "error",
+                            confirmButtonText: "Aceptar"
+                        });
+
+                    });
 
 
                 }
@@ -870,13 +925,33 @@ function iniciarEliminar() {
             if (resultado.isConfirmed) {
 
 
-                window.location.href =
+                fetch(`/dashboard/eliminar-mensaje/${id}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": obtenerCSRFToken()
+                    }
+                })
+                .then(response => {
 
-                    "/dashboard/eliminar-mensaje/" +
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        throw new Error("Error al eliminar");
+                    }
 
-                    id +
+                })
+                .catch(() => {
 
-                    "/";
+                    Swal.fire({
+                        title: "Error",
+                        text: "No se pudo eliminar el mensaje.",
+                        icon: "error",
+                        confirmButtonText: "Aceptar"
+                    });
+
+                });
 
 
             }
