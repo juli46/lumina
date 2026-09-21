@@ -6,7 +6,7 @@
     position:relative;
     overflow:hidden;
 
-    padding:120px 8%;
+    padding: clamp(50px, 10vw, 120px) clamp(20px, 6vw, 8%);
 
     background:
     linear-gradient(
@@ -61,7 +61,7 @@
 
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:70px;
+    gap: clamp(30px, 6vw, 70px);
     align-items:center;
 }
 
@@ -85,7 +85,7 @@
 }
 
 .contact-content h2{
-    font-size:4rem;
+    font-size: clamp(2rem, 6vw, 4rem);
     line-height:1.1;
     color:#1a1a1a;
 
@@ -93,14 +93,14 @@
 }
 
 .contact-text{
-    font-size:1.05rem;
+    font-size: clamp(.95rem, 2vw, 1.05rem);
     color:#666;
 
     line-height:1.9;
 
     max-width:550px;
 
-    margin-bottom:45px;
+    margin-bottom: clamp(30px, 5vw, 45px);
 }
 
 /* CARDS */
@@ -115,12 +115,13 @@
     display:flex;
     align-items:center;
     gap:18px;
+    flex-wrap:wrap;
 
     background:rgba(255,255,255,.75);
 
     backdrop-filter:blur(10px);
 
-    padding:22px;
+    padding: clamp(16px, 3vw, 22px);
 
     border-radius:24px;
 
@@ -138,7 +139,9 @@
 
 .info-icon{
     min-width:60px;
+    width:60px;
     height:60px;
+    flex-shrink:0;
 
     display:flex;
     align-items:center;
@@ -167,12 +170,14 @@
 .info-card span{
     color:#666;
     font-size:.95rem;
+    word-break:break-word;
 }
 
 /* REDES */
 
 .contact-socials{
     display:flex;
+    flex-wrap:wrap;
     gap:15px;
 
     margin-top:40px;
@@ -215,7 +220,7 @@
 
     backdrop-filter:blur(15px);
 
-    padding:45px;
+    padding: clamp(22px, 4vw, 45px);
 
     border-radius:35px;
 
@@ -223,6 +228,8 @@
 
     box-shadow:
     0 20px 50px rgba(0,0,0,.08);
+
+    box-sizing:border-box;
 }
 
 .contact-form{
@@ -247,6 +254,9 @@
 
 .form-group input,
 .form-group textarea{
+    width:100%;
+    box-sizing:border-box;
+
     border:none;
     outline:none;
 
@@ -256,7 +266,7 @@
 
     border-radius:18px;
 
-    font-size:1rem;
+    font-size:1rem; /* evita zoom automático en iOS */
 
     transition:.3s;
 }
@@ -350,6 +360,10 @@
         padding:30px;
     }
 
+    .info-card{
+        text-align:left;
+    }
+
 }
 
 @media(max-width:500px){
@@ -360,6 +374,55 @@
 
     .contact-form-box{
         border-radius:25px;
+        padding:24px;
+    }
+
+    .blur-1, .blur-2{
+        width:180px;
+        height:180px;
+    }
+
+}
+
+@media(max-width:400px){
+
+    .contact-section{
+        padding:60px 5%;
+    }
+
+    .contact-content h2{
+        font-size:1.8rem;
+    }
+
+    .contact-tag{
+        font-size:.7rem;
+        padding:8px 14px;
+    }
+
+    .info-card{
+        padding:14px;
+        gap:12px;
+    }
+
+    .info-icon{
+        width:48px;
+        min-width:48px;
+        height:48px;
+        font-size:1rem;
+    }
+
+    .contact-form-box{
+        padding:18px;
+    }
+
+    .form-group input,
+    .form-group textarea{
+        padding:14px 16px;
+    }
+
+    .contact-btn{
+        font-size:.9rem;
+        padding:15px;
     }
 
 }
