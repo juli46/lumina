@@ -296,10 +296,11 @@ def contacto(request):
             mensaje=mensaje
         )
 
-        resultado = enviar_correo(
-            correo,
-            "✨ Hemos recibido tu mensaje | Lúmina",
-            f"""
+        try:
+            resultado = enviar_correo(
+                correo,
+                "✨ Hemos recibido tu mensaje | Lúmina",
+                f"""
 Hola {nombre},
 
 Gracias por comunicarte con Lúmina 💖
@@ -312,11 +313,15 @@ Nuestro equipo responderá pronto.
 
 Equipo Lúmina
 """
-        )
+            )
 
-        contacto.gmail_message_id = resultado["message_id"]
-        contacto.gmail_thread_id = resultado["thread_id"]
-        contacto.save()
+            contacto.gmail_message_id = resultado["message_id"]
+            contacto.gmail_thread_id = resultado["thread_id"]
+            contacto.save()
+
+        except Exception as e:
+            # El mensaje ya quedó guardado en la BD aunque el correo falle
+            print(f"Error enviando correo de confirmación: {e}")
 
         messages.success(
             request,
