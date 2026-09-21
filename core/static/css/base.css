@@ -42,13 +42,33 @@ footer{
 
 .custom-navbar{
     padding:14px 0;
-    background:rgba(249 218 223);
+    background:rgba(249,218,223,.92);
     position:sticky;
     top:0;
     z-index:9999;
     backdrop-filter:blur(12px);
     border-bottom:1px solid rgba(0,0,0,.04);
     transition:.3s;
+}
+
+/* En escritorio, todo en una sola fila: logo | links | iconos */
+@media (min-width:992px){
+
+    .custom-navbar .container-fluid{
+        display:flex;
+        align-items:center;
+        flex-wrap:nowrap;
+        gap:16px;
+    }
+
+    .custom-navbar .navbar-collapse{
+        flex:1 1 auto;
+        min-width:0;
+    }
+}
+
+.navbar-brand{
+    flex-shrink:0;
 }
 
 .navbar-brand img{
@@ -61,12 +81,14 @@ footer{
     display:flex;
     align-items:center;
     gap:35px;
+    flex-wrap:nowrap;
 }
 
 .menu-right a{
     text-decoration:none;
     color:#2f2f2f;
     font-weight:500;
+    white-space:nowrap;
     transition:.3s;
 }
 
@@ -80,6 +102,7 @@ footer{
     align-items:center;
     gap:22px;
     margin-left:35px;
+    flex-shrink:0;
 }
 
 .menu-icons a{
