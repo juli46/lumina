@@ -5,15 +5,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="icon" href="{% static 'img/logos/logo2.png' %}">
     <title>Mi Cuenta | Lúmina</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/cuenta.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -101,8 +98,6 @@
             </div>
 
         </section>
-
-        <!-- RESULTADOS -->
         <section class="resultados-section">
             <div class="title">
                 <h2>Mis Resultados</h2>
@@ -411,13 +406,14 @@
         </section>
 
         <!-- DIRECCIONES -->
+
         <section class="addresses-section">
 
             <div class="section-title">
                 <h2>📍 Direcciones</h2>
             </div>
 
-            <button type="button" class="btn btn-primary" onclick="openModal()">
+            <button class="btn btn-primary" onclick="openModal()">
                 + Agregar dirección
             </button>
 
@@ -495,6 +491,7 @@
         </section>
 
         <!-- ACCIONES -->
+
         <section class="actions">
 
             <a href="{% url 'editar_perfil' %}" class="action-btn">
@@ -506,6 +503,8 @@
                 <i class="fa-solid fa-right-from-bracket"></i>
                 Cerrar sesión
             </a>
+
+
 
         </section>
 
@@ -539,8 +538,6 @@
         {% endif %}
 
     </div>
-
-
     <!-- MODAL DIRECCIÓN -->
     <div id="addressModal" class="modal-overlay">
 
@@ -636,13 +633,12 @@
 
     </div>
 
-
-    <!-- MODAL RUTINA -->
+    </div>
     <div id="modalRutina" class="modal-overlay">
 
         <div class="modal-card">
 
-            <button type="button" class="close-btn" onclick="cerrarRutina()">
+            <button class="close-btn" onclick="cerrarRutina()">
                 ✕
             </button>
 
@@ -653,7 +649,6 @@
         </div>
 
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/cuenta.js' %}"></script>
 </body>
