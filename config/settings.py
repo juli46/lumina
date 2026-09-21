@@ -1,4 +1,4 @@
-
+import os
 from pathlib import Path
 
 # =========================
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 # =========================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -60,6 +61,7 @@ MIDDLEWARE = [
 
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 
@@ -147,11 +149,9 @@ USE_TZ = True
 # =========================
 # ARCHIVOS ESTÁTICOS
 # =========================
-STATIC_URL = 'static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 
 # =========================
@@ -272,3 +272,30 @@ LOGGING = {
         },
     },
 }
+
+# =========================
+# SEGURIDAD
+# =========================
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    'clave-local-solo-para-desarrollo'
+)
+
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+ALLOWED_HOSTS = os.getenv(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1'
+).split(',')
+
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+CSRF_TRUSTED_ORIGINS = []
+
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(
+        f'https://{RENDER_EXTERNAL_HOSTNAME}'
+    )
