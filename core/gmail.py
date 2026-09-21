@@ -1,4 +1,5 @@
 from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -52,11 +53,32 @@ def login_gmail():
 
     if not creds or not creds.valid:
 
+        necesita_login_nuevo = True
+
         if creds and creds.expired and creds.refresh_token:
 
-            creds.refresh(Request())
+            try:
 
-        else:
+                creds.refresh(Request())
+
+                necesita_login_nuevo = False
+
+            except RefreshError:
+
+                # El refresh token quedó inválido/revocado
+                # (por ejemplo, expiró por estar la app en modo
+                # "Testing" en Google Cloud, o fue revocado a mano).
+                # Borramos el token viejo y forzamos re-autenticación
+                # en vez de quedar reintentando un token muerto en
+                # cada request.
+
+                if os.path.exists(TOKEN):
+
+                    os.remove(TOKEN)
+
+                creds = None
+
+        if necesita_login_nuevo:
 
             flow = InstalledAppFlow.from_client_secrets_file(
                 CREDENTIALS,
