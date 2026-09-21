@@ -1,15 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // =========================
-    // ELIMINAR DIRECCIÓN
+    // ELIMINAR DIRECCIÓN (formulario POST + confirmación)
+    // Si el JS fallara, el formulario igual se envía por POST.
     // =========================
-    document.querySelectorAll(".delete-address").forEach(btn => {
+    document.querySelectorAll(".delete-address-form").forEach(formEl => {
 
-        btn.addEventListener("click", function (e) {
+        formEl.addEventListener("submit", function (e) {
 
             e.preventDefault();
-
-            const url = this.getAttribute("href");
 
             Swal.fire({
                 title: "¿Eliminar dirección?",
@@ -23,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }).then(result => {
 
                 if (result.isConfirmed) {
-                    window.location.href = url;
+                    formEl.submit();
                 }
 
             });
@@ -448,6 +447,3 @@ document.querySelectorAll(".eliminar-resultado").forEach(boton => {
     });
 
 });
-
-
- 

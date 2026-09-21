@@ -1792,3 +1792,16 @@ img {
         font-size: 1rem;
     }
 }
+
+
+/* Botón eliminar dirección (ahora es <button> dentro de un <form>) */
+.delete-address-form {
+    display: inline-block;
+}
+
+.delete-btn {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+}

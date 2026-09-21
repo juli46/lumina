@@ -465,10 +465,14 @@
 
                     <div class="address-actions">
 
-                        <a href="{% url 'eliminar_direccion' d.id %}" class="delete-btn delete-address">
-                            <i class="fa-solid fa-trash"></i>
-                            Eliminar
-                        </a>
+                        <form method="POST" action="{% url 'eliminar_direccion' d.id %}"
+                            class="delete-address-form">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-btn">
+                                <i class="fa-solid fa-trash"></i>
+                                Eliminar
+                            </button>
+                        </form>
 
                     </div>
 
@@ -655,7 +659,18 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{% static 'js/cuenta.js' %}?v=3"></script>
+    <script src="{% static 'js/cuenta.js' %}?v=4"></script>
+    {% if messages %}
+<script>
+    {% for message in messages %}
+    Swal.fire({
+        icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+        text: "{{ message|escapejs }}",
+        confirmButtonColor: "#df6d77"
+    });
+    {% endfor %}
+</script>
+{% endif %}
 </body>
 
 </html>
