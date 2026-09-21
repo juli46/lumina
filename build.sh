@@ -41,5 +41,5 @@ else:
     app.sites.add(site)
     print("Google SocialApp OK:", app.client_id, "| Site:", site.domain)
 EOF
-
+python -c "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings'); import config.wsgi; print('WSGI OK')"
 echo "=== BUILD TERMINADO ==="
