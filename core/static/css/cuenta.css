@@ -1702,3 +1702,93 @@ img {
         text-align: center;
     }
 }
+
+
+/* =========================================================
+   TEXTO MÁS GRANDE EN MÓVIL
+   Casi todo el CSS usa rem, así que subir el tamaño base
+   agranda proporcionalmente toda la página.
+   Si aún se ve pequeño, sube 18px a 19px o 20px.
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    html {
+        font-size: 17px;
+    }
+}
+
+@media (max-width: 520px) {
+
+    html {
+        font-size: 18px;
+    }
+
+    /* Textos que en el diseño original eran diminutos */
+    .status {
+        font-size: .78rem;
+        padding: 7px 12px;
+    }
+
+    .order-fecha,
+    .order-item-mas,
+    .order-guia-datos small {
+        font-size: .82rem;
+    }
+
+    .order-guia-datos strong,
+    .order-item-cantidad {
+        font-size: .9rem;
+    }
+
+    .order-item-row,
+    .order-linea,
+    .order-envio-badge,
+    .address-info p {
+        font-size: .95rem;
+    }
+
+    .order-total {
+        font-size: 1.5rem;
+    }
+
+    /* Botones más cómodos de tocar */
+    .btn-factura,
+    .btn-shop,
+    .btn-rutina,
+    .btn-repetir-test,
+    .btn-eliminar-resultado,
+    .action-btn,
+    .delete-btn,
+    .save-btn,
+    .addresses-section > .btn-primary {
+        min-height: 50px;
+        font-size: 1rem;
+    }
+
+    .btn-rutina,
+    .btn-repetir-test,
+    .btn-eliminar-resultado {
+        height: auto;
+    }
+
+    /* Etiquetas y campos del modal (estaban en px fijos) */
+    .form-group label,
+    .subtitle {
+        font-size: 15px;
+    }
+
+    .error {
+        font-size: .85rem;
+    }
+
+    .resultado-test,
+    .badge,
+    .resultado-footer small {
+        font-size: .85rem;
+    }
+
+    #contenidoRutina {
+        font-size: 1rem;
+    }
+}
