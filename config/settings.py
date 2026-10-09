@@ -6,7 +6,6 @@ from pathlib import Path
 # =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # =========================
 # SEGURIDAD
 # =========================
@@ -15,7 +14,6 @@ SECRET_KEY = 'django-insecure-2ax11sm@$^t2rjkv87%#sj+8d@j%0m0x&an1j+lr34mk8l%mz0
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # =========================
 # APPS
@@ -160,7 +158,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
-
 
 # =========================
 # USUARIO PERSONALIZADO

@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
 
 import base64
+import json
 import quopri
 import re
 import os
@@ -35,6 +36,15 @@ TOKEN = os.path.join(
     "token.json"
 )
 
+# En Render (y cualquier hosting sin navegador/filesystem persistente)
+# el token se lee de una variable de entorno en vez de un archivo.
+# Se genera una sola vez en local (ver login_gmail) y se copia su
+# contenido a esta variable en el panel de Render.
+GOOGLE_TOKEN_JSON = os.environ.get("GOOGLE_TOKEN_JSON")
+
+# Render define esta variable automáticamente en producción.
+EN_PRODUCCION = os.environ.get("RENDER") is not None
+
 
 # ======================================
 # LOGIN
@@ -43,6 +53,58 @@ TOKEN = os.path.join(
 def login_gmail():
 
     creds = None
+
+    # ==================================
+    # PRODUCCIÓN (Render): token desde
+    # variable de entorno, nunca desde
+    # archivo ni flujo interactivo.
+    # ==================================
+
+    if GOOGLE_TOKEN_JSON:
+
+        info = json.loads(GOOGLE_TOKEN_JSON)
+
+        creds = Credentials.from_authorized_user_info(
+            info,
+            SCOPES
+        )
+
+        if not creds.valid:
+
+            if creds.expired and creds.refresh_token:
+
+                try:
+
+                    creds.refresh(Request())
+
+                except RefreshError as error:
+
+                    raise RefreshError(
+                        "El token de Gmail guardado en la variable "
+                        "de entorno GOOGLE_TOKEN_JSON ya no es válido "
+                        "(revocado o expirado). Genera un token.json "
+                        "nuevo en local y actualiza esa variable en "
+                        "Render."
+                    ) from error
+
+            else:
+
+                raise RuntimeError(
+                    "El token de GOOGLE_TOKEN_JSON no tiene "
+                    "refresh_token o no es válido. Regenera "
+                    "token.json en local y actualiza la variable "
+                    "de entorno en Render."
+                )
+
+        # No se escribe a disco: el filesystem de Render es
+        # efímero y se borra en cada deploy/reinicio.
+
+        return creds
+
+    # ==================================
+    # LOCAL: archivo token.json en disco,
+    # con flujo interactivo de respaldo.
+    # ==================================
 
     if os.path.exists(TOKEN):
 
@@ -79,6 +141,16 @@ def login_gmail():
                 creds = None
 
         if necesita_login_nuevo:
+
+            if EN_PRODUCCION:
+
+                raise RuntimeError(
+                    "No hay GOOGLE_TOKEN_JSON configurado y no es "
+                    "posible abrir un flujo interactivo de login en "
+                    "producción. Genera token.json en local y "
+                    "configura la variable de entorno GOOGLE_TOKEN_JSON "
+                    "en Render."
+                )
 
             flow = InstalledAppFlow.from_client_secrets_file(
                 CREDENTIALS,

@@ -273,7 +273,41 @@ def calcular_costo_envio(direccion):
 # =========================
 
 def home(request):
-    return render(request, "core/inicio.html")
+
+    top = (
+        PedidoItem.objects
+        .filter(
+            pedido__estado="PAGADO",
+            variante__isnull=False,
+            variante__producto__activo=True,
+        )
+        .values("variante__producto")
+        .annotate(unidades=Sum("cantidad"))
+        .order_by("-unidades")[:4]
+    )
+
+    ids_ordenados = [fila["variante__producto"] for fila in top]
+    unidades_por_id = {fila["variante__producto"]: fila["unidades"] for fila in top}
+
+    productos = (
+        Producto.objects
+        .filter(id__in=ids_ordenados, activo=True)
+        .select_related("marca")
+        .prefetch_related("imagenes", "variantes")
+    )
+
+    por_id = {p.id: p for p in productos}
+
+    mas_vendidos = []
+    for i in ids_ordenados:
+        if i in por_id:
+            producto = por_id[i]
+            producto.unidades_vendidas = unidades_por_id[i]   # ← nuevo
+            mas_vendidos.append(producto)
+
+    return render(request, "core/inicio.html", {
+        "mas_vendidos": mas_vendidos,
+    })
 
 
 def nosotros(request):
