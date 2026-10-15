@@ -360,6 +360,9 @@ class BlogPost(models.Model):
     publicado = models.BooleanField(default=False)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
+    # NUEVO: contador de likes
+    likes = models.PositiveIntegerField(default=0)
+
     def __str__(self):
         return self.titulo
 
@@ -416,6 +419,9 @@ class Galeria(models.Model):
         auto_now_add=True
     )
 
+    # NUEVO: contador de likes
+    likes = models.PositiveIntegerField(default=0)
+
     def __str__(self):
         return self.titulo
 
@@ -430,6 +436,9 @@ class Test(models.Model):
     descripcion = models.TextField()
     imagen = models.ImageField(upload_to='tests/')
     fecha = models.DateTimeField(auto_now_add=True)
+
+    # NUEVO: contador de likes
+    likes = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.titulo

@@ -1023,9 +1023,6 @@ tbody tr.fila-alerta:hover{
     }
 
 }
-/* =========================================================
-   14. PREMIUM UI POLISH — LÚMINA
-   ========================================================= */
 
 :root{
     --stats-radius-xl:30px;
@@ -1042,7 +1039,6 @@ tbody tr.fila-alerta:hover{
     gap:22px;
 }
 
-/* HERO más editorial */
 .stats-hero{
     min-height:205px;
     padding:38px 42px;
@@ -1079,7 +1075,6 @@ tbody tr.fila-alerta:hover{
     box-shadow:0 12px 28px rgba(45,20,50,.15);
 }
 
-/* KPI grid: tarjetas más limpias y con jerarquía */
 .kpi-grid{
     grid-template-columns:repeat(4,minmax(0,1fr));
     gap:16px;
@@ -1122,11 +1117,9 @@ tbody tr.fila-alerta:hover{
     font-size:clamp(1.35rem,1.8vw,1.75rem);
 }
 
-/* Proveedores tenía clase en HTML pero no color propio */
 .kpi-card.suppliers::before{background:#a855f7}
 .kpi-card.suppliers .icon{background:linear-gradient(135deg,#a855f7,#c084fc)}
 
-/* Mini stats: 12 elementos = 6 columnas, más equilibrado */
 .mini-grid{
     grid-template-columns:repeat(6,minmax(0,1fr));
     gap:12px;
@@ -1316,7 +1309,7 @@ tbody tr{
     padding:18px;
     border:1px solid var(--color-alerta-borde);
     border-radius:17px;
-    background: var(card);
+    background:var(--card);
 }
 
 /* Gráficas: espacio y contenedor */
@@ -1343,10 +1336,6 @@ input:focus-visible{
     outline:3px solid color-mix(in srgb,var(--primary) 28%,transparent);
     outline-offset:2px;
 }
-
-/* =========================================================
-   RESPONSIVE PREMIUM
-   ========================================================= */
 
 @media (max-width:1250px){
     .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
@@ -1386,4 +1375,48 @@ input:focus-visible{
     .stats-hero{
         transition:none!important;
     }
+}
+
+
+/* =========================================================
+   15. LIKES
+========================================================= */
+
+.kpi-card.likes::before{background:#ef4472}
+
+.kpi-card.likes .icon{
+    background:linear-gradient(135deg,#ef4472,#f78fab);
+}
+
+.likes-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    margin-bottom:22px;
+}
+
+.status-card.likes-card{
+    background:var(--primary-soft);
+    border-color:color-mix(in srgb,var(--primary) 14%,transparent);
+}
+
+.status-card.likes-card h2{
+    color:var(--primary);
+}
+
+.tipo-chip{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 10px;
+    border-radius:999px;
+    background:var(--primary-soft);
+    color:var(--primary);
+    font-size:.7rem;
+    font-weight:750;
+}
+
+@media (max-width:600px){
+
+    .likes-grid{
+        grid-template-columns:1fr;
+    }
+
 }

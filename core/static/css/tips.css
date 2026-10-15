@@ -1,4 +1,3 @@
-
 /* =========================================================
    VARIABLES
 ========================================================= */
@@ -4445,5 +4444,128 @@ body.modal-open {
             .01ms !important;
 
     }
+
+}
+
+
+/* =========================================================
+   LIKES
+========================================================= */
+
+.card-actions {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+}
+
+
+.blog-content .card-actions {
+
+    justify-content: flex-start;
+
+}
+
+
+.like-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 9px 14px;
+
+    border: 1px solid var(--tips-border);
+
+    border-radius: 100px;
+
+    background: var(--tips-surface);
+
+    color: var(--tips-text-soft);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: .3s var(--tips-ease);
+
+}
+
+
+.like-btn:hover {
+
+    border-color: var(--tips-primary);
+
+    color: var(--tips-primary);
+
+}
+
+
+.like-btn.liked {
+
+    border-color: var(--tips-primary);
+
+    background: var(--tips-primary-soft);
+
+    color: var(--tips-primary);
+
+}
+
+
+.like-btn:disabled {
+
+    opacity: .6;
+
+    cursor: wait;
+
+}
+
+
+.like-btn.pop i {
+
+    animation: like-pop .45s var(--tips-ease);
+
+}
+
+
+@keyframes like-pop {
+
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.5); }
+    100% { transform: scale(1); }
+
+}
+
+
+/* like flotante sobre las fotos de la galería */
+
+.like-floating {
+
+    position: absolute;
+
+    top: 14px;
+    right: 14px;
+
+    z-index: 5;
+
+    background: rgba(255,255,255,.92);
+
+    color: #51464d;
+
+    backdrop-filter: blur(10px);
+
+}
+
+
+.like-floating.liked {
+
+    background: rgba(255,255,255,.96);
 
 }

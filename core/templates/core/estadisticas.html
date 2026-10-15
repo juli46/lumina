@@ -253,6 +253,31 @@
         </article>
 
 
+        <!-- LIKES -->
+
+        <article class="kpi-card likes">
+
+            <div class="icon">
+
+                <i class="fa-solid fa-heart"></i>
+
+            </div>
+
+            <div class="info">
+
+                <h3>
+                    {{ total_likes }}
+                </h3>
+
+                <span>
+                    Likes totales
+                </span>
+
+            </div>
+
+        </article>
+
+
         <!-- ALERTAS STOCK -->
 
         {% if alertas_stock_total > 0 %}
@@ -872,6 +897,19 @@
                 </li>
 
 
+                <li>
+
+                    <span>
+                        Likes totales
+                    </span>
+
+                    <strong>
+                        {{ total_likes }}
+                    </strong>
+
+                </li>
+
+
             </ul>
 
         </div>
@@ -1227,6 +1265,127 @@
         </div>
 
         {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         LIKES
+    =========================================== -->
+
+    <section class="panel" id="likes">
+
+        <div class="panel-header">
+
+            <h3>
+                <i class="fa-solid fa-heart"></i>
+                Likes del Contenido
+            </h3>
+
+        </div>
+
+        <p class="alerta-descripcion">
+            Likes acumulados en los tests, el blog y la galería de la página Tips.
+        </p>
+
+        <div class="status-grid likes-grid">
+
+            <div class="status-card likes-card">
+                <h2>{{ likes_tests }}</h2>
+                <span>Likes en tests</span>
+            </div>
+
+            <div class="status-card likes-card">
+                <h2>{{ likes_blogs }}</h2>
+                <span>Likes en blog</span>
+            </div>
+
+            <div class="status-card likes-card">
+                <h2>{{ likes_galeria }}</h2>
+                <span>Likes en galería</span>
+            </div>
+
+        </div>
+
+        <div class="charts-grid likes-charts">
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+                    <h3>Likes por sección</h3>
+                </div>
+
+                <canvas id="likesChart"></canvas>
+
+            </div>
+
+            <div class="chart-card">
+
+                <div class="chart-header">
+                    <h3>
+                        <i class="fa-solid fa-ranking-star"></i>
+                        Top 10 contenido más querido
+                    </h3>
+                </div>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Contenido</th>
+                                <th>Tipo</th>
+                                <th>Likes</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for item in ranking_likes %}
+
+                            <tr>
+
+                                <td>
+                                    {% if forloop.counter == 1 %}🥇
+                                    {% elif forloop.counter == 2 %}🥈
+                                    {% elif forloop.counter == 3 %}🥉
+                                    {% else %}{{ forloop.counter }}
+                                    {% endif %}
+                                </td>
+
+                                <td>{{ item.titulo }}</td>
+
+                                <td>
+                                    <span class="tipo-chip">{{ item.tipo }}</span>
+                                </td>
+
+                                <td>
+                                    <strong>{{ item.likes }}</strong>
+                                </td>
+
+                            </tr>
+
+                            {% empty %}
+
+                            <tr>
+                                <td colspan="4" class="tabla-vacia">
+                                    Aún no hay likes registrados.
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
 
     </section>
 
@@ -1690,6 +1849,51 @@
                 responsive: true,
 
                 indexAxis: "y"
+
+            }
+
+        }
+
+    );
+
+
+    /* ==========================================
+       LIKES POR SECCIÓN
+    =========================================== */
+
+    new Chart(
+
+        document.getElementById("likesChart"),
+
+        {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: {{ likes_labels|safe }},
+
+                datasets: [
+
+                    {
+
+                        data: {{ likes_data|safe }},
+
+                        backgroundColor: [
+                            "#df6d86",
+                            "#a795ce",
+                            "#f4a62a"
+                        ]
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true
 
             }
 

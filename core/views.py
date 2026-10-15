@@ -387,17 +387,64 @@ def emprender(request):
         }
     )
 
+LIKE_MODELS = {
+    "test": Test,
+    "blog": BlogPost,
+    "galeria": Galeria,
+}
+
 
 def tips(request):
     blogs = BlogPost.objects.filter(publicado=True).order_by("-fecha_creacion")
     galeria = Galeria.objects.all().order_by("-fecha_creacion")
     tests = Test.objects.filter(activo=True)
 
+    liked = request.session.get("likes", {})
+
     return render(request, "core/tips.html", {
         "blogs": blogs,
         "galeria": galeria,
         "tests": tests,
+        "liked_tests": liked.get("test", []),
+        "liked_blogs": liked.get("blog", []),
+        "liked_galeria": liked.get("galeria", []),
     })
+
+
+@require_POST
+def toggle_like(request):
+    tipo = request.POST.get("tipo")
+    model = LIKE_MODELS.get(tipo)
+
+    if not model:
+        return JsonResponse({"ok": False, "error": "Tipo inválido"}, status=400)
+
+    try:
+        obj_id = int(request.POST.get("id"))
+    except (TypeError, ValueError):
+        return JsonResponse({"ok": False, "error": "ID inválido"}, status=400)
+
+    obj = get_object_or_404(model, pk=obj_id)
+
+    likes = request.session.get("likes", {})
+    ids = likes.get(tipo, [])
+
+    if obj_id in ids:
+        ids.remove(obj_id)
+        model.objects.filter(pk=obj_id, likes__gt=0).update(likes=F("likes") - 1)
+        liked = False
+    else:
+        ids.append(obj_id)
+        model.objects.filter(pk=obj_id).update(likes=F("likes") + 1)
+        liked = True
+
+    likes[tipo] = ids
+    request.session["likes"] = likes
+    request.session.modified = True
+
+    obj.refresh_from_db(fields=["likes"])
+
+    return JsonResponse({"ok": True, "liked": liked, "count": obj.likes})
 
 
 @login_required
@@ -3333,6 +3380,7 @@ def editar_recordatorio(request, id):
 # =========================
 # ESTADÍSTICAS
 # =========================
+
 @login_required
 @admin_required
 def estadisticas(request):
@@ -3664,6 +3712,40 @@ def estadisticas(request):
     ]
 
     # =====================================
+    # LIKES (tests, blog y galería)
+    # =====================================
+
+    likes_tests = Test.objects.aggregate(t=Sum("likes"))["t"] or 0
+    likes_blogs = BlogPost.objects.aggregate(t=Sum("likes"))["t"] or 0
+    likes_galeria = Galeria.objects.aggregate(t=Sum("likes"))["t"] or 0
+
+    total_likes = likes_tests + likes_blogs + likes_galeria
+
+    likes_labels = ["Tests", "Blog", "Galería"]
+    likes_data = [likes_tests, likes_blogs, likes_galeria]
+
+    # Ranking unificado: los 10 contenidos con más likes
+    ranking_likes = []
+
+    for t in Test.objects.filter(likes__gt=0).values("titulo", "likes"):
+        ranking_likes.append(
+            {"tipo": "Test", "titulo": t["titulo"], "likes": t["likes"]}
+        )
+
+    for b in BlogPost.objects.filter(likes__gt=0).values("titulo", "likes"):
+        ranking_likes.append(
+            {"tipo": "Blog", "titulo": b["titulo"], "likes": b["likes"]}
+        )
+
+    for g in Galeria.objects.filter(likes__gt=0).values("titulo", "likes"):
+        ranking_likes.append(
+            {"tipo": "Galería", "titulo": g["titulo"], "likes": g["likes"]}
+        )
+
+    ranking_likes.sort(key=lambda x: x["likes"], reverse=True)
+    ranking_likes = ranking_likes[:10]
+
+    # =====================================
     # USUARIOS RECIENTES
     # =====================================
 
@@ -3858,6 +3940,22 @@ def estadisticas(request):
             json.dumps(productos_menos_data),
 
         # ---------------------------------
+        # LIKES
+        # ---------------------------------
+
+        "total_likes": total_likes,
+        "likes_tests": likes_tests,
+        "likes_blogs": likes_blogs,
+        "likes_galeria": likes_galeria,
+        "ranking_likes": ranking_likes,
+
+        "likes_labels":
+            json.dumps(likes_labels),
+
+        "likes_data":
+            json.dumps(likes_data),
+
+        # ---------------------------------
         # CONTACTOS
         # ---------------------------------
 
@@ -3873,7 +3971,6 @@ def estadisticas(request):
         "core/estadisticas.html",
         context
     )
-
 # =========================
 # KITS
 # =========================

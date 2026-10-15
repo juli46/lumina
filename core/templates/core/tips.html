@@ -1,4 +1,3 @@
-
 {% extends 'core/base.html' %}
 {% load static %}
 
@@ -12,6 +11,9 @@ Tips | Lúmina
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'css/tips.css' %}">
+
+<!-- URL del endpoint de likes (la lee tips.js) -->
+<div id="like-config" data-url="{% url 'toggle_like' %}" hidden></div>
 
 
 <!-- =====================================================
@@ -196,18 +198,37 @@ Tips | Lúmina
                 </p>
 
 
-                <button
-                    type="button"
-                    class="card-button"
-                    onclick="abrirTest('{{ test.id }}')">
+                <div class="card-actions">
 
-                    <span>
-                        Hacer Test
-                    </span>
+                    <button
+                        type="button"
+                        class="card-button"
+                        onclick="abrirTest('{{ test.id }}')">
 
-                    <i class="fa-solid fa-arrow-right"></i>
+                        <span>
+                            Hacer Test
+                        </span>
 
-                </button>
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="like-btn {% if test.id in liked_tests %}liked{% endif %}"
+                        data-tipo="test"
+                        data-id="{{ test.id }}"
+                        onclick="toggleLike(event, this)"
+                        aria-label="Me gusta">
+
+                        <i class="{% if test.id in liked_tests %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+
+                        <span class="like-count">{{ test.likes }}</span>
+
+                    </button>
+
+                </div>
 
             </div>
 
@@ -329,18 +350,37 @@ Tips | Lúmina
                 </p>
 
 
-                <button
-                    type="button"
-                    class="blog-button"
-                    onclick="abrirBlog('{{ blog.id }}')">
+                <div class="card-actions">
 
-                    <span>
-                        Leer artículo
-                    </span>
+                    <button
+                        type="button"
+                        class="blog-button"
+                        onclick="abrirBlog('{{ blog.id }}')">
 
-                    <i class="fa-solid fa-arrow-right"></i>
+                        <span>
+                            Leer artículo
+                        </span>
 
-                </button>
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="like-btn {% if blog.id in liked_blogs %}liked{% endif %}"
+                        data-tipo="blog"
+                        data-id="{{ blog.id }}"
+                        onclick="toggleLike(event, this)"
+                        aria-label="Me gusta">
+
+                        <i class="{% if blog.id in liked_blogs %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+
+                        <span class="like-count">{{ blog.likes }}</span>
+
+                    </button>
+
+                </div>
 
             </div>
 
@@ -420,6 +460,21 @@ Tips | Lúmina
             <img
                 src="{{ item.imagen.url }}"
                 alt="{{ item.titulo }}">
+
+
+            <button
+                type="button"
+                class="like-btn like-floating {% if item.id in liked_galeria %}liked{% endif %}"
+                data-tipo="galeria"
+                data-id="{{ item.id }}"
+                onclick="toggleLike(event, this)"
+                aria-label="Me gusta">
+
+                <i class="{% if item.id in liked_galeria %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+
+                <span class="like-count">{{ item.likes }}</span>
+
+            </button>
 
 
             <div class="gallery-overlay">

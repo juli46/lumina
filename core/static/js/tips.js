@@ -1,7 +1,3 @@
-/* =========================================================
-   LÚMINA — TIPS / TESTS / BLOG / GALERÍA
-========================================================= */
-
 
 /* =========================================================
    VARIABLES GENERALES
@@ -33,6 +29,104 @@ window.scrollSection = function (id) {
         behavior: "smooth",
         block: "start"
     });
+
+};
+
+
+/* =========================================================
+   CSRF
+========================================================= */
+
+function getCookie(name) {
+
+    const cookies = document.cookie.split(";");
+
+    for (let cookie of cookies) {
+
+        cookie = cookie.trim();
+
+        if (cookie.startsWith(name + "=")) {
+
+            return decodeURIComponent(
+                cookie.substring(name.length + 1)
+            );
+
+        }
+
+    }
+
+    return null;
+
+}
+
+
+/* =========================================================
+   LIKES (se guardan en la sesión del servidor)
+========================================================= */
+
+window.toggleLike = async function (event, btn) {
+
+    // evita que el click abra el modal de la galería
+    event.stopPropagation();
+
+    if (btn.disabled) return;
+    btn.disabled = true;
+
+    const config = document.getElementById("like-config");
+    const url = (config && config.dataset.url) || "/like/";
+
+    const formData = new FormData();
+    formData.append("tipo", btn.dataset.tipo);
+    formData.append("id", btn.dataset.id);
+
+    try {
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            throw new Error(data.error || "No se pudo registrar el like");
+        }
+
+        btn.classList.toggle("liked", data.liked);
+
+        const icon = btn.querySelector("i");
+        icon.classList.toggle("fa-solid", data.liked);
+        icon.classList.toggle("fa-regular", !data.liked);
+
+        btn.querySelector(".like-count").textContent = data.count;
+
+        // animación del corazón
+        btn.classList.remove("pop");
+        void btn.offsetWidth;
+        btn.classList.add("pop");
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        Swal.fire(
+            "Error",
+            "No se pudo registrar tu like",
+            "error"
+        );
+
+    }
+
+    finally {
+
+        btn.disabled = false;
+
+    }
 
 };
 
@@ -383,16 +477,6 @@ async function abrirBlog(id) {
 
 }
 
-
-function cerrarBlog() {
-
-    document.getElementById("blogModal").style.display = "none";
-
-    document.getElementById("blogContenido").innerHTML = "";
-
-    document.body.classList.remove("modal-open");
-
-}
 
 /* =========================================================
    CERRAR BLOG
@@ -890,33 +974,6 @@ window.cerrarTest = function () {
     document.body.classList.remove("modal-open");
 
 };
-
-
-/* =========================================================
-   CSRF
-========================================================= */
-
-function getCookie(name) {
-
-    const cookies = document.cookie.split(";");
-
-    for (let cookie of cookies) {
-
-        cookie = cookie.trim();
-
-        if (cookie.startsWith(name + "=")) {
-
-            return decodeURIComponent(
-                cookie.substring(name.length + 1)
-            );
-
-        }
-
-    }
-
-    return null;
-
-}
 
 
 /* =========================================================
