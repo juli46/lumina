@@ -1911,3 +1911,30 @@ class Proveedor(models.Model):
 
     def __str__(self):
         return self.marca
+class HistorialActividad(models.Model):
+    ACCIONES = [
+        ("crear", "Crear"),
+        ("editar", "Editar"),
+        ("eliminar", "Eliminar"),
+        ("otro", "Otro"),
+    ]
+
+    admin = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="actividades",
+    )
+    admin_nombre = models.CharField(max_length=150)
+    accion = models.CharField(max_length=20, choices=ACCIONES, default="otro")
+    entidad = models.CharField(max_length=50, blank=True)
+    descripcion = models.CharField(max_length=255)
+    creado_en = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-creado_en"]
+        verbose_name = "Actividad"
+        verbose_name_plural = "Historial de actividad"
+
+    def __str__(self):
+        return f"{self.admin_nombre}: {self.descripcion}"

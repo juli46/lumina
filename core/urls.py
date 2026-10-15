@@ -82,6 +82,7 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('configuracion/', views.configuracion, name='configuracion'),
     path('estadisticas/', views.estadisticas, name='estadisticas'),
+    path("dashboard/historial/", views.dashboard_historial, name="dashboard_historial"),
 
 
     # ==================================================

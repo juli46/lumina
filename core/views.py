@@ -3,7 +3,8 @@ import hashlib
 import json
 import logging
 import uuid
-
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 import requests
 from decimal import Decimal, InvalidOperation, ROUND_CEILING
 from django.db.models import F, ExpressionWrapper, DecimalField
@@ -33,7 +34,7 @@ from .models import (
     Galeria, IdeaContenido, Kit, KitProducto, Marca, NotaAdmin, Opcion, Pago,
     Pedido, PedidoItem, PedidoItemKitSeleccion, PostIt, Pregunta, Producto,
     ProductoImagen, ProductoVideo, Recordatorio, RecomendacionEmprendimiento,
-    ReporteEmprendimiento, Resultado, ResultadoUsuario, Test, Usuario, Variante, Proveedor,
+    ReporteEmprendimiento, Resultado, ResultadoUsuario, Test, Usuario, Variante, Proveedor, HistorialActividad,
 )
 
 from django.contrib.auth.views import (
@@ -7048,3 +7049,200 @@ def eliminar_proveedor(request, id):
     )
 
     return redirect('dashboard_proveedores')
+
+
+# =====================================================================
+# HISTORIAL DE ACTIVIDAD
+# =====================================================================
+@login_required
+@admin_required
+def dashboard_historial(request):
+
+    registros = HistorialActividad.objects.select_related("admin")
+
+    admin_id = request.GET.get("admin", "")
+    accion = request.GET.get("accion", "")
+    entidad = request.GET.get("entidad", "")
+    desde = request.GET.get("desde", "")
+    hasta = request.GET.get("hasta", "")
+    q = request.GET.get("q", "").strip()
+
+    if admin_id:
+        registros = registros.filter(admin_id=admin_id)
+    if accion:
+        registros = registros.filter(accion=accion)
+    if entidad:
+        registros = registros.filter(entidad=entidad)
+    if desde:
+        registros = registros.filter(creado_en__date__gte=desde)
+    if hasta:
+        registros = registros.filter(creado_en__date__lte=hasta)
+    if q:
+        registros = registros.filter(descripcion__icontains=q)
+
+    paginator = Paginator(registros, 25)
+    pagina = paginator.get_page(request.GET.get("page"))
+
+    params = request.GET.copy()
+    params.pop("page", None)
+
+    return render(request, "core/historial.html", {
+        "pagina": pagina,
+        "admins": Usuario.objects.filter(rol="admin").order_by("username"),
+        "acciones": HistorialActividad.ACCIONES,
+        "entidades": (
+            HistorialActividad.objects.exclude(entidad="")
+            .values_list("entidad", flat=True)
+            .distinct()
+            .order_by("entidad")
+        ),
+        "filtros": {
+            "admin": admin_id, "accion": accion, "entidad": entidad,
+            "desde": desde, "hasta": hasta, "q": q,
+        },
+        "query_string": params.urlencode(),
+        "total": paginator.count,
+    })
+    
+# =========================
+# ADMINISTRACIÓN DE USUARIOS
+# =========================
+
+ROLES_VALIDOS = {"usuario", "admin"}
+
+
+def _validar_datos_usuario(request, usuario=None):
+    """Valida los campos del formulario. Devuelve (datos, errores)."""
+    username = request.POST.get("username", "").strip()
+    email = request.POST.get("email", "").strip().lower()
+    telefono = request.POST.get("telefono", "").strip()
+    rol = request.POST.get("rol", "").strip()
+
+    errores = []
+
+    if len(username) < 3:
+        errores.append("El usuario debe tener al menos 3 caracteres.")
+    else:
+        qs = Usuario.objects.filter(username__iexact=username)
+        if usuario:
+            qs = qs.exclude(pk=usuario.pk)
+        if qs.exists():
+            errores.append("Ese nombre de usuario ya existe.")
+
+    try:
+        validate_email(email)
+    except ValidationError:
+        errores.append("Ingresa un correo electrónico válido.")
+    else:
+        qs = Usuario.objects.filter(email__iexact=email)
+        if usuario:
+            qs = qs.exclude(pk=usuario.pk)
+        if qs.exists():
+            errores.append("Ese correo ya está registrado.")
+
+    if telefono and (not telefono.isdigit() or not 7 <= len(telefono) <= 10):
+        errores.append("El teléfono debe tener entre 7 y 10 números.")
+
+    if rol not in ROLES_VALIDOS:
+        errores.append("Selecciona un rol válido.")
+
+    datos = {
+        "username": username,
+        "email": email,
+        "telefono": telefono or None,
+        "rol": rol,
+    }
+    return datos, errores
+
+
+@login_required
+@admin_required
+def usuario_d(request):
+
+    # ---------- CREAR USUARIO ----------
+    if request.method == "POST":
+        datos, errores = _validar_datos_usuario(request)
+
+        password = request.POST.get("password", "")
+        password2 = request.POST.get("password2", "")
+
+        if len(password) < 8:
+            errores.append("La contraseña debe tener al menos 8 caracteres.")
+        elif password != password2:
+            errores.append("Las contraseñas no coinciden.")
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("usuario_d")
+
+        nuevo = Usuario(**datos)
+        nuevo.set_password(password)
+
+        if request.FILES.get("foto"):
+            nuevo.foto = request.FILES["foto"]
+
+        nuevo.save()
+
+        messages.success(
+            request, f"Usuario {nuevo.username} creado correctamente."
+        )
+        return redirect("usuario_d")
+
+    # ---------- LISTADO ----------
+    usuarios_list = Usuario.objects.all().order_by("-id")
+    usuarios = Paginator(usuarios_list, 10).get_page(request.GET.get("page"))
+
+    return render(request, "core/usuarios_d.html", {
+        "usuarios": usuarios,
+    })
+
+
+@login_required
+@admin_required
+def editar_usuario(request, id):
+    usuario = get_object_or_404(Usuario, id=id)
+
+    if request.method == "POST":
+        datos, errores = _validar_datos_usuario(request, usuario)
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("editar_usuario", id=usuario.id)
+
+        es_el_mismo = request.user.id == usuario.id
+        activo = request.POST.get("is_active") == "on"
+
+        # Un admin no puede quitarse el rol ni desactivarse a sí mismo
+        if es_el_mismo and (datos["rol"] != "admin" or not activo):
+            messages.error(
+                request,
+                "No puedes quitarte el rol de administrador "
+                "ni desactivar tu propia cuenta."
+            )
+            return redirect("editar_usuario", id=usuario.id)
+
+        usuario.username = datos["username"]
+        usuario.email = datos["email"]
+        usuario.telefono = datos["telefono"]
+        usuario.rol = datos["rol"]
+        usuario.is_active = activo
+        usuario.estado = "activo" if activo else "inactivo"
+
+        if request.FILES.get("foto"):
+            usuario.foto = request.FILES["foto"]
+
+        usuario.save()
+
+        messages.success(request, "Usuario actualizado correctamente.")
+        return redirect("usuario_d")
+
+    # GET: lista con el panel de edición abierto y lleno
+    usuarios_list = Usuario.objects.all().order_by("-id")
+    usuarios = Paginator(usuarios_list, 10).get_page(request.GET.get("page"))
+
+    return render(request, "core/usuarios_d.html", {
+        "usuarios": usuarios,
+        "usuario": usuario,
+    })

@@ -1,0 +1,363 @@
+
+{% extends "core/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/historial.css' %}?v=2">
+
+<div class="hist-page">
+
+    <!-- ENCABEZADO -->
+    <div class="hist-header">
+        <div>
+            <span class="hist-eyebrow">✨ LÚMINA</span>
+            <h1>Historial de actividad</h1>
+            <p>
+                Consulta qué hizo cada perfil administrador,
+                en qué sección y cuándo.
+            </p>
+        </div>
+
+        <div class="hist-total">
+            <i class="fa-solid fa-clock-rotate-left"
+               aria-hidden="true"></i>
+
+            <div>
+                <strong>{{ total }}</strong>
+                <span>registro{{ total|pluralize }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+    <form method="get" class="hist-filters">
+
+        <!-- BUSCADOR -->
+        <div class="hist-search">
+            <i class="fa-solid fa-magnifying-glass"
+               aria-hidden="true"></i>
+
+            <input
+                type="text"
+                name="q"
+                value="{{ filtros.q }}"
+                placeholder="Buscar en el detalle..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- FILTRO POR ADMINISTRADOR -->
+        <select
+            name="admin"
+            class="hist-select"
+            aria-label="Filtrar por perfil"
+        >
+            <option value="">Todos los perfiles</option>
+
+            {% for a in admins %}
+                <option
+                    value="{{ a.id }}"
+                    {% if filtros.admin == a.id|stringformat:"s" %}
+                        selected
+                    {% endif %}
+                >
+                    {{ a.username }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- FILTRO POR ACCIÓN -->
+        <select
+            name="accion"
+            class="hist-select"
+            aria-label="Filtrar por acción"
+        >
+            <option value="">Todas las acciones</option>
+
+            {% for valor, nombre in acciones %}
+                <option
+                    value="{{ valor }}"
+                    {% if filtros.accion == valor %}
+                        selected
+                    {% endif %}
+                >
+                    {{ nombre }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- FILTRO POR SECCIÓN -->
+        <select
+            name="entidad"
+            class="hist-select"
+            aria-label="Filtrar por sección"
+        >
+            <option value="">Todas las secciones</option>
+
+            {% for e in entidades %}
+                <option
+                    value="{{ e }}"
+                    {% if filtros.entidad == e %}
+                        selected
+                    {% endif %}
+                >
+                    {{ e }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- FECHA INICIAL -->
+        <input
+            type="date"
+            name="desde"
+            value="{{ filtros.desde }}"
+            class="hist-select"
+            title="Desde"
+            aria-label="Fecha inicial"
+        >
+
+        <!-- FECHA FINAL -->
+        <input
+            type="date"
+            name="hasta"
+            value="{{ filtros.hasta }}"
+            class="hist-select"
+            title="Hasta"
+            aria-label="Fecha final"
+        >
+
+        <!-- BOTONES -->
+        <div class="hist-filter-actions">
+
+            <button type="submit" class="hist-btn-primary">
+                <i class="fa-solid fa-filter"
+                   aria-hidden="true"></i>
+                Filtrar
+            </button>
+
+            <a
+                href="{% url 'dashboard_historial' %}"
+                class="hist-btn-secondary"
+            >
+                <i class="fa-solid fa-arrow-rotate-left"
+                   aria-hidden="true"></i>
+                Limpiar
+            </a>
+
+        </div>
+
+    </form>
+
+    <!-- RESULTADOS -->
+    {% if pagina.object_list %}
+
+        <div class="hist-card">
+
+            <div class="hist-table-scroll">
+
+                <table class="hist-table">
+
+                    <thead>
+                        <tr>
+                            <th>Fecha y hora</th>
+                            <th>Perfil</th>
+                            <th>Acción</th>
+                            <th>Sección</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for r in pagina %}
+
+                            <tr>
+
+                                <!-- FECHA -->
+                                <td class="hist-date">
+                                    <strong>
+                                        {{ r.creado_en|date:"d/m/Y" }}
+                                    </strong>
+
+                                    <span>
+                                        {{ r.creado_en|date:"H:i" }}
+                                    </span>
+                                </td>
+
+                                <!-- ADMINISTRADOR -->
+                                <td>
+                                    <div class="hist-user">
+
+                                        <span class="hist-avatar">
+
+                                            {% if r.admin and r.admin.foto %}
+                                                <img
+                                                    src="{{ r.admin.foto.url }}"
+                                                    alt="Foto de {{ r.admin_nombre }}"
+                                                >
+                                            {% else %}
+                                                {{ r.admin_nombre|slice:":1"|upper }}
+                                            {% endif %}
+
+                                        </span>
+
+                                        <strong>
+                                            {{ r.admin_nombre }}
+                                        </strong>
+
+                                    </div>
+                                </td>
+
+                                <!-- ACCIÓN -->
+                                <td>
+                                    <span class="hist-badge hist-badge-{{ r.accion }}">
+
+                                        {% if r.accion == "crear" %}
+
+                                            <i
+                                                class="fa-solid fa-plus"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                        {% elif r.accion == "editar" %}
+
+                                            <i
+                                                class="fa-solid fa-pen"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                        {% elif r.accion == "eliminar" %}
+
+                                            <i
+                                                class="fa-solid fa-trash"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                        {% else %}
+
+                                            <i
+                                                class="fa-solid fa-circle-info"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                        {% endif %}
+
+                                        {{ r.get_accion_display }}
+
+                                    </span>
+                                </td>
+
+                                <!-- SECCIÓN -->
+                                <td>
+                                    {% if r.entidad %}
+
+                                        <span class="hist-chip">
+                                            {{ r.entidad }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="hist-muted">—</span>
+
+                                    {% endif %}
+                                </td>
+
+                                <!-- DETALLE -->
+                                <td class="hist-detail">
+                                    {{ r.descripcion }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- PAGINACIÓN -->
+        {% if pagina.paginator.num_pages > 1 %}
+
+            <nav
+                class="hist-pagination"
+                aria-label="Paginación del historial"
+            >
+
+                {% if pagina.has_previous %}
+
+                    <a
+                        href="?{{ query_string }}&page={{ pagina.previous_page_number }}"
+                        class="hist-btn-secondary"
+                    >
+                        <i
+                            class="fa-solid fa-chevron-left"
+                            aria-hidden="true"
+                        ></i>
+                        Anterior
+                    </a>
+
+                {% endif %}
+
+                <span class="hist-page-info">
+                    Página {{ pagina.number }}
+                    de {{ pagina.paginator.num_pages }}
+                </span>
+
+                {% if pagina.has_next %}
+
+                    <a
+                        href="?{{ query_string }}&page={{ pagina.next_page_number }}"
+                        class="hist-btn-secondary"
+                    >
+                        Siguiente
+                        <i
+                            class="fa-solid fa-chevron-right"
+                            aria-hidden="true"
+                        ></i>
+                    </a>
+
+                {% endif %}
+
+            </nav>
+
+        {% endif %}
+
+    {% else %}
+
+        <!-- ESTADO VACÍO -->
+        <div class="hist-empty">
+
+            <div class="hist-empty-icon" aria-hidden="true">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+
+            <h3>Sin actividad para mostrar</h3>
+
+            <p>
+                Aún no hay acciones registradas o ninguna
+                coincide con los filtros elegidos.
+            </p>
+
+            <a
+                href="{% url 'dashboard_historial' %}"
+                class="hist-btn-secondary"
+            >
+                <i
+                    class="fa-solid fa-arrow-rotate-left"
+                    aria-hidden="true"
+                ></i>
+                Limpiar filtros
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

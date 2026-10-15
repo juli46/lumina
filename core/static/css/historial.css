@@ -1,0 +1,501 @@
+:root{
+
+    --primary:#df6d86;
+    --primary-light:#c4b2ff;
+    --primary-soft:#fff1f5;
+
+    --bg:#fff9fc;
+    --card:#ffffff;
+
+    --text:#5f5668;
+    --text-light:#8b8593;
+    --title:#433b4a;
+
+    --border:#eadfea;
+
+    --lavender:#dcc6ff;
+
+    --success:#35c76e;
+    --info:#4b88ff;
+    --danger:#e11d48;
+    --danger-soft:#fdeaef;
+
+    --shadow:
+    0 15px 35px rgba(223,109,134,.12);
+
+    --shadow-hover:
+    0 20px 45px rgba(223,109,134,.22);
+
+    --radius:18px;
+    --radius-lg:28px;
+
+    --transition:.3s ease;
+
+}
+
+/* ==========================================
+   BASE
+=========================================== */
+
+.hist-page{
+    background:var(--bg);
+    color:var(--text);
+    padding:32px;
+    font-family:'Poppins','Segoe UI',sans-serif;
+}
+
+.hist-page h1,
+.hist-page h3{
+    color:var(--title);
+    margin:0;
+}
+
+.hist-eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.75rem;
+    font-weight:600;
+    letter-spacing:.08em;
+    color:var(--primary);
+    background:var(--primary-soft);
+    padding:6px 14px;
+    border-radius:999px;
+    margin-bottom:10px;
+}
+
+/* ==========================================
+   ENCABEZADO
+=========================================== */
+
+.hist-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-bottom:24px;
+}
+
+.hist-header h1{
+    font-size:2rem;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.hist-header p{
+    color:var(--text-light);
+    max-width:520px;
+    margin:0;
+}
+
+.hist-total{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:14px 22px;
+    box-shadow:var(--shadow);
+}
+
+.hist-total i{
+    width:44px;
+    height:44px;
+    border-radius:14px;
+    background:var(--primary-soft);
+    color:var(--primary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.1rem;
+}
+
+.hist-total div{
+    display:flex;
+    flex-direction:column;
+}
+
+.hist-total strong{
+    font-size:1.3rem;
+    color:var(--title);
+    line-height:1.1;
+}
+
+.hist-total span{
+    font-size:.78rem;
+    color:var(--text-light);
+}
+
+/* ==========================================
+   BOTONES
+=========================================== */
+
+.hist-btn-primary,
+.hist-btn-secondary{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:none;
+    border-radius:var(--radius);
+    padding:11px 20px;
+    font-size:.85rem;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+    font-family:inherit;
+    transition:var(--transition);
+}
+
+.hist-btn-primary{
+    background:var(--primary);
+    color:#fff;
+    box-shadow:var(--shadow);
+}
+
+.hist-btn-primary:hover{
+    background:var(--primary-light);
+    box-shadow:var(--shadow-hover);
+    transform:translateY(-2px);
+}
+
+.hist-btn-secondary{
+    background:transparent;
+    color:var(--text);
+    border:1px solid var(--border);
+}
+
+.hist-btn-secondary:hover{
+    background:var(--primary-soft);
+    color:var(--primary);
+}
+
+/* ==========================================
+   FILTROS
+=========================================== */
+
+.hist-filters{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:18px 22px;
+    box-shadow:var(--shadow);
+    margin-bottom:24px;
+}
+
+.hist-search{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:1 1 220px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:9px 14px;
+    background:var(--bg);
+    transition:var(--transition);
+}
+
+.hist-search:focus-within{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px var(--primary-soft);
+}
+
+.hist-search i{
+    color:var(--primary);
+    font-size:.8rem;
+    flex-shrink:0;
+}
+
+.hist-search input{
+    border:none;
+    outline:none;
+    background:transparent;
+    width:100%;
+    font-size:.85rem;
+    color:var(--text);
+    font-family:inherit;
+}
+
+.hist-select{
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:10px 14px;
+    background:var(--bg);
+    font-size:.85rem;
+    color:var(--text);
+    font-family:inherit;
+    outline:none;
+    cursor:pointer;
+    transition:var(--transition);
+    flex:0 0 auto;
+}
+
+.hist-select:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px var(--primary-soft);
+}
+
+.hist-filter-actions{
+    display:flex;
+    gap:10px;
+}
+
+/* ==========================================
+   TABLA
+=========================================== */
+
+.hist-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+
+.hist-table-scroll{
+    overflow-x:auto;
+}
+
+.hist-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+}
+
+.hist-table thead th{
+    background:var(--primary-soft);
+    color:var(--primary);
+    text-align:left;
+    font-size:.74rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    padding:14px 18px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+}
+
+.hist-table tbody td{
+    padding:14px 18px;
+    border-bottom:1px solid var(--border);
+    font-size:.86rem;
+    vertical-align:middle;
+}
+
+.hist-table tbody tr:last-child td{
+    border-bottom:none;
+}
+
+.hist-table tbody tr{
+    transition:var(--transition);
+}
+
+.hist-table tbody tr:hover{
+    background:var(--bg);
+}
+
+/* FECHA */
+
+.hist-date{
+    white-space:nowrap;
+}
+
+.hist-date strong{
+    display:block;
+    color:var(--title);
+    font-size:.86rem;
+}
+
+.hist-date span{
+    font-size:.76rem;
+    color:var(--text-light);
+}
+
+/* PERFIL */
+
+.hist-user{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.hist-user strong{
+    color:var(--title);
+    font-weight:600;
+}
+
+.hist-avatar{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:var(--lavender);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.8rem;
+    font-weight:700;
+    flex-shrink:0;
+    overflow:hidden;
+}
+
+.hist-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+/* ACCIÓN */
+
+.hist-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.75rem;
+    font-weight:600;
+    padding:5px 12px;
+    border-radius:999px;
+    white-space:nowrap;
+}
+
+.hist-badge i{
+    font-size:.68rem;
+}
+
+.hist-badge-crear{
+    background:rgba(53,199,110,.12);
+    color:var(--success);
+}
+
+.hist-badge-editar{
+    background:rgba(75,136,255,.12);
+    color:var(--info);
+}
+
+.hist-badge-eliminar{
+    background:var(--danger-soft);
+    color:var(--danger);
+}
+
+.hist-badge-otro{
+    background:var(--primary-soft);
+    color:var(--primary);
+}
+
+/* SECCIÓN */
+
+.hist-chip{
+    display:inline-flex;
+    align-items:center;
+    font-size:.76rem;
+    font-weight:500;
+    padding:5px 12px;
+    border-radius:999px;
+    background:rgba(196,178,255,.18);
+    color:#8a6fd6;
+    white-space:nowrap;
+}
+
+.hist-muted{
+    color:var(--text-light);
+}
+
+.hist-detail{
+    color:var(--text);
+    max-width:380px;
+}
+
+/* ==========================================
+   PAGINACIÓN
+=========================================== */
+
+.hist-pagination{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-top:22px;
+}
+
+.hist-page-info{
+    font-size:.82rem;
+    color:var(--text-light);
+}
+
+/* ==========================================
+   ESTADO VACÍO
+=========================================== */
+
+.hist-empty{
+    text-align:center;
+    padding:60px 20px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+}
+
+.hist-empty-icon{
+    width:70px;
+    height:70px;
+    margin:0 auto 18px;
+    border-radius:50%;
+    background:var(--primary-soft);
+    color:var(--primary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.6rem;
+}
+
+.hist-empty h3{
+    font-size:1.1rem;
+    margin-bottom:8px;
+}
+
+.hist-empty p{
+    color:var(--text-light);
+    max-width:380px;
+    margin:0 auto 22px;
+}
+
+/* ==========================================
+   RESPONSIVE
+=========================================== */
+
+@media (max-width:640px){
+
+    .hist-page{
+        padding:20px;
+    }
+
+    .hist-header h1{
+        font-size:1.6rem;
+    }
+
+    .hist-filters{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .hist-select{
+        width:100%;
+    }
+
+    .hist-filter-actions{
+        justify-content:space-between;
+    }
+
+    .hist-filter-actions > *{
+        flex:1;
+        justify-content:center;
+    }
+
+}

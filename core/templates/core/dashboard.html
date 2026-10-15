@@ -13,12 +13,6 @@
 
     <link rel="icon" href="{% static 'img/logos/logo2.png' %}">
 
-
-    <!-- =====================================
-         CONFIG GUARDADA (tema / color / fuente)
-         Se aplica ANTES del CSS y de forma síncrona
-         sobre <html>, así no hay parpadeo al navegar.
-    ===================================== -->
     <script>
         (function () {
             var root = document.documentElement;
@@ -431,6 +425,18 @@ Cerrar sesión
 
     <span>
         Configuración
+    </span>
+
+
+</a>
+<a href="{% url 'dashboard_historial' %}">
+
+
+    <i class="fa-solid fa-clock-rotate-left"></i>
+
+
+    <span>
+        Historial
     </span>
 
 
