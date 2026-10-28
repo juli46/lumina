@@ -407,6 +407,37 @@
                     </h3>
 
 
+                    <!-- NUEVO: ESTRELLAS DEL PRODUCTO (solo si hay reseñas) -->
+
+                    {% if item.producto.rating_cantidad > 0 %}
+
+                    <button
+                        type="button"
+                        class="producto-rating rv-leer"
+                        data-slug="{{ item.producto.slug }}"
+                        data-nombre="{{ item.producto.nombre }}"
+                        aria-label="Ver las {{ item.producto.rating_cantidad }} reseñas de {{ item.producto.nombre }}"
+                    >
+
+                        <span
+                            class="rt-stars"
+                            style="--pct: {% widthratio item.producto.rating_promedio 5 100 %}%"
+                            aria-hidden="true"
+                        >★★★★★</span>
+
+                        <span class="rt-num">
+                            {{ item.producto.rating_promedio|floatformat:1 }}
+                        </span>
+
+                        <span class="rt-cant">
+                            ({{ item.producto.rating_cantidad }})
+                        </span>
+
+                    </button>
+
+                    {% endif %}
+
+
                     {% if item.variante %}
 
                     <span class="kit-item-variante">
@@ -636,6 +667,10 @@
     </section>
 
 </div>
+
+{# NUEVO: modal de lectura de reseñas (el mismo que usa el catálogo) #}
+{% include "core/_resenas_modal.html" %}
+
 <script>
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -739,7 +774,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     title: "Faltan tonos por elegir",
                     text: mensaje,
                     confirmButtonText: "Entendido",
-                    confirmButtonColor: "#df6d86"
+                    confirmButtonColor: "#df6d77"
                 });
 
             } else {
@@ -846,7 +881,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     title: "Kit",
                     text: error.message,
                     confirmButtonText: "Entendido",
-                    confirmButtonColor: "#df6d86"
+                    confirmButtonColor: "#df6d77"
                 });
 
             } else {

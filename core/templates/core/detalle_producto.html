@@ -111,6 +111,38 @@
                 </h1>
 
 
+                <!-- NUEVO: ESTRELLAS (solo si hay reseñas aprobadas) -->
+
+                {% if producto.rating_cantidad > 0 %}
+
+                <button
+                    type="button"
+                    class="producto-rating producto-rating-detalle rv-leer"
+                    data-slug="{{ producto.slug }}"
+                    data-nombre="{{ producto.nombre }}"
+                    aria-label="Ver las {{ producto.rating_cantidad }} reseñas de {{ producto.nombre }}"
+                >
+
+                    <span
+                        class="rt-stars"
+                        style="--pct: {% widthratio producto.rating_promedio 5 100 %}%"
+                        aria-hidden="true"
+                    >★★★★★</span>
+
+                    <span class="rt-num">
+                        {{ producto.rating_promedio|floatformat:1 }}
+                    </span>
+
+                    <span class="rt-cant">
+                        ({{ producto.rating_cantidad }}
+                        reseña{{ producto.rating_cantidad|pluralize }})
+                    </span>
+
+                </button>
+
+                {% endif %}
+
+
                 <!-- PRECIO NORMAL -->
 
                 <div class="producto-precio-principal">
@@ -773,6 +805,9 @@
     </section>
 
 </div>
+
+{# NUEVO: modal de lectura de reseñas (el mismo que usa el catálogo) #}
+{% include "core/_resenas_modal.html" %}
 
 
 <!-- ==========================================

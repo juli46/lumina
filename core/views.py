@@ -6,6 +6,7 @@ import uuid
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 import requests
+from django.views.decorators.http import require_GET, require_POST
 from decimal import Decimal, InvalidOperation, ROUND_CEILING
 from django.db.models import F, ExpressionWrapper, DecimalField
 from django.conf import settings
@@ -35,6 +36,7 @@ from .models import (
     Pedido, PedidoItem, PedidoItemKitSeleccion, PostIt, Pregunta, Producto,
     ProductoImagen, ProductoVideo, Recordatorio, RecomendacionEmprendimiento,
     ReporteEmprendimiento, Resultado, ResultadoUsuario, Test, Usuario, Variante, Proveedor, HistorialActividad,
+    Resena, recalcular_rating, usuario_compro_producto,
 )
 
 from django.contrib.auth.views import (
@@ -7246,3 +7248,239 @@ def editar_usuario(request, id):
         "usuarios": usuarios,
         "usuario": usuario,
     })
+# =====================================================================
+# RESEÑAS DE PRODUCTOS
+#
+# Pega este bloque COMPLETO al final de views.py, después de borrar
+# cualquier función de reseñas que haya quedado a medias:
+# ORDENES_RESENA, _nombre_publico, resenas_producto, mi_resena,
+# crear_resena, eliminar_resena, admin_resenas y moderar_resena.
+#
+# Usa imports que views.py ya tiene: Resena, recalcular_rating,
+# usuario_compro_producto, HistorialActividad, Paginator, Count,
+# require_GET, require_POST, JsonResponse, login_required, admin_required.
+# =====================================================================
+
+ORDENES_RESENA = {
+    "recientes": "-creado",
+    "mejores": "-calificacion",
+    "peores": "calificacion",
+}
+
+
+def _nombre_publico(usuario):
+    """Muestra 'María P.' en vez de datos completos del usuario."""
+    nombre = usuario.first_name or usuario.username
+    inicial = f" {usuario.last_name[0]}." if usuario.last_name else ""
+    return f"{nombre}{inicial}"
+
+
+# ---------- PÚBLICO ----------
+
+@require_GET
+def resenas_producto(request, slug):
+    """Lista pública de reseñas aprobadas + resumen de estrellas."""
+    producto = get_object_or_404(Producto, slug=slug, activo=True)
+
+    aprobadas = producto.resenas.filter(estado="aprobada")
+
+    qs = aprobadas.select_related("usuario").order_by(
+        ORDENES_RESENA.get(request.GET.get("orden"), "-creado")
+    )
+    page = Paginator(qs, 10).get_page(request.GET.get("page"))
+
+    distribucion = {i: 0 for i in range(1, 6)}
+    for fila in aprobadas.values("calificacion").annotate(c=Count("id")):
+        distribucion[fila["calificacion"]] = fila["c"]
+
+    return JsonResponse({
+        "promedio": float(producto.rating_promedio),
+        "total": producto.rating_cantidad,
+        "distribucion": distribucion,
+        "pagina": page.number,
+        "paginas": page.paginator.num_pages,
+        "resenas": [
+            {
+                "id": r.id,
+                "autor": _nombre_publico(r.usuario),
+                "calificacion": r.calificacion,
+                "titulo": r.titulo,
+                "comentario": r.comentario,
+                "compra_verificada": r.compra_verificada,
+                "respuesta_admin": r.respuesta_admin,
+                "fecha": r.creado.strftime("%Y-%m-%d"),
+            }
+            for r in page
+        ],
+    })
+
+
+@require_GET
+def mi_resena(request, slug):
+    """
+    Le dice al frontend si debe mostrar el formulario:
+    si está logueado, si compró el producto y si ya reseñó.
+    """
+    producto = get_object_or_404(Producto, slug=slug, activo=True)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "autenticado": False,
+            "puede_resenar": False,
+            "resena": None,
+        })
+
+    resena = Resena.objects.filter(
+        producto=producto, usuario=request.user
+    ).first()
+
+    return JsonResponse({
+        "autenticado": True,
+        "puede_resenar": usuario_compro_producto(request.user, producto),
+        "resena": None if not resena else {
+            "id": resena.id,
+            "calificacion": resena.calificacion,
+            "titulo": resena.titulo,
+            "comentario": resena.comentario,
+            "estado": resena.estado,
+        },
+    })
+
+
+# ---------- USUARIO LOGUEADO ----------
+
+@login_required
+@require_POST
+def crear_resena(request, slug):
+    """
+    Crea la reseña del usuario o la edita si ya existía.
+    Se publica de inmediato (estado "aprobada"), sin revisión previa.
+    Si un admin la ocultó antes (estado "rechazada"), el usuario puede
+    editar el texto pero la reseña sigue oculta: así no se salta la
+    moderación editándola.
+    """
+    producto = get_object_or_404(Producto, slug=slug, activo=True)
+
+    if not usuario_compro_producto(request.user, producto):
+        return JsonResponse(
+            {"error": "Solo puedes reseñar productos que hayas comprado."},
+            status=403,
+        )
+
+    try:
+        data = json.loads(request.body)
+        calificacion = int(data.get("calificacion"))
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Datos inválidos."}, status=400)
+
+    if not 1 <= calificacion <= 5:
+        return JsonResponse(
+            {"error": "La calificación debe ser de 1 a 5."},
+            status=400,
+        )
+
+    resena = (
+        Resena.objects.filter(producto=producto, usuario=request.user).first()
+        or Resena(producto=producto, usuario=request.user)
+    )
+
+    estaba_oculta = resena.pk is not None and resena.estado == "rechazada"
+
+    resena.calificacion = calificacion
+    resena.titulo = (data.get("titulo") or "").strip()[:120]
+    resena.comentario = (data.get("comentario") or "").strip()[:2000]
+    resena.compra_verificada = True
+
+    if not estaba_oculta:
+        resena.estado = "aprobada"
+
+    resena.save()
+
+    # Actualiza rating_promedio y rating_cantidad del producto
+    recalcular_rating(producto.id)
+
+    return JsonResponse({"ok": True, "estado": resena.estado}, status=201)
+
+
+@login_required
+@require_POST
+def eliminar_resena(request, pk):
+    """El usuario elimina su propia reseña."""
+    resena = get_object_or_404(Resena, pk=pk, usuario=request.user)
+    producto_id = resena.producto_id
+    resena.delete()
+
+    recalcular_rating(producto_id)
+
+    return JsonResponse({"ok": True})
+
+
+# ---------- ADMIN ----------
+
+@login_required
+@admin_required
+@require_GET
+def admin_resenas(request):
+    """Listado para moderación. Filtra con ?estado=pendiente|aprobada|rechazada."""
+    estado = request.GET.get("estado", "pendiente")
+
+    qs = (
+        Resena.objects.filter(estado=estado)
+        .select_related("usuario", "producto")
+        .order_by("-creado")
+    )
+    page = Paginator(qs, 20).get_page(request.GET.get("page"))
+
+    return JsonResponse({
+        "pagina": page.number,
+        "paginas": page.paginator.num_pages,
+        "resenas": [
+            {
+                "id": r.id,
+                "producto": r.producto.nombre,
+                "usuario": r.usuario.username,
+                "calificacion": r.calificacion,
+                "titulo": r.titulo,
+                "comentario": r.comentario,
+                "estado": r.estado,
+                "respuesta_admin": r.respuesta_admin,
+                "fecha": r.creado.strftime("%Y-%m-%d %H:%M"),
+            }
+            for r in page
+        ],
+    })
+
+
+@login_required
+@admin_required
+@require_POST
+def moderar_resena(request, pk):
+    """Aprueba o rechaza una reseña, y opcionalmente responde como tienda."""
+    resena = get_object_or_404(Resena, pk=pk)
+
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return JsonResponse({"error": "Datos inválidos."}, status=400)
+
+    estado = data.get("estado")
+    if estado not in ("aprobada", "rechazada"):
+        return JsonResponse({"error": "Estado inválido."}, status=400)
+
+    resena.estado = estado
+    resena.respuesta_admin = (
+        data.get("respuesta_admin", resena.respuesta_admin) or ""
+    ).strip()
+    resena.save()
+
+    recalcular_rating(resena.producto_id)
+
+    HistorialActividad.objects.create(
+        admin=request.user,
+        admin_nombre=request.user.get_full_name() or request.user.username,
+        accion="editar",
+        entidad="Reseña",
+        descripcion=f"Reseña #{resena.id} de {resena.producto.nombre}: {estado}",
+    )
+
+    return JsonResponse({"ok": True})

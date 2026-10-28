@@ -671,11 +671,15 @@ img {
     font-weight: 800;
 }
 
-/* Botón factura */
+/* Botones de acción del pedido */
 
+/* NUEVO: apila los botones (factura + reseñar) con espacio entre ellos */
 .order-actions {
     position: relative;
     z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     padding: 0 24px 23px;
 }
 
@@ -703,6 +707,16 @@ img {
 .btn-factura:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(223,109,119,.24);
+}
+
+/* NUEVO: el botón "Reseñar productos" es un <button>, no un <a> */
+button.btn-factura {
+    border: none;
+    cursor: pointer;
+}
+
+.btn-resenar {
+    background: linear-gradient(135deg, var(--lumina-lilac), var(--lumina-pastel-pink));
 }
 
 
@@ -1804,4 +1818,238 @@ img {
     cursor: pointer;
     font-family: inherit;
     font-size: 1rem;
+}
+
+
+/* =========================================================
+   NUEVO — MODAL DE RESEÑAS
+   ========================================================= */
+
+.rv-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,20,30,.48);
+    backdrop-filter: blur(7px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.rv-overlay[hidden] {
+    display: none;
+}
+
+.rv-card {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    color: var(--lumina-text);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.25),
+        0 10px 25px rgba(223,109,119,.15);
+    animation: pop .25s ease;
+}
+
+.rv-card h2 {
+    margin: 0 40px 14px 0;
+    font-size: 1.3rem;
+    color: var(--lumina-primary);
+    overflow-wrap: anywhere;
+}
+
+.rv-cerrar {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: #fff2f5;
+    color: var(--lumina-primary);
+    font-size: 16px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.rv-cerrar:hover {
+    background: #ffe6ec;
+    transform: scale(1.05);
+}
+
+.rv-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.rv-fila:last-child {
+    border-bottom: none;
+}
+
+.rv-fila > div {
+    min-width: 0;
+}
+
+.rv-fila strong {
+    display: block;
+    font-size: .92rem;
+    overflow-wrap: anywhere;
+}
+
+.rv-fila small {
+    display: block;
+    margin-top: 2px;
+    color: #9b8aa5;
+    font-size: .78rem;
+}
+
+.rv-btn {
+    flex-shrink: 0;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 99px;
+    background: linear-gradient(135deg, var(--lumina-primary), var(--lumina-pastel-pink));
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.rv-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(223,109,119,.2);
+}
+
+.rv-btn.sec {
+    background: #f3eef5;
+    color: var(--lumina-text);
+}
+
+.rv-btn.sec:hover {
+    box-shadow: none;
+    background: #ebe3ee;
+}
+
+.rv-btn:disabled {
+    opacity: .6;
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+}
+
+.rv-pick {
+    display: flex;
+    gap: 2px;
+    margin: 12px 0;
+}
+
+.rv-pick button {
+    padding: 0 3px;
+    border: none;
+    background: none;
+    color: #e3d9e6;
+    font-size: 2.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform .15s ease, color .15s ease;
+}
+
+.rv-pick button:hover {
+    transform: scale(1.15);
+}
+
+.rv-pick button.on {
+    color: #f4a62a;
+}
+
+.rv-card input[type="text"],
+.rv-card textarea {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px 14px;
+    border: 1px solid #e9d5e5;
+    border-radius: 12px;
+    background: #fff;
+    color: #2f2f2f;
+    font-size: 16px;   /* evita el zoom automático de iOS */
+    outline: none;
+    resize: vertical;
+    transition: .2s;
+}
+
+.rv-card input[type="text"]:focus,
+.rv-card textarea:focus {
+    border-color: var(--lumina-primary);
+    box-shadow: 0 0 0 4px rgba(223,109,119,.12);
+}
+
+.rv-aviso {
+    margin: 10px 0;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: #fff3f6;
+    color: var(--lumina-text);
+    font-size: .85rem;
+    line-height: 1.5;
+}
+
+.rv-msg {
+    margin-top: 10px;
+    color: #d33;
+    font-size: .85rem;
+    min-height: 18px;
+}
+
+.rv-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* SweetAlert debe verse POR ENCIMA del modal de reseñas (z-index 9999) */
+.swal2-container {
+    z-index: 10000 !important;
+}
+
+@media (max-width: 520px) {
+
+    .rv-overlay {
+        padding: 12px;
+    }
+
+    .rv-card {
+        padding: 22px 18px;
+        border-radius: 20px;
+        max-height: 94vh;
+    }
+
+    .rv-fila strong {
+        font-size: 1rem;
+    }
+
+    .rv-fila small,
+    .rv-aviso,
+    .rv-msg {
+        font-size: .9rem;
+    }
+
+    .rv-btn {
+        min-height: 44px;
+        font-size: .95rem;
+    }
 }

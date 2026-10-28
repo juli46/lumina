@@ -447,3 +447,265 @@ document.querySelectorAll(".eliminar-resultado").forEach(boton => {
     });
 
 });
+
+
+/* =========================================================
+   RESEÑAS DE PRODUCTOS (modal en "Mis pedidos")
+   Las reseñas se publican de inmediato (sin revisión previa).
+   ========================================================= */
+(function () {
+
+    const modal = document.getElementById("rvModal");
+    if (!modal) return;   // usuario no logueado
+
+    const cuerpo = document.getElementById("rvCuerpo");
+    const titulo = document.getElementById("rvTitulo");
+    const CSRF   = modal.querySelector("[name=csrfmiddlewaretoken]").value;
+
+    const URL_MIA   = modal.dataset.urlMia;
+    const URL_CREAR = modal.dataset.urlCrear;
+    const URL_ELIM  = modal.dataset.urlEliminar;   // /api/resenas/0/eliminar/
+
+    const ESTADOS = {
+        pendiente: "En revisión",
+        aprobada: "Publicada",
+        rechazada: "Oculta"
+    };
+
+    // Crea elementos con textContent (nunca innerHTML) para evitar XSS
+    const el = (tag, cls, txt) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (txt !== undefined) e.textContent = txt;
+        return e;
+    };
+
+    const abrir  = () => { modal.hidden = false; };
+    const cerrar = () => { modal.hidden = true; cuerpo.replaceChildren(); };
+
+    document.getElementById("rvCerrar").onclick = cerrar;
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) cerrar();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !modal.hidden) cerrar();
+    });
+
+    // ---------- LISTA DE PRODUCTOS DEL PEDIDO ----------
+    async function mostrarLista(pedidoId) {
+
+        titulo.textContent = "Reseñar productos";
+        cuerpo.replaceChildren(el("p", "rv-aviso", "Cargando…"));
+
+        // Quita duplicados por slug (mismo producto en varios tonos)
+        const vistos = new Map();
+
+        document.querySelectorAll(`#rv-datos-${pedidoId} span`).forEach((s) => {
+            vistos.set(s.dataset.slug, s.dataset.nombre);
+        });
+
+        let filas = [];
+
+        try {
+            filas = await Promise.all([...vistos].map(async ([slug, nombre]) => {
+                const r = await fetch(URL_MIA.replace("SLUG", slug), {
+                    credentials: "same-origin"
+                });
+                const d = await r.json();
+                return { slug, nombre, resena: d.resena, puede: d.puede_resenar };
+            }));
+        } catch (err) {
+            cuerpo.replaceChildren(
+                el("p", "rv-aviso", "No se pudieron cargar tus productos. Intenta de nuevo.")
+            );
+            return;
+        }
+
+        cuerpo.replaceChildren();
+
+        if (!filas.length) {
+            cuerpo.append(el("p", "rv-aviso",
+                "Este pedido no tiene productos individuales para reseñar."));
+            return;
+        }
+
+        filas.forEach((f) => {
+
+            const fila = el("div", "rv-fila");
+            const info = el("div");
+
+            info.append(el("strong", "", f.nombre));
+            info.append(el("small", "", f.resena
+                ? `${"★".repeat(f.resena.calificacion)} · ${ESTADOS[f.resena.estado]}`
+                : "Sin reseña"));
+
+            fila.append(info);
+
+            if (f.puede) {
+                const b = el("button", "rv-btn", f.resena ? "Editar" : "Reseñar");
+                b.type = "button";
+                b.onclick = () => mostrarForm(pedidoId, f);
+                fila.append(b);
+            }
+
+            cuerpo.append(fila);
+        });
+    }
+
+    // ---------- FORMULARIO ----------
+    function mostrarForm(pedidoId, f) {
+
+        titulo.textContent = f.nombre;
+        cuerpo.replaceChildren();
+
+        const mia = f.resena;
+        let nota = mia ? mia.calificacion : 0;
+
+        if (mia) {
+            const avisos = {
+                pendiente: "Tu reseña está en revisión.",
+                aprobada: "Tu reseña está publicada. Puedes editarla cuando quieras.",
+                rechazada: "El equipo de Lúmina ocultó tu reseña. Puedes editarla, pero seguirá oculta."
+            };
+            cuerpo.append(el("p", "rv-aviso", avisos[mia.estado] || ""));
+        }
+
+        // Estrellas
+        const pick = el("div", "rv-pick");
+        const botones = [];
+        const pintar = () =>
+            botones.forEach((b, i) => b.classList.toggle("on", i < nota));
+
+        for (let i = 1; i <= 5; i++) {
+            const b = el("button", "", "★");
+            b.type = "button";
+            b.setAttribute("aria-label", `${i} estrellas`);
+            b.onclick = () => { nota = i; pintar(); };
+            botones.push(b);
+            pick.append(b);
+        }
+
+        pintar();
+        cuerpo.append(pick);
+
+        // Título y comentario
+        const tit = el("input");
+        tit.type = "text";
+        tit.maxLength = 120;
+        tit.placeholder = "Título (opcional)";
+        tit.value = mia ? mia.titulo : "";
+
+        const com = el("textarea");
+        com.rows = 4;
+        com.maxLength = 2000;
+        com.placeholder = "Cuéntanos qué tal te pareció el producto";
+        com.value = mia ? mia.comentario : "";
+
+        cuerpo.append(tit, com);
+
+        const msg = el("div", "rv-msg");
+        const acc = el("div", "rv-acciones");
+
+        // Enviar
+        const enviar = el("button", "rv-btn", mia ? "Actualizar" : "Publicar");
+        enviar.type = "button";
+
+        enviar.onclick = async () => {
+
+            if (!nota) {
+                msg.textContent = "Elige una calificación.";
+                return;
+            }
+
+            enviar.disabled = true;
+
+            try {
+                const r = await fetch(URL_CREAR.replace("SLUG", f.slug), {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": CSRF
+                    },
+                    body: JSON.stringify({
+                        calificacion: nota,
+                        titulo: tit.value,
+                        comentario: com.value
+                    })
+                });
+
+                const resp = await r.json().catch(() => ({}));
+
+                if (r.ok) {
+                    cerrar();
+                    Swal.fire({
+                        icon: "success",
+                        text: resp.estado === "aprobada"
+                            ? "¡Gracias! Tu reseña ya está publicada."
+                            : "Tu reseña se guardó, pero sigue oculta por el equipo de Lúmina.",
+                        confirmButtonColor: "#df6d77"
+                    });
+                } else {
+                    msg.textContent = resp.error || "No se pudo guardar la reseña.";
+                }
+            } catch (err) {
+                msg.textContent = "Error de conexión. Intenta de nuevo.";
+            }
+
+            enviar.disabled = false;
+        };
+
+        acc.append(enviar);
+
+        // Eliminar (solo si ya existe una reseña)
+        if (mia) {
+            const borrar = el("button", "rv-btn sec", "Eliminar");
+            borrar.type = "button";
+
+            borrar.onclick = async () => {
+
+                const conf = await Swal.fire({
+                    title: "¿Eliminar tu reseña?",
+                    text: "Esta acción no se puede deshacer.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#df6d77",
+                    cancelButtonColor: "#999",
+                    confirmButtonText: "Sí, eliminar",
+                    cancelButtonText: "Cancelar"
+                });
+
+                if (!conf.isConfirmed) return;
+
+                await fetch(URL_ELIM.replace("/0/", `/${mia.id}/`), {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "X-CSRFToken": CSRF }
+                });
+
+                mostrarLista(pedidoId);
+            };
+
+            acc.append(borrar);
+        }
+
+        // Volver
+        const volver = el("button", "rv-btn sec", "Volver");
+        volver.type = "button";
+        volver.onclick = () => mostrarLista(pedidoId);
+        acc.append(volver);
+
+        cuerpo.append(acc, msg);
+    }
+
+    // Botones "Reseñar productos" de cada pedido
+    document.querySelectorAll(".rv-abrir").forEach((b) => {
+        b.onclick = () => {
+            abrir();
+            mostrarLista(b.dataset.pedido);
+        };
+    });
+
+})();

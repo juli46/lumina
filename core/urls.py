@@ -242,6 +242,13 @@ urlpatterns = [
     path('pedidos/<int:pedido_id>/estado/', views.dashboard_pedido_estado, name='dashboard_pedido_estado'),
     path('pedido/<int:pedido_id>/factura/', views.factura_pedido, name='factura_pedido'),
 
+
+    path("api/productos/<slug:slug>/resenas/", views.resenas_producto, name="resenas_producto"),
+    path("api/productos/<slug:slug>/mi-resena/", views.mi_resena, name="mi_resena"),
+    path("api/productos/<slug:slug>/resenas/crear/", views.crear_resena, name="crear_resena"),
+    path("api/resenas/<int:pk>/eliminar/", views.eliminar_resena, name="eliminar_resena"),
+    path("api/admin/resenas/", views.admin_resenas, name="admin_resenas"),
+    path("api/admin/resenas/<int:pk>/moderar/", views.moderar_resena, name="moderar_resena"),
 ]
 
 

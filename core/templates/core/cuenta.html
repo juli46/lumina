@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/cuenta.css' %}">
+    <link rel="stylesheet" href="{% static 'css/cuenta.css' %}?v=2">
 </head>
 
 <body>
@@ -379,6 +379,22 @@
                             <i class="fa-solid fa-file-invoice"></i>
                             Ver factura
                         </a>
+
+                        {% if pedido.estado == "PAGADO" %}
+                        <button type="button" class="btn-factura btn-resenar rv-abrir" data-pedido="{{ pedido.id }}">
+                            <i class="fa-solid fa-star"></i>
+                            Reseñar productos
+                        </button>
+
+                        <div id="rv-datos-{{ pedido.id }}" hidden>
+                            {% for item in pedido.items.all %}
+                                {% if item.variante %}
+                                <span data-slug="{{ item.variante.producto.slug }}"
+                                      data-nombre="{{ item.variante.producto.nombre }}"></span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
 
                 </div>
@@ -658,8 +674,24 @@
 
     </div>
 
+
+    <!-- MODAL RESEÑAS -->
+    <div id="rvModal" class="rv-overlay" hidden
+         data-url-mia="{% url 'mi_resena' 'SLUG' %}"
+         data-url-crear="{% url 'crear_resena' 'SLUG' %}"
+         data-url-eliminar="{% url 'eliminar_resena' 0 %}">
+
+        <div class="rv-card">
+            <button type="button" class="rv-cerrar" id="rvCerrar" aria-label="Cerrar">✕</button>
+            <h2 id="rvTitulo">Reseñar productos</h2>
+            {% csrf_token %}
+            <div id="rvCuerpo"></div>
+        </div>
+
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{% static 'js/cuenta.js' %}?v=4"></script>
+    <script src="{% static 'js/cuenta.js' %}?v=5"></script>
     {% if messages %}
 <script>
     {% for message in messages %}

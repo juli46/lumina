@@ -1,0 +1,220 @@
+<div id="rlModal" class="rl-overlay" hidden
+     data-url="{% url 'resenas_producto' 'SLUG' %}">
+  <div class="rl-card" role="dialog" aria-modal="true" aria-labelledby="rlTitulo">
+    <button type="button" class="rl-cerrar" id="rlCerrar" aria-label="Cerrar">✕</button>
+    <h2 id="rlTitulo"></h2>
+
+    <div class="rl-resumen" id="rlResumen"></div>
+
+    <div class="rl-toolbar">
+      <label for="rlOrden">Ordenar por</label>
+      <select id="rlOrden">
+        <option value="recientes">Más recientes</option>
+        <option value="mejores">Mejor calificadas</option>
+        <option value="peores">Peor calificadas</option>
+      </select>
+    </div>
+
+    <div id="rlLista"></div>
+    <button type="button" class="rl-mas" id="rlMas" hidden>Ver más reseñas</button>
+  </div>
+</div>
+
+<style>
+  /* ---- Estrellas reutilizables (tarjetas y modal) ---- */
+  .rt-stars {
+    --pct: 0%;
+    display: inline-block;
+    letter-spacing: 2px;
+    font-size: 14px;
+    line-height: 1;
+    background: linear-gradient(90deg, #f4a62a var(--pct), #e3d9e6 var(--pct));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .producto-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    color: #9C868C;
+  }
+  .producto-rating:hover .rt-cant { color: #B23F5C; text-decoration: underline; }
+  .producto-rating .rt-num { font-weight: 700; color: #4A383D; }
+
+  /* ---- Modal ---- */
+  .rl-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    background: rgba(30,20,30,.48);
+    backdrop-filter: blur(7px);
+  }
+  .rl-overlay[hidden] { display: none; }
+  .rl-card {
+    position: relative;
+    width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+    padding: 26px;
+    background: #fff; color: #4A383D;
+    border: 1px solid #FBE0E6; border-radius: 22px;
+    box-shadow: 0 25px 60px rgba(0,0,0,.25);
+    font-family: inherit;
+  }
+  .rl-card h2 { margin: 0 40px 16px 0; font-size: 1.2rem; color: #B23F5C; overflow-wrap: anywhere; }
+  .rl-cerrar {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px; border: 0; border-radius: 10px;
+    background: #FFF1F4; color: #DF6D86; font-size: 16px; cursor: pointer;
+  }
+  .rl-resumen { display: flex; gap: 22px; align-items: center; flex-wrap: wrap;
+    padding: 16px; background: #FFF8F9; border: 1px solid #FBE0E6; border-radius: 16px; }
+  .rl-prom { text-align: center; }
+  .rl-prom-num { font-size: 2.4rem; font-weight: 700; color: #DF6D86; line-height: 1; }
+  .rl-prom small { display: block; margin-top: 4px; color: #9C868C; font-size: 12px; }
+  .rl-barras { flex: 1; min-width: 180px; }
+  .rl-barra { display: flex; align-items: center; gap: 8px; margin: 3px 0; font-size: 12px; }
+  .rl-barra-fondo { flex: 1; height: 7px; background: #F3E3E7; border-radius: 99px; overflow: hidden; }
+  .rl-barra-relleno { height: 100%; background: #DF6D86; }
+  .rl-toolbar { display: flex; align-items: center; gap: 8px; margin: 18px 0 6px; font-size: 13px; color: #9C868C; }
+  .rl-toolbar select { padding: 6px 10px; border: 1px solid #E9D5E5; border-radius: 8px; font: inherit; color: #4A383D; }
+  .rl-item { padding: 14px 0; border-bottom: 1px dashed #F3DBE8; }
+  .rl-item:last-child { border-bottom: 0; }
+  .rl-autor { font-weight: 600; font-size: 14px; }
+  .rl-fecha { margin-left: 8px; color: #9C868C; font-size: 12px; }
+  .rl-badge { margin-left: 8px; padding: 2px 8px; border-radius: 99px;
+    background: #E6F8EE; color: #1F9D55; font-size: 11px; }
+  .rl-titulo-r { margin: 6px 0 2px; font-weight: 600; font-size: 14px; }
+  .rl-coment { margin: 0; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .rl-resp { margin-top: 10px; padding: 10px 14px; background: #FFF3F6;
+    border-left: 3px solid #DF6D86; border-radius: 6px; font-size: 13px; }
+  .rl-vacio { padding: 20px 0; text-align: center; color: #9C868C; font-size: 14px; }
+  .rl-mas { display: block; margin: 14px auto 0; padding: 10px 22px; border: 0; border-radius: 99px;
+    background: linear-gradient(120deg, #DF6D86, #E4BE78); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  .rl-mas[hidden] { display: none; }
+  .rl-mas:disabled { opacity: .6; cursor: default; }
+</style>
+
+<script>
+(function () {
+  const modal = document.getElementById("rlModal");
+  if (!modal) return;
+
+  const URL_BASE = modal.dataset.url;          // /api/productos/SLUG/resenas/
+  const $ = (id) => document.getElementById(id);
+  const titulo = $("rlTitulo"), resumen = $("rlResumen"), lista = $("rlLista"),
+        mas = $("rlMas"), orden = $("rlOrden");
+
+  let slug = "", pagina = 1;
+
+  const el = (tag, cls, txt) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt !== undefined) e.textContent = txt;
+    return e;
+  };
+
+  // Estrellas con relleno proporcional (4.5 se ve como 4 y media)
+  const estrellas = (prom) => {
+    const s = el("span", "rt-stars", "★★★★★");
+    s.style.setProperty("--pct", (prom / 5 * 100) + "%");
+    return s;
+  };
+
+  const abrir = () => { modal.hidden = false; document.body.style.overflow = "hidden"; };
+  const cerrar = () => { modal.hidden = true; document.body.style.overflow = ""; };
+
+  $("rlCerrar").onclick = cerrar;
+  modal.addEventListener("click", (e) => { if (e.target === modal) cerrar(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) cerrar(); });
+
+  function pintarResumen(d) {
+    resumen.replaceChildren();
+
+    const prom = el("div", "rl-prom");
+    prom.append(el("div", "rl-prom-num", d.promedio.toFixed(1)));
+    prom.append(estrellas(d.promedio));
+    prom.append(el("small", "", d.total === 1 ? "1 reseña" : d.total + " reseñas"));
+
+    const barras = el("div", "rl-barras");
+    for (let i = 5; i >= 1; i--) {
+      const cant = d.distribucion[i] || 0;
+      const pct = d.total ? (cant / d.total) * 100 : 0;
+      const fila = el("div", "rl-barra");
+      const fondo = el("div", "rl-barra-fondo");
+      const relleno = el("div", "rl-barra-relleno");
+      relleno.style.width = pct + "%";
+      fondo.append(relleno);
+      fila.append(el("span", "", i + "★"), fondo, el("span", "", String(cant)));
+      barras.append(fila);
+    }
+    resumen.append(prom, barras);
+  }
+
+  function pintarResenas(items) {
+    items.forEach((r) => {
+      const item = el("article", "rl-item");
+      const cab = el("div");
+      cab.append(estrellas(r.calificacion));
+      cab.append(el("span", "rl-autor", " " + r.autor));
+      cab.append(el("span", "rl-fecha", r.fecha));
+      if (r.compra_verificada) cab.append(el("span", "rl-badge", "Compra verificada"));
+      item.append(cab);
+      if (r.titulo) item.append(el("div", "rl-titulo-r", r.titulo));
+      if (r.comentario) item.append(el("p", "rl-coment", r.comentario));
+      if (r.respuesta_admin) {
+        const resp = el("div", "rl-resp");
+        resp.append(el("strong", "", "Respuesta de Lúmina: "));
+        resp.append(document.createTextNode(r.respuesta_admin));
+        item.append(resp);
+      }
+      lista.append(item);
+    });
+  }
+
+  async function cargar(reset) {
+    if (reset) { pagina = 1; lista.replaceChildren(el("p", "rl-vacio", "Cargando…")); mas.hidden = true; }
+    else { pagina += 1; }
+
+    mas.disabled = true;
+    try {
+      const url = URL_BASE.replace("SLUG", slug) + `?orden=${orden.value}&page=${pagina}`;
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+
+      if (reset) { pintarResumen(d); lista.replaceChildren(); }
+      if (!d.resenas.length && reset) lista.append(el("p", "rl-vacio", "Aún no hay reseñas."));
+      pintarResenas(d.resenas);
+      mas.hidden = d.pagina >= d.paginas;
+    } catch (e) {
+      if (reset) lista.replaceChildren(el("p", "rl-vacio", "No se pudieron cargar las reseñas."));
+      else pagina -= 1;
+    }
+    mas.disabled = false;
+  }
+
+  orden.addEventListener("change", () => cargar(true));
+  mas.addEventListener("click", () => cargar(false));
+
+  // Delegación: funciona con cualquier botón .rv-leer, aunque la tarjeta
+  // se oculte/muestre con los filtros del catálogo
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".rv-leer");
+    if (!b) return;
+    slug = b.dataset.slug;
+    titulo.textContent = b.dataset.nombre;
+    orden.value = "recientes";
+    abrir();
+    cargar(true);
+  });
+})();
+</script>

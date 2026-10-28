@@ -179,6 +179,17 @@ class Producto(models.Model):
         auto_now_add=True
     )
 
+    # NUEVO: resumen de reseñas (se actualiza con recalcular_rating)
+    rating_promedio = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0
+    )
+
+    rating_cantidad = models.PositiveIntegerField(
+        default=0
+    )
+
     def calcular_precio_con_margen(self):
 
         return self.costo_base / Decimal("0.60")
@@ -1938,3 +1949,118 @@ class HistorialActividad(models.Model):
 
     def __str__(self):
         return f"{self.admin_nombre}: {self.descripcion}"
+
+
+# =========================
+# NUEVO: RESEÑAS DE PRODUCTOS
+# =========================
+
+class Resena(models.Model):
+
+    ESTADOS = [
+        ("pendiente", "Pendiente"),
+        ("aprobada", "Aprobada"),
+        ("rechazada", "Rechazada"),
+    ]
+
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        related_name="resenas"
+    )
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="resenas"
+    )
+
+    calificacion = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+
+    titulo = models.CharField(
+        max_length=120,
+        blank=True
+    )
+
+    comentario = models.TextField(
+        max_length=2000,
+        blank=True
+    )
+
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        default="pendiente"
+    )
+
+    compra_verificada = models.BooleanField(
+        default=False
+    )
+
+    respuesta_admin = models.TextField(
+        blank=True
+    )
+
+    creado = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    actualizado = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["-creado"]
+        verbose_name = "Reseña"
+        verbose_name_plural = "Reseñas"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["producto", "usuario"],
+                name="resena_unica_por_usuario_producto"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["producto", "estado", "-creado"])
+        ]
+
+    def __str__(self):
+        return f"{self.usuario.username} → {self.producto.nombre} ({self.calificacion}★)"
+
+
+def recalcular_rating(producto_id):
+    """
+    Recalcula promedio y cantidad de reseñas aprobadas de un producto.
+    Usa update() para no disparar Producto.save() y su lógica de precios.
+    """
+    from django.db.models import Avg, Count
+
+    datos = Resena.objects.filter(
+        producto_id=producto_id,
+        estado="aprobada"
+    ).aggregate(
+        prom=Avg("calificacion"),
+        total=Count("id")
+    )
+
+    Producto.objects.filter(pk=producto_id).update(
+        rating_promedio=Decimal(str(round(datos["prom"] or 0, 2))),
+        rating_cantidad=datos["total"],
+    )
+
+
+def usuario_compro_producto(usuario, producto):
+    """
+    True si el usuario tiene un pedido PAGADO que incluya el producto,
+    ya sea comprado suelto (por variante) o dentro de un kit.
+    """
+    from django.db.models import Q
+
+    return PedidoItem.objects.filter(
+        pedido__usuario=usuario,
+        pedido__estado="PAGADO",
+    ).filter(
+        Q(variante__producto=producto) |
+        Q(kit__items__producto=producto)
+    ).exists()

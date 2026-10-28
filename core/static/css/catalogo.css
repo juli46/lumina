@@ -6,9 +6,9 @@
    un degradado rosa→dorado como firma y un brillo satinado que recorre
    cada tarjeta al pasar el cursor.
 
-   Este archivo fue reescrito para coincidir exactamente con las clases
-   reales de catalogo.html (antes había clases huérfanas que no existían
-   en el HTML, como .catalogo-container, .filtro-campo o .catalogo-vacio).
+   Este archivo coincide con las clases reales de catalogo.html.
+   Incluye los estilos del rating (.producto-rating, .rt-stars, .rt-num,
+   .rt-cant) que faltaban.
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -34,6 +34,7 @@
     --lumina-line-strong: rgba(74, 56, 61, 0.14);
     --lumina-danger: #C15F6C;
     --lumina-success: #1b5d31;
+    --lumina-star-empty: #E8DADD;
 
     /* Tipografía */
     --font-display: 'Fraunces', Georgia, serif;
@@ -523,6 +524,12 @@
     transition: transform 0.35s var(--ease);
 }
 
+/* display:flex pisa el atributo [hidden] del navegador; sin esta regla
+   el filtrado y la paginación hechos con JS no ocultarían las tarjetas. */
+.producto-card[hidden] {
+    display: none;
+}
+
 .producto-card:hover {
     transform: translateY(-4px);
 }
@@ -703,6 +710,59 @@
 .producto-categoria {
     font-size: 12px;
     color: var(--lumina-text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Rating (estrellas) — .producto-rating > .rt-stars + .rt-num + .rt-cant
+   El template pasa --pct inline (0%–100%) según el promedio sobre 5.
+   Las estrellas se pintan con un degradado recortado al texto: dorado
+   hasta --pct y gris rosado el resto, lo que permite medias estrellas.
+   -------------------------------------------------------------------------- */
+
+.producto-rating {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--lumina-text-muted);
+}
+
+.rt-stars {
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--lumina-gold) var(--pct, 0%),
+        var(--lumina-star-empty) var(--pct, 0%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.rt-num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--lumina-ink);
+    transition: color 0.2s var(--ease);
+}
+
+.rt-cant {
+    color: var(--lumina-text-muted);
+}
+
+.producto-rating:hover .rt-num {
+    color: var(--lumina-rose-deep);
 }
 
 .producto-precio {

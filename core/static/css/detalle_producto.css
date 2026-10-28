@@ -1,5 +1,3 @@
-
-
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
@@ -27,6 +25,7 @@
     --lumina-success: #397653;
     --lumina-success-bg: #EDF8F2;
     --lumina-success-border: #D6EFDF;
+    --lumina-star-empty: #E8DADD;
 
     --font-display: 'Fraunces', Georgia, serif;
     --font-body: 'Manrope', -apple-system, sans-serif;
@@ -275,6 +274,84 @@
     line-height: 1.1;
     color: var(--lumina-ink);
     margin: 0 0 18px;
+}
+
+/* --------------------------------------------------------------------------
+   Rating (estrellas) — .producto-rating > .rt-stars + .rt-num + .rt-cant
+   El template pasa --pct inline (0%–100%) según el promedio sobre 5.
+   Las estrellas se pintan con un degradado recortado al texto: dorado
+   hasta --pct y gris rosado el resto, lo que permite medias estrellas.
+   -------------------------------------------------------------------------- */
+
+.producto-rating {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 6px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--lumina-text-muted);
+}
+
+.rt-stars {
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--lumina-gold) var(--pct, 0%),
+        var(--lumina-star-empty) var(--pct, 0%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.rt-num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--lumina-ink);
+    transition: color 0.2s var(--ease);
+}
+
+.rt-cant {
+    color: var(--lumina-text-muted);
+}
+
+.producto-rating:hover .rt-num,
+.producto-rating:hover .rt-cant {
+    color: var(--lumina-rose-deep);
+}
+
+.producto-rating:focus-visible {
+    outline: 2px solid var(--lumina-rose);
+    outline-offset: 4px;
+    border-radius: 6px;
+}
+
+/* Versión grande para la página de detalle, justo debajo del título */
+.producto-rating-detalle {
+    display: flex;
+    width: fit-content;
+    margin: -6px 0 20px;
+    font-size: 13px;
+}
+
+.producto-rating-detalle .rt-stars {
+    font-size: 19px;
+    letter-spacing: 3px;
+}
+
+.producto-rating-detalle .rt-cant {
+    text-decoration: underline;
+    text-decoration-color: var(--lumina-line-strong);
+    text-underline-offset: 3px;
 }
 
 .producto-precio-principal {
